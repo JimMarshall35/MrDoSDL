@@ -18,12 +18,15 @@ struct BackgroundTileConfigData : public SpriteSheetConfigData
 };
 
 typedef std::map<std::string, std::vector<uvec2>> AnimationMap;
+typedef std::map<std::string, uvec2> SingleSpriteMap;
+
 struct AnimationsConfigData : public SpriteSheetConfigData
 {
 	u8 ColourKeyR;
 	u8 ColourKeyG;
 	u8 ColourKeyB;
 	AnimationMap Animations;
+	SingleSpriteMap SingleSprites;
 };
 
 struct LevelConfigData

@@ -33,3 +33,14 @@ void AnimationAssetManager::MakeAnimationRectFramesFromName(const std::string& a
 		outRectFrames.push_back(rect);
 	}
 }
+
+void AnimationAssetManager::MakeSingleSpriteRectFrame(const std::string& singleSpriteName, SDL_Rect& outRect) const
+{
+	const AnimationsConfigData& animData = Config->GetAnimationsConfigData();
+	assert(animData.SingleSprites.find(singleSpriteName) != animData.SingleSprites.end());
+	uvec2 spriteSheetCoords = animData.SingleSprites.at(singleSpriteName);
+	outRect.x = spriteSheetCoords.x * animData.TileSize;
+	outRect.y = spriteSheetCoords.y * animData.TileSize;
+	outRect.w = animData.TileSize;
+	outRect.h = animData.TileSize;
+}

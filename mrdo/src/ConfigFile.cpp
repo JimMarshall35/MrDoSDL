@@ -53,6 +53,13 @@ void ConfigFile::PopulateAnimationsConfigDataStruct()
 			AnimationConfigData.Animations[key].push_back({ val[i]["x"], val[i]["y"]});
 		}
 	}
+	for (auto& item : ConfigFileJSON["Animations"]["SingleSprites"].items())
+	{
+		std::string key = item.key();
+		json val = item.value();
+		assert(val.is_object());
+		AnimationConfigData.SingleSprites[key] = { val["x"], val["y"] };
+	}
 }
 
 void ConfigFile::PopulateSpriteSheetBase(SpriteSheetConfigData& spriteSheet, const std::string& objectName)

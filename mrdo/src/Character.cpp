@@ -2,11 +2,13 @@
 #include "IAnimationAssetManager.h"
 #include "IConfigFile.h"
 #include "TiledWorld.h"
+#include "MovementHelpers.h"
 #include <functional>
 #include <cassert>
 
 Character::Character(const std::shared_ptr<IAnimationAssetManager>& assetManager, const std::shared_ptr<IConfigFile>& configFile, const std::shared_ptr<TiledWorld>& tiledWorld)
-	:AnimationAssetManager(assetManager),
+	:MyCrystalBall(this, assetManager.get(), configFile.get(), tiledWorld.get()),
+	AnimationAssetManager(assetManager),
 	ConfigFile(configFile),
 	CachedTiledWorld(tiledWorld)
 {
@@ -28,11 +30,29 @@ Character::Character(const std::shared_ptr<IAnimationAssetManager>& assetManager
 
 	CharacterSpeed = ConfigFile->GetFloatValue("CharacterSpeed");
 	Animator.FPS = ConfigFile->GetFloatValue("CharacterAnimatorFPS");
+	PostThrowTimerLimit = ConfigFile->GetFloatValue("PostThrowTimerLimit");
 	PopulateAnimFrames();
 }
 
 void Character::Update(float deltaTime, GameInputState inputState)
 {
+	if (inputState.CrystalBall && CrystalBallState == CrystalBallState::HasBall)
+	{
+		MyCrystalBall.Release();
+		PostThrowTimer = 0.0f;
+		bCanCatchBall = false;
+		CrystalBallState = CrystalBallState::NoBall;
+	}
+	if (MyCrystalBall.IsReleased())
+	{
+		assert(CrystalBallState == CrystalBallState::NoBall);
+		MyCrystalBall.Update(deltaTime);
+		PostThrowTimer += deltaTime;
+		if (PostThrowTimer > PostThrowTimerLimit)
+		{
+			bCanCatchBall = true;
+		}
+	}
 	if (inputState.AnyDirectionPressed())
 	{
 		bIsMoving = true;
@@ -142,7 +162,19 @@ void Character::Update(float deltaTime, GameInputState inputState)
 		bIsMoving = false;
 	}
 	Animator.CurrentAnimation = &RunningAnimFrames[(u32)CrystalBallState][(u32)PushingState][(u32)CurrentMovementDirection];
-	UpdateAnimator(deltaTime / 1000.0f);
+	Animator.bIsAnimating = bIsMoving;
+	Animator.Update(deltaTime / 1000.0f);
+}
+
+void Character::CatchBall()
+{
+	assert(CrystalBallState == CrystalBallState::NoBall);
+	assert(MyCrystalBall.IsReleased());
+	if (bCanCatchBall)
+	{
+		MyCrystalBall.SetIsReleased(false);
+		CrystalBallState = CrystalBallState::HasBall;
+	}
 }
 
 void Character::PopulateAnimFrames()
@@ -262,7 +294,7 @@ void Character::MoveTowardsDestination(float deltaTime)
 	
 	float tileSize = ConfigFile->GetBackgroundConfigData().TileSize;
 	float deltaTSeconds = deltaTime / 1000.0f;
-	vec2 dVec = GetDirectionVector(CurrentMovementDirection);
+	vec2 dVec = MovementHelpers::GetDirectionVector(CurrentMovementDirection);
 	if (DestinationTile != CurrentTile)
 	{
 		CurrentLocation += (dVec * CharacterSpeed * deltaTime);
@@ -332,36 +364,13 @@ void Character::MoveTowardsDestination(float deltaTime)
 	}
 }
 
-vec2 Character::GetDirectionVector(MovementDirection direction)
-{
-	static const vec2 LUT[4] = { {0,-1},{1,0},{0,1},{-1,0} };
-	u32 i = (u32)direction;
-	assert(i < 4);
-	return LUT[i];
-}
-
-void Character::UpdateAnimator(float deltaTimeSeconds)
-{
-	if (!bIsMoving)
-	{
-		Animator.OnAnimFrame = 0;
-	}
-	else
-	{
-		Animator.AccumulatedTime += deltaTimeSeconds;
-		if (Animator.AccumulatedTime >= 1.0f / Animator.FPS)
-		{
-			Animator.AccumulatedTime = 0.0f;
-			++Animator.OnAnimFrame;
-			if (Animator.OnAnimFrame >= Animator.CurrentAnimation->size()) {
-				Animator.OnAnimFrame = 0;
-			}
-		}
-	}
-}
-
 void Character::Draw(SDL_Surface* windowSurface, float scale) const
 {
+	if (MyCrystalBall.IsReleased())
+	{
+		assert(CrystalBallState == CrystalBallState::NoBall);
+		MyCrystalBall.Draw(windowSurface, scale);
+	}
 	SDL_Surface* surface = AnimationAssetManager->GetAnimationsSpriteSheetSurface();
 	SDL_Rect dst;
 	float tileSize = ConfigFile->GetBackgroundConfigData().TileSize;
@@ -369,7 +378,7 @@ void Character::Draw(SDL_Surface* windowSurface, float scale) const
 	dst.h = tileSize * scale;
 	dst.x = CurrentLocation.x * scale;
 	dst.y = CurrentLocation.y * scale;
-	const std::vector<SDL_Rect>& animation = *Animator.CurrentAnimation;
-	const SDL_Rect& rect = animation[Animator.OnAnimFrame];
+	
+	const SDL_Rect& rect = Animator.GetCurrentFrame();
 	SDL_BlitSurfaceScaled(surface, &rect, windowSurface, &dst);
 }

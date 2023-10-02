@@ -12,6 +12,8 @@ public:
 
 	//IAnimationAssetManager
 	virtual void MakeAnimationRectFramesFromName(const std::string& animationName, std::vector<SDL_Rect>& outRectFrames) const override;
+	virtual void MakeSingleSpriteRectFrame(const std::string& singleSpriteName, SDL_Rect& outRect) const override;
+
 	virtual SDL_Surface* GetAnimationsSpriteSheetSurface() const override { return AnimationsSpriteSheet; }
 
 private:

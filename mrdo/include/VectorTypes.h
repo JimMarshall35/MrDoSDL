@@ -1,5 +1,6 @@
 #pragma once
 #include "CommonTypedefs.h"
+#include <math.h>       /* sqrt */
 
 struct vec2
 {
@@ -19,6 +20,26 @@ struct vec2
 	{
 		x += other.x;
 		y += other.y;
+	}
+
+	bool operator==(const vec2& other)
+	{
+		return (x == other.x) && (y == other.y);
+	}
+	bool operator!=(const vec2& other)
+	{
+		return !((x == other.x) && (y == other.y));
+	}
+
+	float Magnitude()
+	{
+		return sqrt(x * x + y * y);
+	}
+
+	vec2 Normalized()
+	{
+		float mag = Magnitude();
+		return { x / mag, y / mag };
 	}
 };
 
@@ -47,5 +68,13 @@ struct uvec2
 	uvec2 operator+(const uvec2& other)
 	{
 		return { x + other.x, y + other.y };
+	}
+	bool operator==(const uvec2& other)
+	{
+		return (x == other.x) && (y == other.y);
+	}
+	bool operator!=(const uvec2& other)
+	{
+		return !((x == other.x) && (y == other.y));
 	}
 };
