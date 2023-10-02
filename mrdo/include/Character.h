@@ -22,8 +22,8 @@ enum class MovementDirection
 
 enum class CrystalBallState
 {
-	HasBall = 0,
-	NoBall = 1,
+	NoBall = 0,
+	HasBall = 1,
 	MAX
 };
 

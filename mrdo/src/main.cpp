@@ -75,6 +75,7 @@ int main(int argc, char* args[])
                     b = a;
                     //std::cout << "fps: " << 1000 / delta << std::endl;
                     GameInputState state = inputManager.PollEvents();
+                    quit = state.Quit;
                     character.Update(delta, state);
 
                     //Fill the surface white
