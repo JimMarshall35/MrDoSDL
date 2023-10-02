@@ -42,9 +42,10 @@ struct CharacterInitOptions
 
 struct Animator
 {
-	float fps;
+	float AccumulatedTime = 0;
+	float FPS;
 	u32 OnAnimFrame = 0;
-	std::vector<SDL_Rect>* currentAnimation;
+	std::vector<SDL_Rect>* CurrentAnimation;
 };
 
 class Character
@@ -59,6 +60,7 @@ private:
 	void SetNewDestinationCell(MovementDirection newDirection);
 	void MoveTowardsDestination(float deltaTime);
 	static vec2 GetDirectionVector(MovementDirection direction);
+	void UpdateAnimator(float deltaTimeSeconds);
 private:
 	Animator Animator;
 	// map of frames, index in by crystal ball state, is pushing or digging and finally direction moving

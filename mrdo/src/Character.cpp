@@ -27,6 +27,7 @@ Character::Character(const std::shared_ptr<IAnimationAssetManager>& assetManager
 	spawnedAtTile &= ~(1 << (u32)TileWallDirectionBit::Center); // knock out center wall of tile spawned in
 
 	CharacterSpeed = ConfigFile->GetFloatValue("CharacterSpeed");
+	Animator.FPS = ConfigFile->GetFloatValue("CharacterAnimatorFPS");
 	PopulateAnimFrames();
 }
 
@@ -140,7 +141,8 @@ void Character::Update(float deltaTime, GameInputState inputState)
 	{
 		bIsMoving = false;
 	}
-
+	Animator.CurrentAnimation = &RunningAnimFrames[(u32)CrystalBallState][(u32)PushingState][(u32)CurrentMovementDirection];
+	UpdateAnimator(deltaTime / 1000.0f);
 }
 
 void Character::PopulateAnimFrames()
@@ -338,6 +340,26 @@ vec2 Character::GetDirectionVector(MovementDirection direction)
 	return LUT[i];
 }
 
+void Character::UpdateAnimator(float deltaTimeSeconds)
+{
+	if (!bIsMoving)
+	{
+		Animator.OnAnimFrame = 0;
+	}
+	else
+	{
+		Animator.AccumulatedTime += deltaTimeSeconds;
+		if (Animator.AccumulatedTime >= 1.0f / Animator.FPS)
+		{
+			Animator.AccumulatedTime = 0.0f;
+			++Animator.OnAnimFrame;
+			if (Animator.OnAnimFrame >= Animator.CurrentAnimation->size()) {
+				Animator.OnAnimFrame = 0;
+			}
+		}
+	}
+}
+
 void Character::Draw(SDL_Surface* windowSurface, float scale) const
 {
 	SDL_Surface* surface = AnimationAssetManager->GetAnimationsSpriteSheetSurface();
@@ -347,7 +369,7 @@ void Character::Draw(SDL_Surface* windowSurface, float scale) const
 	dst.h = tileSize * scale;
 	dst.x = CurrentLocation.x * scale;
 	dst.y = CurrentLocation.y * scale;
-	const std::vector<SDL_Rect>& animation = RunningAnimFrames[(u32)CrystalBallState][(u32)PushingState][(u32)CurrentMovementDirection];
+	const std::vector<SDL_Rect>& animation = *Animator.CurrentAnimation;
 	const SDL_Rect& rect = animation[Animator.OnAnimFrame];
 	SDL_BlitSurfaceScaled(surface, &rect, windowSurface, &dst);
 }

@@ -1,4 +1,5 @@
 {
+	"CharacterAnimatorFPS" : 12.0,
 	"CharacterSpeed" : 0.1,
 	"UpKey" : 82,
 	"DownKey" : 81,
