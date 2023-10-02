@@ -126,6 +126,7 @@ void Character::Update(float deltaTime, GameInputState inputState)
 		}
 		else
 		{
+			// first time movement needs to be handled differently as we're not yet fully initialised
 			MovementDirection newDir = GetMovementDirection(inputState);
 			CurrentMovementDirection = newDir;
 			NextMovementDirection = newDir;
@@ -258,7 +259,7 @@ void Character::MoveTowardsDestination(float deltaTime)
 {
 	
 	float tileSize = ConfigFile->GetBackgroundConfigData().TileSize;
-	float deltaTSeconds = 1000.0f / deltaTime;
+	float deltaTSeconds = deltaTime / 1000.0f;
 	vec2 dVec = GetDirectionVector(CurrentMovementDirection);
 	if (DestinationTile != CurrentTile)
 	{
