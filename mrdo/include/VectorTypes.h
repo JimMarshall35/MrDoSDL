@@ -16,6 +16,7 @@ struct vec2
 		return { x * other, y * other };
 	}
 
+
 	void operator+=(const vec2& other)
 	{
 		x += other.x;

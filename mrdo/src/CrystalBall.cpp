@@ -75,7 +75,8 @@ void CrystalBall::Release()
 	MovementDirection dir = Owner->GetCurrentMovementDirection();
 	vec2 characterFacing = MovementHelpers::GetDirectionVector(dir);
 	Position = Owner->GetPosition();
-	DirectionVector = (characterFacing + ReleaseNormalLUT[(u32)dir]).Normalized();
+	vec2 releaseNormal = ReleaseNormalLUT[(u32)dir];
+	DirectionVector = (characterFacing + vec2{releaseNormal.x * 1.0f, releaseNormal.y*1.0f}).Normalized();
 	bIsReleased = true;
 }
 
@@ -202,7 +203,7 @@ void CrystalBall::Update(float deltaT)
 					if (isintersect(oldTileToptWallA, oldTileToptWallB, oldballCenter, ballCenter))
 					{
 						hasCollided = true;
-						collidedCell = cellToLeft;
+						collidedCell = cellAbove;
 						collisionNormal = MovementHelpers::Down;
 						break;
 					}
@@ -246,15 +247,15 @@ void CrystalBall::Update(float deltaT)
 				}
 				if ((ballCenterTile & (1 << (u32)TileWallDirectionBit::Right)) || (tileAbove & (1 << (u32)TileWallDirectionBit::Left)))
 				{
-					vec2 newTileBottomWallA = vec2{
+					vec2 newTileBRightWallA = vec2{
 						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
 						(float)ballCenterTileCoords.y * CachedTileSize
 					};
-					vec2 newTileBottomWallB = vec2{
+					vec2 newTileRightWallB = vec2{
 						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
 						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
 					};
-					if (isintersect(newTileBottomWallA, newTileBottomWallB, oldballCenter, ballCenter))
+					if (isintersect(newTileBRightWallA, newTileRightWallB, oldballCenter, ballCenter))
 					{
 						hasCollided = true;
 						collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
@@ -266,12 +267,12 @@ void CrystalBall::Update(float deltaT)
 
 			break;
 			case 0:
-				if ((oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Right)) || (ballCenterTile & (1 << (u32)TileWallDirectionBit::Left)))
+				if ((oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Left)) || (ballCenterTile & (1 << (u32)TileWallDirectionBit::Right)))
 				{
 					// collision
 					hasCollided = true;
 					collidedCell = ivec2{ (i32)ballCenterTileCoords.x, (i32)ballCenterTileCoords.y };
-					collisionNormal = MovementHelpers::Left;
+					collisionNormal = MovementHelpers::Right;
 				}
 				break;
 			case 1:
@@ -295,8 +296,8 @@ void CrystalBall::Update(float deltaT)
 					if (isintersect(oldTilBottomtWallA, oldTilBottomtWallB, oldballCenter, ballCenter))
 					{
 						hasCollided = true;
-						collidedCell = cellToLeft;
-						collisionNormal = MovementHelpers::Down;
+						collidedCell = cellBelow;
+						collisionNormal = MovementHelpers::Up;
 						break;
 					}
 				}
@@ -363,23 +364,23 @@ void CrystalBall::Update(float deltaT)
 			switch (dy)
 			{
 			case -1:
-				if ((oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Down)) || (ballCenterTile & (1 << (u32)TileWallDirectionBit::Up)))
-				{
-					// collision
-					hasCollided = true;
-					collidedCell = ivec2{ (i32)ballCenterTileCoords.x, (i32)ballCenterTileCoords.y };
-					collisionNormal = MovementHelpers::Up;
-				}
-				break;
-			case 0:
-				break;
-			case 1:
 				if ((oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Up)) || (ballCenterTile & (1 << (u32)TileWallDirectionBit::Down)))
 				{
 					// collision
 					hasCollided = true;
 					collidedCell = ivec2{ (i32)ballCenterTileCoords.x, (i32)ballCenterTileCoords.y };
 					collisionNormal = MovementHelpers::Down;
+				}
+				break;
+			case 0:
+				break;
+			case 1:
+				if ((oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Down)) || (ballCenterTile & (1 << (u32)TileWallDirectionBit::Up)))
+				{
+					// collision
+					hasCollided = true;
+					collidedCell = ivec2{ (i32)ballCenterTileCoords.x, (i32)ballCenterTileCoords.y };
+					collisionNormal = MovementHelpers::Up;
 				}
 				break;
 			}
@@ -394,7 +395,7 @@ void CrystalBall::Update(float deltaT)
 
 					u8 tileToRight = CachedTiledWorld->GetCellAtIndex(cellToRight);
 					u8 tileAbove = CachedTiledWorld->GetCellAtIndex(cellAbove);
-					if ((tileAbove & (1 << (u32)TileWallDirectionBit::Down)) || (tileToRight & (1 << (u32)TileWallDirectionBit::Up)))
+					if ((tileAbove & (1 << (u32)TileWallDirectionBit::Down)) || (oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Up)))
 					{
 						vec2 oldTileToptWallA = vec2{
 							(float)oldBallCenterTileCoords.x * CachedTileSize,
@@ -489,11 +490,11 @@ void CrystalBall::Update(float deltaT)
 					{
 						vec2 oldTileBottomtWallA = vec2{
 							(float)oldBallCenterTileCoords.x * CachedTileSize,
-							(float)oldBallCenterTileCoords.y * CachedTileSize
+							(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize
 						};
 						vec2 oldTileBottomtWallB = vec2{
 							(float)oldBallCenterTileCoords.x * CachedTileSize + CachedTileSize,
-							(float)oldBallCenterTileCoords.y * CachedTileSize
+							(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize,
 						};
 						if (isintersect(oldTileBottomtWallA, oldTileBottomtWallB, oldballCenter, ballCenter))
 						{
