@@ -18,6 +18,12 @@ public:
 	bool IsReleased() const { return bIsReleased; };
 	void SetIsReleased(bool val) { bIsReleased = val; }
 private:
+	bool DoesBallsPathIntersectLineSegment(
+		const vec2& oldBallCenter, const vec2& ballcenter,
+		const vec2& segmentPtA, const vec2& segmentPtB,
+		const vec2& normalToSetIfItDoes, const ivec2& collidedCellToSetIfCollision,
+		bool& hasCollidedOut, vec2& collisionNormalOut, ivec2& collidedCellOut) const;
+private:
 	Character* Owner;
 	vec2 Position;
 	vec2 DirectionVector;

@@ -5,6 +5,7 @@
 #include "IConfigFile.h"
 #include "IAnimationAssetManager.h"
 #include "TiledWorld.h"
+#include "CollisionHelpers.h"
 #include <cassert>
 #include <math.h>
 #include <algorithm>
@@ -80,74 +81,6 @@ void CrystalBall::Release()
 	bIsReleased = true;
 }
 
-/*
-   Computes the direction of the three given points
-   Returns a positive value if they form a counter-clockwise orientation,
-   a negative value if they form a clockwise orientation,
-   and zero if they are collinear
-*/
-int direction(const vec2& p, const vec2& q, const vec2& r) {
-	return (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
-}
-
-// Checks if two line segments are collinear and overlapping
-bool areCollinearAndOverlapping(const vec2& a1, const vec2& b1, const vec2& a2, const vec2& b2) {
-	using namespace std;
-	// Check if the line segments are collinear
-	if (direction(a1, b1, a2) == 0) {
-		// Check if the line segments overlap
-		if (a2.x <= max(a1.x, b1.x) && a2.x >= min(a1.x, b1.x) && a2.y <= max(a1.y, b1.y) && a2.y >= min(a1.y, b1.y)) {
-			return true;
-		}
-	}
-	return false;
-}
-
-// Checks if two line segments intersect or not
-bool isintersect(const vec2& a1, const vec2& b1, const vec2& a2, const vec2& b2) {
-	// Compute the directions of the four line segments
-	int d1 = direction(a1, b1, a2);
-	int d2 = direction(a1, b1, b2);
-	int d3 = direction(a2, b2, a1);
-	int d4 = direction(a2, b2, b1);
-
-	// Check if the two line segments intersect
-	if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) {
-		return true;
-	}
-
-	// Check if the line segments are collinear and overlapping
-	if (areCollinearAndOverlapping(a1, b1, a2, b2) || areCollinearAndOverlapping(a2, b2, a1, b1)) {
-		return true;
-	}
-
-	return false;
-}
-
-bool CircleRect(float cx, float cy, float radius, float rx, float ry, float rw, float rh) {
-
-	// temporary variables to set edges for testing
-	float testX = cx;
-	float testY = cy;
-
-	// which edge is closest?
-	if (cx < rx)         testX = rx;      // test left edge
-	else if (cx > rx + rw) testX = rx + rw;   // right edge
-	if (cy < ry)         testY = ry;      // top edge
-	else if (cy > ry + rh) testY = ry + rh;   // bottom edge
-
-	// get distance from closest edges
-	float distX = cx - testX;
-	float distY = cy - testY;
-	float distance = sqrt((distX * distX) + (distY * distY));
-
-	// if the distance is less than the radius, collision!
-	if (distance <= radius) {
-		return true;
-	}
-	return false;
-}
-
 void CrystalBall::Update(float deltaT)
 {
 	if (!bIsReleased)
@@ -200,7 +133,7 @@ void CrystalBall::Update(float deltaT)
 						(float)oldBallCenterTileCoords.x * CachedTileSize + CachedTileSize,
 						(float)oldBallCenterTileCoords.y * CachedTileSize
 					};
-					if (isintersect(oldTileToptWallA, oldTileToptWallB, oldballCenter, ballCenter))
+					if (CollisionHelpers::isintersect(oldTileToptWallA, oldTileToptWallB, oldballCenter, ballCenter))
 					{
 						hasCollided = true;
 						collidedCell = cellAbove;
@@ -219,7 +152,7 @@ void CrystalBall::Update(float deltaT)
 						(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize
 					};
 
-					if (isintersect(oldTileLeftWallA, oldTileLeftWallB, oldballCenter, ballCenter))
+					if (CollisionHelpers::isintersect(oldTileLeftWallA, oldTileLeftWallB, oldballCenter, ballCenter))
 					{
 						hasCollided = true;
 						collidedCell = cellToLeft;
@@ -237,7 +170,7 @@ void CrystalBall::Update(float deltaT)
 						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
 						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
 					};
-					if (isintersect(newTileBottomWallA, newTileBottomWallB, oldballCenter, ballCenter))
+					if (CollisionHelpers::isintersect(newTileBottomWallA, newTileBottomWallB, oldballCenter, ballCenter))
 					{
 						hasCollided = true;
 						collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
@@ -255,7 +188,7 @@ void CrystalBall::Update(float deltaT)
 						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
 						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
 					};
-					if (isintersect(newTileBRightWallA, newTileRightWallB, oldballCenter, ballCenter))
+					if (CollisionHelpers::isintersect(newTileBRightWallA, newTileRightWallB, oldballCenter, ballCenter))
 					{
 						hasCollided = true;
 						collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
@@ -293,7 +226,7 @@ void CrystalBall::Update(float deltaT)
 						(float)oldBallCenterTileCoords.x * CachedTileSize + CachedTileSize,
 						(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize
 					};
-					if (isintersect(oldTilBottomtWallA, oldTilBottomtWallB, oldballCenter, ballCenter))
+					if (CollisionHelpers::isintersect(oldTilBottomtWallA, oldTilBottomtWallB, oldballCenter, ballCenter))
 					{
 						hasCollided = true;
 						collidedCell = cellBelow;
@@ -312,7 +245,7 @@ void CrystalBall::Update(float deltaT)
 						(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize
 					};
 
-					if (isintersect(oldTileLeftWallA, oldTileLeftWallB, oldballCenter, ballCenter))
+					if (CollisionHelpers::isintersect(oldTileLeftWallA, oldTileLeftWallB, oldballCenter, ballCenter))
 					{
 						hasCollided = true;
 						collidedCell = cellToLeft;
@@ -330,7 +263,7 @@ void CrystalBall::Update(float deltaT)
 						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
 						(float)ballCenterTileCoords.y * CachedTileSize
 					};
-					if (isintersect(newTileTopWallA, newTileTopWallB, oldballCenter, ballCenter))
+					if (CollisionHelpers::isintersect(newTileTopWallA, newTileTopWallB, oldballCenter, ballCenter))
 					{
 						hasCollided = true;
 						collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
@@ -348,7 +281,7 @@ void CrystalBall::Update(float deltaT)
 						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
 						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
 					};
-					if (isintersect(newTileRightWallA, newTileRightWallB, oldballCenter, ballCenter))
+					if (CollisionHelpers::isintersect(newTileRightWallA, newTileRightWallB, oldballCenter, ballCenter))
 					{
 						hasCollided = true;
 						collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
@@ -405,7 +338,7 @@ void CrystalBall::Update(float deltaT)
 							(float)oldBallCenterTileCoords.x * CachedTileSize + CachedTileSize,
 							(float)oldBallCenterTileCoords.y * CachedTileSize
 						};
-						if (isintersect(oldTileToptWallA, oldTileToptWallB, oldballCenter, ballCenter))
+						if (CollisionHelpers::isintersect(oldTileToptWallA, oldTileToptWallB, oldballCenter, ballCenter))
 						{
 							hasCollided = true;
 							collidedCell = cellToRight;
@@ -424,7 +357,7 @@ void CrystalBall::Update(float deltaT)
 							(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize
 						};
 
-						if (isintersect(oldTileRighttWallA, oldTileRightWallB, oldballCenter, ballCenter))
+						if (CollisionHelpers::isintersect(oldTileRighttWallA, oldTileRightWallB, oldballCenter, ballCenter))
 						{
 							hasCollided = true;
 							collidedCell = cellToRight;
@@ -442,7 +375,7 @@ void CrystalBall::Update(float deltaT)
 							(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
 							(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
 						};
-						if (isintersect(newTileBottomWallA, newTileBottomWallB, oldballCenter, ballCenter))
+						if (CollisionHelpers::isintersect(newTileBottomWallA, newTileBottomWallB, oldballCenter, ballCenter))
 						{
 							hasCollided = true;
 							collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
@@ -460,7 +393,7 @@ void CrystalBall::Update(float deltaT)
 							(float)ballCenterTileCoords.x * CachedTileSize ,
 							(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
 						};
-						if (isintersect(newTileLeftWallA, newTileLeftWallB, oldballCenter, ballCenter))
+						if (CollisionHelpers::isintersect(newTileLeftWallA, newTileLeftWallB, oldballCenter, ballCenter))
 						{
 							hasCollided = true;
 							collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
@@ -496,7 +429,7 @@ void CrystalBall::Update(float deltaT)
 							(float)oldBallCenterTileCoords.x * CachedTileSize + CachedTileSize,
 							(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize,
 						};
-						if (isintersect(oldTileBottomtWallA, oldTileBottomtWallB, oldballCenter, ballCenter))
+						if (CollisionHelpers::isintersect(oldTileBottomtWallA, oldTileBottomtWallB, oldballCenter, ballCenter))
 						{
 							hasCollided = true;
 							collidedCell = cellBelow;
@@ -515,7 +448,7 @@ void CrystalBall::Update(float deltaT)
 							(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize
 						};
 
-						if (isintersect(oldTileRighttWallA, oldTileRightWallB, oldballCenter, ballCenter))
+						if (CollisionHelpers::isintersect(oldTileRighttWallA, oldTileRightWallB, oldballCenter, ballCenter))
 						{
 							hasCollided = true;
 							collidedCell = cellToRight;
@@ -533,7 +466,7 @@ void CrystalBall::Update(float deltaT)
 							(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
 							(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
 						};
-						if (isintersect(newTileBottomWallA, newTileBottomWallB, oldballCenter, ballCenter))
+						if (CollisionHelpers::isintersect(newTileBottomWallA, newTileBottomWallB, oldballCenter, ballCenter))
 						{
 							hasCollided = true;
 							collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
@@ -551,7 +484,7 @@ void CrystalBall::Update(float deltaT)
 							(float)ballCenterTileCoords.x * CachedTileSize ,
 							(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
 						};
-						if (isintersect(newTileLeftWallA, newTileLeftWallB, oldballCenter, ballCenter))
+						if (CollisionHelpers::isintersect(newTileLeftWallA, newTileLeftWallB, oldballCenter, ballCenter))
 						{
 							hasCollided = true;
 							collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
@@ -583,9 +516,26 @@ void CrystalBall::Update(float deltaT)
 		vec2 ballCenterNew = Position + vec2{ CachedTileSize / 2.0f, CachedTileSize / 2.0f };
 		vec2 ownerPos = Owner->GetPosition();
 
-		if (CircleRect(ballCenterNew.x, ballCenterNew.y, (float)CrystalBallRadius, ownerPos.x, ownerPos.y, CachedTileSize, CachedTileSize))
+		if (CollisionHelpers::CircleRect(ballCenterNew.x, ballCenterNew.y, (float)CrystalBallRadius, ownerPos.x, ownerPos.y, CachedTileSize, CachedTileSize))
 		{
 			Owner->CatchBall();
 		}
 	}
+}
+
+bool CrystalBall::DoesBallsPathIntersectLineSegment(
+	const vec2& oldBallCenter, const vec2& ballcenter,
+	const vec2& segmentPtA, const vec2& segmentPtB,
+	const vec2& normalToSetIfItDoes, const ivec2& collidedCellToSetIfCollision,
+	bool& hasCollidedOut, vec2& collisionNormalOut, ivec2& collidedCellOut) const
+{
+	if (CollisionHelpers::isintersect(segmentPtA, segmentPtB, oldBallCenter, ballcenter))
+	{
+		hasCollidedOut = true;
+		collidedCellOut = collidedCellToSetIfCollision;
+		collisionNormalOut = normalToSetIfItDoes;
+		return true;
+	}
+	hasCollidedOut = false;
+	return false;
 }
