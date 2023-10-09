@@ -8,10 +8,14 @@
 #include "Animator.h"
 #include "MovementTypes.h"
 #include "CrystalBall.h"
+#include "EventListener.h"
 
 class IAnimationAssetManager;
 class IConfigFile;
 class TiledWorld;
+
+template<typename T>
+class Event;
 
 enum class CrystalBallState
 {
@@ -38,17 +42,24 @@ struct CharacterInitOptions
 class Character
 {
 public:
-	Character(const std::shared_ptr<IAnimationAssetManager>& assetManager, const std::shared_ptr<IConfigFile>& configFile, const std::shared_ptr<TiledWorld>& tiledWorld);
+	Character(
+		const std::shared_ptr<IAnimationAssetManager>& assetManager,
+		const std::shared_ptr<IConfigFile>& configFile, 
+		const std::shared_ptr<TiledWorld>& tiledWorld,
+		Event<int>& onLevelLoaded);
 	void Update(float deltaTime, GameInputState inputState);
 	void Draw(SDL_Surface* windowSurface, float scale) const;
 	vec2 GetPosition() const { return CurrentLocation; }
 	MovementDirection GetCurrentMovementDirection() const { return CurrentMovementDirection; }
 	void CatchBall();
+	const ivec2& GetTile() const { return CurrentTile; }
 private:
 	void PopulateAnimFrames();
 	MovementDirection GetMovementDirection(GameInputState inputState);
 	void SetNewDestinationCell(MovementDirection newDirection);
 	void MoveTowardsDestination(float deltaTime);
+	void OnNewLevelStarted(int levelNumber);
+	
 private:
 	CrystalBall MyCrystalBall;
 	Animator Animator;
@@ -72,4 +83,6 @@ private:
 	u8 bIsMoving : 1;
 	u8 bHasMoved : 1;
 	u8 bCanCatchBall : 1;
+
+	LISTENER(Character, OnNewLevelStarted, int);
 };

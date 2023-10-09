@@ -9,6 +9,8 @@
 #include "InputManager.h"
 #include "Character.h"
 #include <iostream>
+#include "GameFramework.h"
+#include "GameLayer.h"
 //Screen dimension constants
 
 
@@ -22,22 +24,6 @@ int main(int argc, char* args[])
     //The surface contained by the window
     SDL_Surface* screenSurface = NULL;
 
-
-    // Game systems setup
-    std::shared_ptr<IFileSystem> fileSystem = std::make_shared<FileSystem>(exePath);
-    std::shared_ptr<IConfigFile> configFile = std::make_shared<ConfigFile>(fileSystem);
-    std::shared_ptr<BackgroundTileAssetManager> backgroundTileAssetManager =  std::make_shared<BackgroundTileAssetManager>(configFile);
-    std::shared_ptr<TiledWorld> level = std::make_shared<TiledWorld>(configFile, backgroundTileAssetManager);
-    InputManager inputManager(configFile);
-    level->LoadLevel(0);
-    
-
-    uvec2 windowSize = level->GetRequiredBaseWindowSize();
-    float scaleFactor = 3.0f;
-    const int SCREEN_WIDTH = windowSize.x * scaleFactor;
-    const int SCREEN_HEIGHT = windowSize.y * scaleFactor;
-    
-    
     //Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -45,6 +31,12 @@ int main(int argc, char* args[])
     }
     else
     {
+        // just hard code this for now - all levels are this size
+        uvec2 windowSize = { 12 * 16, 15 * 16 }; //level->GetRequiredBaseWindowSize();
+        float scaleFactor = 3.0f;
+        const int SCREEN_WIDTH = windowSize.x * scaleFactor;
+        const int SCREEN_HEIGHT = windowSize.y * scaleFactor;
+
         //Create window
         SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, 0, &window, &renderer);
         SDL_SetRenderScale(renderer, scaleFactor, scaleFactor);
@@ -56,36 +48,39 @@ int main(int argc, char* args[])
         {
             //Get window surface
             screenSurface = SDL_GetWindowSurface(window);
-            std::shared_ptr<IAnimationAssetManager> animationAssetManager = std::make_shared<AnimationAssetManager>(configFile, screenSurface);
-            Character character(animationAssetManager, configFile, level);
-            
 
-            //Hack to get window to stay up
+            // Game systems setup
+            // my rationale for making these shared ptrs is that they might be used in destructors of classes that depend on them
+            // so I don't want the order of instantiation to matter as it would if they were stack allocated here and passed as raw ptrs for example
+
+            std::shared_ptr<IFileSystem> fileSystem = std::make_shared<FileSystem>(exePath);
+            std::shared_ptr<IConfigFile> configFile = std::make_shared<ConfigFile>(fileSystem);
+            std::shared_ptr<BackgroundTileAssetManager> backgroundTileAssetManager = std::make_shared<BackgroundTileAssetManager>(configFile);
+            InputManager inputManager(configFile);
+
+            std::shared_ptr<IAnimationAssetManager> animationAssetManager = std::make_shared<AnimationAssetManager>(configFile, screenSurface);
+            
+            Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager);
+
+            GameFramework::PushLayers("Game", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0); // start at level 0
+
             bool quit = false; 
-            u32 a = SDL_GetTicks();
-            u32 b = SDL_GetTicks();
-            double delta = 0;
+            u32 simulationTime = 0;
+            u32 realTime = 0;
             while (quit == false) 
             {
-                a = SDL_GetTicks();
-                delta += a - b;
-
-                if (delta > 1000 / 60.0)
-                {
-                    b = a;
-                    //std::cout << "fps: " << 1000 / delta << std::endl;
+                realTime = SDL_GetTicks();
+                while (simulationTime < realTime) {
+                    simulationTime += 16; //Timeslice is ALWAYS 16ms (60 FPS). 
                     GameInputState state = inputManager.PollEvents();
                     quit = state.Quit;
-                    character.Update(delta, state);
-
-                    //Fill the surface white
-                    SDL_FillSurfaceRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
-                    level->DrawActiveLevel(screenSurface, scaleFactor);
-                    character.Draw(screenSurface, scaleFactor);
-                    //Update the surface
-                    SDL_UpdateWindowSurface(window);
-                    delta = 0;
+                    GameFramework::RecieveInput(state);
+                    GameFramework::Update(16);
                 }
+
+                SDL_FillSurfaceRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
+                GameFramework::Draw(screenSurface, scaleFactor);
+                SDL_UpdateWindowSurface(window);
             }
         }
     }

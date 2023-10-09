@@ -8,7 +8,9 @@
 	"RightKey" : 79,
 	"CrystalBallKey" : 224,
 	"CrystalBallRadiusPixels" : 3,
+	"NumCrystalBallUpdates" : 3,
 	"PostThrowTimerLimit" : 500.0,
+	"ApplePoolSize" : 20,
 	"Levels" :
 	[
 		{ 
@@ -178,12 +180,28 @@
 				{"x" : 2, "y" : 7},
 				{"x" : 3, "y" : 7},
 				{"x" : 4, "y" : 7}
+			],
+			"Apple_Wobble" : [
+				{"x" : 12, "y" : 3},
+				{"x" : 13, "y" : 3},
+				{"x" : 14, "y" : 3}
+			],
+			"Apple_Split_LeftHalf" : [
+				{"x" : 12, "y" : 4},
+				{"x" : 14, "y" : 4},
+				{"x" : 16, "y" : 4}
+			],
+			"Apple_Split_RightHalf" : [
+				{"x" : 13, "y" : 4},
+				{"x" : 15, "y" : 4},
+				{"x" : 17, "y" : 4}
 			]
 		},
 		"SingleSprites" :
 		{
 			"CrystalBall_BounceUp" : {"x" : 12, "y" : 0},
-			"CrystalBall_BounceDown" : {"x" : 13, "y" : 0}
+			"CrystalBall_BounceDown" : {"x" : 13, "y" : 0},
+			"Cherry" : {"x" : 12, "y" : 5}
 		}
 	}
 }

@@ -51,5 +51,4 @@ void BackgroundTileAssetManager::BuildCellCaseToTileIndexLUT()
 		u8 val = data.RowPattern[i];
 		CellCaseToTileIndexLUT[val] = i;
 	}
-
 }

@@ -1,18 +1,42 @@
 {
+	"CharacterAnimatorFPS" : 12.0,
+	"CharacterSpeed" : 0.06,
+	"CrystalBallSpeed" : 0.15,
+	"UpKey" : 82,
+	"DownKey" : 81,
+	"LeftKey" : 80,
+	"RightKey" : 79,
+	"CrystalBallKey" : 224,
+	"CrystalBallRadiusPixels" : 3,
+	"NumCrystalBallUpdates" : 3,
+	"PostThrowTimerLimit" : 500.0,
+	"Levels" :
+	[
+		{ 
+			"PlayerSpawnLocation" : { "x" : 5, "y" : 5},
+			"PlayerSpawnFacing" : 1,
+			"BackgroundTileset" : 0,
+			"NumCols" : 12,
+			"NumRows" : 15,
+			"TileData" : [31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31]
+		}
+	],
 	"BackgroundTiles" :
 	{
-		"cols" : 18,
-		"rows" : 13,
-		"relativePath" : "Background.bmp",
-		"rowPattern" : [15,11,14,13,7,10,5,9,3,6,12,1,8,4,2,0,255] 
+		"TileSize" : 16,
+		"NumCols" : 18,
+		"NumRows" : 13,
+		"AssetPath" : "Background.bmp",
+		"RowPattern" : [15,11,14,13,7,10,5,9,3,6,12,1,8,4,2,31,255,0] 
 	},
 	"Animations" : 
 	{
-		"type" : "animations",
-		"cols" : 22,
-		"rows" : 19,
-		"relativePath" : "characters.bmp",
-		"animations" : {
+		"ColourKey" : {"r":5,"g":53,"b":0},
+		"TileSize" : 16,
+		"NumCols" : 22,
+		"NumRows" : 19,
+		"AssetPath" : "characters.bmp",
+		"AnimationFrames" : {
 			"MrDo_RunRight_NoBall" : [
 				{"x":0,"y":0},
 				{"x":1,"y":0},
@@ -45,7 +69,7 @@
 			],
 			"MrDo_RunRight_Ball_Throw" : [
 				{"x" : 0, "y" : 6},
-				{"x" : 1, "y" : 6},
+				{"x" : 1, "y" : 6}
 			],
 			"MrDo_RunDown_NoBall" : [
 				{"x" : 3, "y" : 0},
@@ -79,7 +103,7 @@
 			],
 			"MrDo_RunDown_Ball_Throw" : [
 				{"x" : 3, "y" : 6},
-				{"x" : 4, "y" : 6},
+				{"x" : 4, "y" : 6}
 			],
 			"MrDo_RunLeft_NoBall" : [
 				{"x" : 6, "y" : 0},
@@ -113,7 +137,7 @@
 			],
 			"MrDo_RunLeft_Ball_Throw" : [
 				{"x" : 6, "y" : 6},
-				{"x" : 7, "y" : 6},
+				{"x" : 7, "y" : 6}
 			],
 			"MrDo_RunUp_NoBall" : [
 				{"x" : 9, "y" : 0},
@@ -147,18 +171,36 @@
 			],
 			"MrDo_RunUp_Ball_Throw" : [
 				{"x" : 9, "y" : 6},
-				{"x" : 10, "y" : 6},
+				{"x" : 10, "y" : 6}
 			],
 			"MrDo_Die" : [
 				{"x" : 0, "y" : 7},
 				{"x" : 1, "y" : 7},
 				{"x" : 2, "y" : 7},
 				{"x" : 3, "y" : 7},
-				{"x" : 4, "y" : 7},
+				{"x" : 4, "y" : 7}
+			],
+			"Apple_Wobble" : [
+				{"x" : 12, "y" : 3},
+				{"x" : 13, "y" : 3},
+				{"x" : 14, "y" : 3}
+			],
+			"Apple_Split_LeftHalf" : [
+				{"x" : 12, "y" : 4},
+				{"x" : 14, "y" : 4},
+				{"x" : 16, "y" : 4}
+			],
+			"Apple_Split_RightHalf" : [
+				{"x" : 13, "y" : 4},
+				{"x" : 15, "y" : 4},
+				{"x" : 17, "y" : 4}
 			]
-
-
+		},
+		"SingleSprites" :
+		{
+			"CrystalBall_BounceUp" : {"x" : 12, "y" : 0},
+			"CrystalBall_BounceDown" : {"x" : 13, "y" : 0},
+			"Cherry" : {"x" : 12, "y" : 5}
 		}
-
 	}
 }

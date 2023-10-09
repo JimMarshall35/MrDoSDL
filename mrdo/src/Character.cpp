@@ -5,28 +5,22 @@
 #include "MovementHelpers.h"
 #include <functional>
 #include <cassert>
+#include "Event.h"
 
-Character::Character(const std::shared_ptr<IAnimationAssetManager>& assetManager, const std::shared_ptr<IConfigFile>& configFile, const std::shared_ptr<TiledWorld>& tiledWorld)
+Character::Character(
+	const std::shared_ptr<IAnimationAssetManager>& assetManager,
+	const std::shared_ptr<IConfigFile>& configFile,
+	const std::shared_ptr<TiledWorld>& tiledWorld,
+	Event<int>& levelLoaded)
 	:MyCrystalBall(this, assetManager.get(), configFile.get(), tiledWorld.get()),
 	AnimationAssetManager(assetManager),
 	ConfigFile(configFile),
-	CachedTiledWorld(tiledWorld)
+	CachedTiledWorld(tiledWorld),
+	LOnNewLevelStarted(this)
 {
-	const std::vector<LevelConfigData>& data = ConfigFile->GetLevelsConfigData();
-	const LevelConfigData& level = data[CachedTiledWorld->GetLevelLoaded()];
-	const BackgroundTileConfigData& bgData = ConfigFile->GetBackgroundConfigData();
-
-	CurrentTile = ivec2{ (int)level.PlayerSpawnLocation.x, (int)level.PlayerSpawnLocation.x };
-	CurrentLocation = vec2{ (float)level.PlayerSpawnLocation.x * bgData.TileSize, (float)level.PlayerSpawnLocation.y * bgData.TileSize };
-	CurrentMovementDirection = (MovementDirection)level.PlayerSpawnFacing;
+	levelLoaded += &LOnNewLevelStarted;
 	bIsMoving = false;
 	bHasMoved = false;
-	CachedLevelDims.x = CachedTiledWorld->GetActiveLevelWidth();
-	CachedLevelDims.y = CachedTiledWorld->GetActiveLevelHeight();
-
-	u8& spawnedAtTile = CachedTiledWorld->GetCellAtIndex(CurrentTile);
-
-	spawnedAtTile &= ~(1 << (u32)TileWallDirectionBit::Center); // knock out center wall of tile spawned in
 
 	CharacterSpeed = ConfigFile->GetFloatValue("CharacterSpeed");
 	Animator.FPS = ConfigFile->GetFloatValue("CharacterAnimatorFPS");
@@ -172,8 +166,8 @@ void Character::CatchBall()
 	assert(MyCrystalBall.IsReleased());
 	if (bCanCatchBall)
 	{
-		MyCrystalBall.SetIsReleased(false);
 		CrystalBallState = CrystalBallState::HasBall;
+		MyCrystalBall.OnCaught();
 	}
 }
 
@@ -362,6 +356,24 @@ void Character::MoveTowardsDestination(float deltaTime)
 		}
 		break;
 	}
+}
+
+void Character::OnNewLevelStarted(int levelNumber)
+{
+	const std::vector<LevelConfigData>& data = ConfigFile->GetLevelsConfigData();
+	const LevelConfigData& level = data[levelNumber];
+	const BackgroundTileConfigData& bgData = ConfigFile->GetBackgroundConfigData();
+
+	CurrentTile = ivec2{ (int)level.PlayerSpawnLocation.x, (int)level.PlayerSpawnLocation.x };
+	CurrentLocation = vec2{ (float)level.PlayerSpawnLocation.x * bgData.TileSize, (float)level.PlayerSpawnLocation.y * bgData.TileSize };
+	CurrentMovementDirection = (MovementDirection)level.PlayerSpawnFacing;
+
+	CachedLevelDims.x = CachedTiledWorld->GetActiveLevelWidth(); // todo: sort these out - sort out size of levels in general
+	CachedLevelDims.y = CachedTiledWorld->GetActiveLevelHeight();
+
+	u8& spawnedAtTile = CachedTiledWorld->GetCellAtIndex(CurrentTile);
+
+	spawnedAtTile &= ~(1 << (u32)TileWallDirectionBit::Center); // knock out center wall of tile spawned in
 }
 
 void Character::Draw(SDL_Surface* windowSurface, float scale) const

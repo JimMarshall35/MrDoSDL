@@ -16,13 +16,9 @@ public:
 	void Release();
 	void Update(float deltaT);
 	bool IsReleased() const { return bIsReleased; };
-	void SetIsReleased(bool val) { bIsReleased = val; }
+	void OnCaught();
 private:
-	bool DoesBallsPathIntersectLineSegment(
-		const vec2& oldBallCenter, const vec2& ballcenter,
-		const vec2& segmentPtA, const vec2& segmentPtB,
-		const vec2& normalToSetIfItDoes, const ivec2& collidedCellToSetIfCollision,
-		bool& hasCollidedOut, vec2& collisionNormalOut, ivec2& collidedCellOut) const;
+	void UpdateInternal(float deltaT);
 private:
 	Character* Owner;
 	vec2 Position;
@@ -36,4 +32,5 @@ private:
 	float CachedTileSize;
 	TiledWorld* CachedTiledWorld;
 	u32 CrystalBallRadius;
+	u32 NumUpdatesPerFrame;
 };
