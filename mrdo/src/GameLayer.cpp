@@ -41,7 +41,7 @@ void Game::Draw(SDL_Surface* windowSurface, float scale) const
 {
 	MyTiledWorld->DrawActiveLevel(windowSurface, scale);
 	MyCharacter.Draw(windowSurface, scale);
-
+	MyAppleManager.Draw(windowSurface, scale);
 }
 
 bool Game::MasksPreviousDrawableLayer() const

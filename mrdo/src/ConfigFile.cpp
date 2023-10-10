@@ -93,6 +93,13 @@ void ConfigFile::PopulateLevelsConfigData()
 			assert(tile < 256);
 			data.TileData.push_back(tile);
 		}
+
+		json apples = level["Apples"];
+		for (const json& apple : apples)
+		{
+			data.Apples.push_back(uvec2{ apple["x"], apple["y"] });
+		}
+
 		LevelsConfigData.push_back(data);
 	}
 }

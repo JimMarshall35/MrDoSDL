@@ -31,6 +31,7 @@ struct AnimationsConfigData : public SpriteSheetConfigData
 
 struct LevelConfigData
 {
+	std::vector<uvec2> Apples;
 	std::vector<u8> TileData;
 	int NumRows;
 	int NumCols;
