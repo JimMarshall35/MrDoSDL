@@ -174,13 +174,13 @@ void Character::Update(float deltaTime, GameInputState inputState)
 	{
 		if ((CurrentLocation.y > foundApple->Position.y) && (CurrentLocation.x == foundApple->Position.x))
 		{
-			// we're approaching apple from below - resolve collision
+			// we're approaching apple from below therefore it's blocking us - resolve collision
 			CurrentLocation.y = foundApple->Position.y + CachedSpriteDims.y;
 			bHasMoved = false;
 		}
 		else if ((CurrentLocation.y < foundApple->Position.y) && (CurrentLocation.x == foundApple->Position.x))
 		{
-			// we're approaching apple from above - resolve collision
+			// we're approaching apple from above therefore it's blocking us - resolve collision
 			CurrentLocation.y = foundApple->Position.y - CachedSpriteDims.y;
 			bHasMoved = false;
 		}

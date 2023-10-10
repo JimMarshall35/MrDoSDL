@@ -100,14 +100,15 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 		{
 			if ((apple.Position.x > characterPos.x) && (apple.Position.y == characterPos.y))
 			{
-				// mr do is approaching from the left - resolve collision
+				// mr do is approaching from the left therefore pushing the apple - resolve collision
 				apple.Position.x = characterPos.x + CachedSpriteDims.x;
 			}
 			else if ((apple.Position.x < characterPos.x) && (apple.Position.y == characterPos.y))
 			{
-				// mr do is approaching from the right - resolve collision
+				// mr do is approaching from the right therefore pushing the apple - resolve collision
 				apple.Position.x = characterPos.x - CachedSpriteDims.x;
 			}
+			// todo - check in if statements above if apple is colliding with any other apples and push those too if it is
 		}
 		// todo: check here to see if apple should transition to the falling state and make transition if required
 	}
