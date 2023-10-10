@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cassert>
 #include "IAnimationAssetManager.h"
+#include "Character.h"
+#include "CollisionHelpers.h"
 
 
 AppleManager::AppleManager(
@@ -17,7 +19,8 @@ AppleManager::AppleManager(
 	ApplePoolSize(configFile->GetUIntValue("ApplePoolSize")),
 	ThisLevelNumApplesAtStart(0),
 	ApplePool(std::make_unique<Apple[]>(ApplePoolSize)),
-	LOnNewLevelStarted(this)
+	LOnNewLevelStarted(this),
+	CachedSpriteDims(vec2{ (float)configFile->GetAnimationsConfigData().TileSize, (float)configFile->GetAnimationsConfigData().TileSize })
 {
 	onNewLevelStarted += &LOnNewLevelStarted;
 	CachedBackgroundTileSize = configFile->GetBackgroundConfigData().TileSize;
@@ -26,6 +29,14 @@ AppleManager::AppleManager(
 
 void AppleManager::Update(float deltaT)
 {
+	for (int i = 0; i < ThisLevelNumApplesAtStart; i++)
+	{
+		Apple& apple = ApplePool[i];
+		if (apple.bIsActive)
+		{
+			UpdateSingleApple(deltaT, apple);
+		}
+	}
 }
 
 void AppleManager::Draw(SDL_Surface* windowSurface, float scale) const
@@ -45,6 +56,72 @@ void AppleManager::Draw(SDL_Surface* windowSurface, float scale) const
 			const SDL_Rect& rect = WobbleAnimation[1];//Animator.GetCurrentFrame();
 			SDL_BlitSurfaceScaled(surface, &rect, windowSurface, &dst);
 		}
+	}
+}
+
+void AppleManager::SetCharacter(Character* character)
+{
+	CharacterRef = character;
+}
+
+AppleManager::Apple* AppleManager::FindActiveAppleByPredicate(std::function<bool(const Apple&)> predicate)
+{
+	for (int i = 0; i < ThisLevelNumApplesAtStart; i++)
+	{
+		// just iterate through all the apples even non active ones.
+		// Could maintain link field to next active apple to minimise iterations 
+		// but I don't think its worth it given anticpiated number of apples.
+		// Also if I did this it would still have to initially iterate through all of them
+		const Apple& apple = ApplePool[i];
+		if (apple.bIsActive)
+		{
+			if (predicate(apple))
+			{
+				return &ApplePool[i];
+			}
+		}
+	}
+	return nullptr;
+}
+
+void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
+{
+	switch (apple.State)
+	{
+	case AppleState::Settled:
+	{
+		// possible transitions: falling, wobbling
+		vec2 characterPos = CharacterRef->GetPosition();
+		if (CollisionHelpers::AABBCollision(
+			apple.Position + vec2{ 0, A_SMALL_NUMBER / 2.0f },
+			characterPos,
+			CachedSpriteDims - vec2{ 0, A_SMALL_NUMBER }, // take a small number from either side of our dims so we don't collide with apples to the left and right of us
+			CachedSpriteDims))
+		{
+			if ((apple.Position.x > characterPos.x) && (apple.Position.y == characterPos.y))
+			{
+				// mr do is approaching from the left - resolve collision
+				apple.Position.x = characterPos.x + CachedSpriteDims.x;
+			}
+			else if ((apple.Position.x < characterPos.x) && (apple.Position.y == characterPos.y))
+			{
+				// mr do is approaching from the right - resolve collision
+				apple.Position.x = characterPos.x - CachedSpriteDims.x;
+			}
+		}
+		// todo: check here to see if apple should transition to the falling state and make transition if required
+	}
+		
+		break;
+	case AppleState::Falling:
+		// possible transiitons: Settled, Spliiting
+		break;
+	case AppleState::Splitting:
+		// possible transition: None. Apple becomes inactive after animation
+		break;
+	case AppleState::Wobbling:
+		// possible transition: falling
+		break;
 	}
 }
 

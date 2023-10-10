@@ -71,4 +71,16 @@ namespace CollisionHelpers
 		}
 		return false;
 	}
+
+	bool AABBCollision(const vec2& posA, const vec2& posB, const vec2& dimsA, const vec2& dimsB)
+	{
+		// collision x-axis?
+		bool collisionX = posA.x + dimsA.x >= posB.x &&
+			posB.x + dimsB.x >= posA.x;
+		// collision y-axis?
+		bool collisionY = posA.y + dimsA.y >= posB.y &&
+			posB.y + dimsB.y >= posA.y;
+		// collision only if on both axes
+		return collisionX && collisionY;
+	}
 }

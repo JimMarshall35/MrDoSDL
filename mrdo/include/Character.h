@@ -13,6 +13,7 @@
 class IAnimationAssetManager;
 class IConfigFile;
 class TiledWorld;
+class AppleManager;
 
 template<typename T>
 class Event;
@@ -53,6 +54,7 @@ public:
 	MovementDirection GetCurrentMovementDirection() const { return CurrentMovementDirection; }
 	void CatchBall();
 	const ivec2& GetTile() const { return CurrentTile; }
+	void SetAppleManager(AppleManager* appleManager);     // can't be passed into ctor with other dependencies as both this and the apple manager are members of GameLayer and instantiated at same time so would lead to chicken and egg syndrom
 private:
 	void PopulateAnimFrames();
 	MovementDirection GetMovementDirection(GameInputState inputState);
@@ -85,4 +87,7 @@ private:
 	u8 bCanCatchBall : 1;
 
 	LISTENER(Character, OnNewLevelStarted, int);
+	vec2 CachedSpriteDims;
+
+	AppleManager* AppleManagerRef = nullptr;
 };

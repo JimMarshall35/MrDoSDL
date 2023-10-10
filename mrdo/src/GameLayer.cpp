@@ -8,12 +8,14 @@ Game::Game(const std::shared_ptr<IFileSystem>& fileSystem, const std::shared_ptr
 	MyCharacter(animationManager, config, MyTiledWorld, NewLevelBegun),
 	MyAppleManager(animationManager, config, MyTiledWorld, NewLevelBegun)
 {
-
+	MyCharacter.SetAppleManager(&MyAppleManager);
+	MyAppleManager.SetCharacter(&MyCharacter);
 }
 
 void Game::Update(float deltaT)
 {
 	MyCharacter.Update(deltaT, InputState);
+	MyAppleManager.Update(deltaT);
 }
 
 bool Game::MasksPreviousUpdateableLayer() const

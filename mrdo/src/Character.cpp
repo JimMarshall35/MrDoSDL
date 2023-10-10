@@ -6,6 +6,8 @@
 #include <functional>
 #include <cassert>
 #include "Event.h"
+#include "AppleManager.h"
+#include "CollisionHelpers.h"
 
 Character::Character(
 	const std::shared_ptr<IAnimationAssetManager>& assetManager,
@@ -16,7 +18,8 @@ Character::Character(
 	AnimationAssetManager(assetManager),
 	ConfigFile(configFile),
 	CachedTiledWorld(tiledWorld),
-	LOnNewLevelStarted(this)
+	LOnNewLevelStarted(this),
+	CachedSpriteDims(vec2{ (float)configFile->GetAnimationsConfigData().TileSize, (float)configFile->GetAnimationsConfigData().TileSize })
 {
 	levelLoaded += &LOnNewLevelStarted;
 	bIsMoving = false;
@@ -155,6 +158,35 @@ void Character::Update(float deltaTime, GameInputState inputState)
 	{
 		bIsMoving = false;
 	}
+
+	// find any apples we're colliding with from top or bottom
+	assert(AppleManagerRef);
+	AppleManager::Apple* foundApple = AppleManagerRef->FindActiveAppleByPredicate([this](const AppleManager::Apple& apple) -> bool
+	{
+		return CollisionHelpers::AABBCollision(
+			CurrentLocation + vec2{ A_SMALL_NUMBER / 2.0f, 0 },
+			apple.Position, 
+			CachedSpriteDims - vec2{ A_SMALL_NUMBER, 0 }, // take a small number from either side of our dims so we don't collide with apples to the left and right of us
+			CachedSpriteDims);
+	});
+
+	if (foundApple && foundApple->State == AppleManager::AppleState::Settled)
+	{
+		if ((CurrentLocation.y > foundApple->Position.y) && (CurrentLocation.x == foundApple->Position.x))
+		{
+			// we're approaching apple from below - resolve collision
+			CurrentLocation.y = foundApple->Position.y + CachedSpriteDims.y;
+			bHasMoved = false;
+		}
+		else if ((CurrentLocation.y < foundApple->Position.y) && (CurrentLocation.x == foundApple->Position.x))
+		{
+			// we're approaching apple from above - resolve collision
+			CurrentLocation.y = foundApple->Position.y - CachedSpriteDims.y;
+			bHasMoved = false;
+		}
+		PushingState = PushingState::Pushing;
+	}
+
 	Animator.CurrentAnimation = &RunningAnimFrames[(u32)CrystalBallState][(u32)PushingState][(u32)CurrentMovementDirection];
 	Animator.bIsAnimating = bIsMoving;
 	Animator.Update(deltaTime / 1000.0f);
@@ -221,6 +253,11 @@ MovementDirection Character::GetMovementDirection(GameInputState inputState)
 		return MovementDirection::Right;
 	}
 	return MovementDirection::Undefined;
+}
+
+void Character::SetAppleManager(AppleManager* appleManager)
+{
+	AppleManagerRef = appleManager;
 }
 
 void Character::SetNewDestinationCell(MovementDirection newDirection)

@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
 
+#define A_SMALL_NUMBER 0.1f
+
 typedef uint64_t u64;
 typedef uint32_t u32;
 typedef uint16_t u16;
