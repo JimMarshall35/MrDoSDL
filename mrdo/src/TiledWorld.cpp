@@ -129,10 +129,14 @@ u8& TiledWorld::GetCellAtIndex(const ivec2& coords)
 	return ActiveLevel[i];
 }
 
-u8 TiledWorld::GetCellAtIndex(const ivec2& coords) const
+u8 TiledWorld::GetCellAtIndexValue(const ivec2& coords) const
 {
-	assert(coords.x >= 0 && coords.y >= 0);
-	assert((coords.x < ActiveLevelWidth) && (coords.y < ActiveLevelHeight));
+	static const u8 fullCell = 0xff;
+	if (!(coords.x >= 0 && coords.y >= 0) ||
+		!((coords.x < ActiveLevelWidth) && (coords.y < ActiveLevelHeight)))
+	{
+		return fullCell;
+	}
 	int i = coords.y * ActiveLevelWidth + coords.x;
 	return ActiveLevel[i];
 }
@@ -152,8 +156,8 @@ bool TiledWorld::IsBarrierBetween(const ivec2& cell1, const ivec2& cell2) const
 	assert((dx >= -1) && (dx <= 1));
 	assert((dy >= -1) && (dy <= 1));
 	assert((dx == 0) || (dy == 0));
-	u8 cell1Val = GetCellAtIndex(cell1);
-	u8 cell2Val = GetCellAtIndex(cell2);
+	u8 cell1Val = GetCellAtIndexValue(cell1);
+	u8 cell2Val = GetCellAtIndexValue(cell2);
 	if (dx == 1)
 	{
 		return (cell1Val & (u8)(1 << (u8)TileWallDirectionBit::Right)) || (cell2Val & (u8)(1 << (u8)TileWallDirectionBit::Left));

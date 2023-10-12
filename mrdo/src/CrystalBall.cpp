@@ -115,8 +115,8 @@ void CrystalBall::UpdateInternal(float deltaT)
 
 	if (ballCenterTileCoords != oldBallCenterTileCoords)
 	{
-		u8 oldBallCenterTile = CachedTiledWorld->GetCellAtIndex(ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenter1By1TileIndex.y });
-		u8 ballCenterTile = CachedTiledWorld->GetCellAtIndex(ivec2{ (i32)ballCenterTileCoords.x, (i32)ballCenterTileCoords.y });
+		u8 oldBallCenterTile = CachedTiledWorld->GetCellAtIndexValue(ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenter1By1TileIndex.y });
+		u8 ballCenterTile = CachedTiledWorld->GetCellAtIndexValue(ivec2{ (i32)ballCenterTileCoords.x, (i32)ballCenterTileCoords.y });
 
 		int dx = ballCenterTileCoords.x - oldBallCenterTileCoords.x;
 		int dy = ballCenterTileCoords.y - oldBallCenterTileCoords.y;
@@ -136,8 +136,8 @@ void CrystalBall::UpdateInternal(float deltaT)
 				ivec2 cellToLeft = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ -1,0 };
 				ivec2 cellAbove = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ 0,-1 };
 
-				u8 tileToLeft = CachedTiledWorld->GetCellAtIndex(cellToLeft);
-				u8 tileAbove = CachedTiledWorld->GetCellAtIndex(cellAbove);
+				u8 tileToLeft = CachedTiledWorld->GetCellAtIndexValue(cellToLeft);
+				u8 tileAbove = CachedTiledWorld->GetCellAtIndexValue(cellAbove);
 				if ((tileAbove & (1 << (u32)TileWallDirectionBit::Down)) || (oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Up)))
 				{
 					vec2 oldTileToptWallA = vec2{
@@ -229,8 +229,8 @@ void CrystalBall::UpdateInternal(float deltaT)
 				ivec2 cellToLeft = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ -1,0 };
 				ivec2 cellBelow = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ 0, 1 };
 
-				u8 tileToLeft = CachedTiledWorld->GetCellAtIndex(cellToLeft);
-				u8 tileBelow = CachedTiledWorld->GetCellAtIndex(cellBelow);
+				u8 tileToLeft = CachedTiledWorld->GetCellAtIndexValue(cellToLeft);
+				u8 tileBelow = CachedTiledWorld->GetCellAtIndexValue(cellBelow);
 				if ((tileBelow & (1 << (u32)TileWallDirectionBit::Up)) || (oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Down)))
 				{
 					vec2 oldTilBottomtWallA = vec2{
@@ -341,8 +341,8 @@ void CrystalBall::UpdateInternal(float deltaT)
 				ivec2 cellToRight = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ 1,0 };
 				ivec2 cellAbove = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ 0,-1 };
 
-				u8 tileToRight = CachedTiledWorld->GetCellAtIndex(cellToRight);
-				u8 tileAbove = CachedTiledWorld->GetCellAtIndex(cellAbove);
+				u8 tileToRight = CachedTiledWorld->GetCellAtIndexValue(cellToRight);
+				u8 tileAbove = CachedTiledWorld->GetCellAtIndexValue(cellAbove);
 				if ((tileAbove & (1 << (u32)TileWallDirectionBit::Down)) || (oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Up)))
 				{
 					vec2 oldTileToptWallA = vec2{
@@ -432,8 +432,8 @@ void CrystalBall::UpdateInternal(float deltaT)
 				ivec2 cellToRight = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ 1,0 };
 				ivec2 cellBelow = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ 0,-1 };
 
-				u8 tileToRight = CachedTiledWorld->GetCellAtIndex(cellToRight);
-				u8 tileBelow = CachedTiledWorld->GetCellAtIndex(cellBelow);
+				u8 tileToRight = CachedTiledWorld->GetCellAtIndexValue(cellToRight);
+				u8 tileBelow = CachedTiledWorld->GetCellAtIndexValue(cellBelow);
 				if ((tileBelow & (1 << (u32)TileWallDirectionBit::Up)) || (oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Down)))
 				{
 					vec2 oldTileBottomtWallA = vec2{

@@ -44,6 +44,8 @@ public:
 	Apple* FindActiveAppleByPredicate(std::function<bool(const Apple&)> predicate);
 private:
 	void UpdateSingleApple(float deltaT, Apple& apple);
+	void RecursivelyPushApples(Apple& applePushed);
+	void ClampPushedApples();
 private:
 	std::shared_ptr<IConfigFile> CachedConfig;
 	const std::shared_ptr<IAnimationAssetManager> AnimationAssetManager;
@@ -57,6 +59,11 @@ private:
 	void OnNewLevelStarted(int levelNumber);
 private:
 	LISTENER(AppleManager, OnNewLevelStarted, int);
+private:
 	vec2 CachedSpriteDims;
+	uvec2 CachedLevelSize = { 0,0 };
 
+
+	std::unique_ptr<Apple*[]> PushedAppleStack;
+	int PushedAppleStackSize = 0;
 };

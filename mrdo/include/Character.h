@@ -51,6 +51,8 @@ public:
 	void Update(float deltaTime, GameInputState inputState);
 	void Draw(SDL_Surface* windowSurface, float scale) const;
 	vec2 GetPosition() const { return CurrentLocation; }
+	void SetPosition(const vec2& pos) { CurrentLocation = pos; }
+
 	MovementDirection GetCurrentMovementDirection() const { return CurrentMovementDirection; }
 	void CatchBall();
 	const ivec2& GetTile() const { return CurrentTile; }

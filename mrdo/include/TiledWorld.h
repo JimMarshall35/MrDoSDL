@@ -26,7 +26,7 @@ public:
 	void ConnectAdjacentCells(const ivec2& cell1, const ivec2& cell2);
 	int GetLevelLoaded() const;
 	u8& GetCellAtIndex(const ivec2& coords);	
-	u8 GetCellAtIndex(const ivec2& coords) const;
+	u8 GetCellAtIndexValue(const ivec2& coords) const;
 	u32 GetActiveLevelWidth() const { return ActiveLevelWidth; }
 	u32 GetActiveLevelHeight() const { return ActiveLevelHeight; }
 	bool IsBarrierBetween(const ivec2& cell1, const ivec2& cell2) const;

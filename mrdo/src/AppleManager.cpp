@@ -20,7 +20,8 @@ AppleManager::AppleManager(
 	ThisLevelNumApplesAtStart(0),
 	ApplePool(std::make_unique<Apple[]>(ApplePoolSize)),
 	LOnNewLevelStarted(this),
-	CachedSpriteDims(vec2{ (float)configFile->GetAnimationsConfigData().TileSize, (float)configFile->GetAnimationsConfigData().TileSize })
+	CachedSpriteDims(vec2{ (float)configFile->GetAnimationsConfigData().TileSize, (float)configFile->GetAnimationsConfigData().TileSize }),
+	PushedAppleStack(std::make_unique<Apple*[]>(ApplePoolSize))
 {
 	onNewLevelStarted += &LOnNewLevelStarted;
 	CachedBackgroundTileSize = configFile->GetBackgroundConfigData().TileSize;
@@ -108,7 +109,12 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 				// mr do is approaching from the right therefore pushing the apple - resolve collision
 				apple.Position.x = characterPos.x - CachedSpriteDims.x;
 			}
-			// todo - check in if statements above if apple is colliding with any other apples and push those too if it is
+
+			PushedAppleStackSize = 0;
+			PushedAppleStack[PushedAppleStackSize++] = &apple;
+
+			RecursivelyPushApples(apple);
+			ClampPushedApples();
 		}
 		// todo: check here to see if apple should transition to the falling state and make transition if required
 	}
@@ -126,6 +132,83 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 	}
 }
 
+void AppleManager::RecursivelyPushApples(Apple& apple)
+{
+	for (int i = 0; i < ThisLevelNumApplesAtStart; i++)
+	{
+		Apple& otherApple = ApplePool[i];
+		if (otherApple.bIsActive && (&otherApple != &apple))
+		{
+			if (CollisionHelpers::AABBCollision(
+				apple.Position,
+				otherApple.Position,
+				CachedSpriteDims,
+				CachedSpriteDims))
+			{
+				if (apple.Position.x < otherApple.Position.x)
+				{
+					otherApple.Position.x = apple.Position.x + CachedSpriteDims.x + A_SMALL_NUMBER;
+				}
+				else
+				{
+					otherApple.Position.x = apple.Position.x - CachedSpriteDims.x - A_SMALL_NUMBER;
+				}
+				PushedAppleStack[PushedAppleStackSize++] = &otherApple;
+
+				RecursivelyPushApples(otherApple);
+			}
+		}
+	}
+}
+
+void AppleManager::ClampPushedApples()
+{
+	assert(PushedAppleStackSize);
+	vec2 characterPos = CharacterRef->GetPosition();
+	Apple* endApple = PushedAppleStack[PushedAppleStackSize - 1];
+	float tileMaxX = (CachedLevelSize.x - 1) * CachedBackgroundTileSize;
+
+	// does the end epple in the stack need to be clamped
+	if (endApple->Position.x > tileMaxX || endApple->Position.x < 0)
+	{
+		// clamp the last apple being pushed to the edges of the screen
+		if (endApple->Position.x > tileMaxX)
+		{
+			endApple->Position.x = tileMaxX;
+		}
+		else if (endApple->Position.x < 0)
+		{
+			endApple->Position.x = 0;
+		}
+
+		// propagate collision resolution to all the other apples
+		for (int i = PushedAppleStackSize - 2; i >= 0; i--)
+		{
+			Apple* apple = PushedAppleStack[i];
+			Apple* previousApple = PushedAppleStack[i + 1];
+			if (apple->Position.x < previousApple->Position.x)
+			{
+				apple->Position.x = previousApple->Position.x - CachedSpriteDims.x;
+			}
+			else
+			{
+				apple->Position.x = previousApple->Position.x + CachedSpriteDims.x;
+			}
+		}
+
+		// propagate collision resolution to mr do
+		Apple* firstApple = PushedAppleStack[0];
+		if (characterPos.x < firstApple->Position.x)
+		{
+			CharacterRef->SetPosition({ firstApple->Position.x - CachedSpriteDims.x, characterPos.y });
+		}
+		else
+		{
+			CharacterRef->SetPosition({ firstApple->Position.x + CachedSpriteDims.x, characterPos.y });
+		}
+	}
+}
+
 void AppleManager::OnNewLevelStarted(int levelNumber)
 {
 	const std::vector<LevelConfigData>& levels = CachedConfig->GetLevelsConfigData();
@@ -137,5 +220,6 @@ void AppleManager::OnNewLevelStarted(int levelNumber)
 		ApplePool[i].bIsActive = true;
 		ApplePool[i].Position = vec2{ (float)startedLevel.Apples[i].x * CachedBackgroundTileSize, (float)startedLevel.Apples[i].y * CachedBackgroundTileSize };
 	}
-	std::cerr << "started\n";
+	CachedLevelSize.x = startedLevel.NumCols;
+	CachedLevelSize.y = startedLevel.NumRows;
 }
