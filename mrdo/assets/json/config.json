@@ -11,6 +11,10 @@
 	"NumCrystalBallUpdates" : 3,
 	"PostThrowTimerLimit" : 500.0,
 	"ApplePoolSize" : 20,
+	"AppleSlideSpeed" : 0.06,
+	"AppleFallSpeed" : 0.06,
+	"AppleWobbleTime" : 500.0,
+	"AppleSplitTime" : 500.0,
 	"Levels" :
 	[
 		{ 

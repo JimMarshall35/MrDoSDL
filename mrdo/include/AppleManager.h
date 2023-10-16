@@ -21,16 +21,21 @@ class AppleManager
 public:
 	enum class AppleState
 	{
+		Inactive,
 		Settled,
 		Wobbling,
 		Falling,
-		Splitting
+		Splitting,
+		Sliding
 	};
 	struct Apple
 	{
 		vec2 Position;
-		bool bIsActive = true;
-		AppleState State = AppleState::Settled;
+		AppleState State = AppleState::Inactive;
+		float SlideDestination;
+		float AnimationTimer = 0;;
+		u32 OnAnimationFrame;
+		float DistanceFallen = 0.0f;
 	};
 public:
 	AppleManager(
@@ -54,9 +59,13 @@ private:
 	std::unique_ptr<Apple[]> ApplePool;
 	float CachedBackgroundTileSize;
 	std::vector<SDL_Rect> WobbleAnimation;
+	std::vector<SDL_Rect> LeftHalfSplitAnimation;
+	std::vector<SDL_Rect> RightHalfSplitAnimation;
 	Character* CharacterRef;
 private:
 	void OnNewLevelStarted(int levelNumber);
+	bool IsCellBelowEmpty(Apple* apple) const;
+	bool IsCellDirectlyBelowEmpty(Apple* apple) const;
 private:
 	LISTENER(AppleManager, OnNewLevelStarted, int);
 private:
@@ -66,4 +75,9 @@ private:
 
 	std::unique_ptr<Apple*[]> PushedAppleStack;
 	int PushedAppleStackSize = 0;
+	const std::shared_ptr<TiledWorld> CachedTiledWorld;
+	float AppleSlideSpeed;
+	float AppleFallSpeed;
+	float AppleWobbleTime;
+	float AppleSplitTime;
 };
