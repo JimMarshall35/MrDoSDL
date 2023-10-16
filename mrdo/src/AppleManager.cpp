@@ -176,7 +176,7 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 				
 					Apple* lastApple = PushedAppleStack[PushedAppleStackSize - 1];
 
-					if (IsCellBelowEmpty(lastApple))
+					if (IsCellBelowEmpty(lastApple) && !IsAppleBelow(lastApple))
 					{
 						lastApple->State = AppleState::Sliding;
 						float lastAppleCenterX = lastApple->Position.x + CachedSpriteDims.x / 2.0f;
@@ -186,7 +186,7 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 				}
 			
 			}
-			else if(IsCellBelowEmpty(&apple) && !IsMrDoBelow(&apple))
+			else if(IsCellBelowEmpty(&apple) && !IsMrDoBelow(&apple) && !IsAppleBelow(&apple))
 			{
 				apple.State = AppleState::Wobbling;
 			}
@@ -294,7 +294,6 @@ void AppleManager::RecursivelyPushApples(Apple& apple)
 					otherApple.Position.x = apple.Position.x - CachedSpriteDims.x - A_SMALL_NUMBER;
 				}
 				PushedAppleStack[PushedAppleStackSize++] = &otherApple;
-
 				RecursivelyPushApples(otherApple);
 			}
 		}
@@ -404,6 +403,7 @@ bool AppleManager::IsMrDoBelow(Apple* apple) const
 bool AppleManager::IsAppleBelow(Apple* apple) const
 {
 	vec2 cellBelowPos = GetCellBelowPos(apple);
+	cellBelowPos += {A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f};
 	for (int i = 0; i < ThisLevelNumApplesAtStart; i++)
 	{
 		const Apple& otherApple = ApplePool[i];
@@ -412,7 +412,7 @@ bool AppleManager::IsAppleBelow(Apple* apple) const
 			if (CollisionHelpers::AABBCollision(
 				cellBelowPos,
 				otherApple.Position,
-				{ CachedBackgroundTileSize, CachedBackgroundTileSize },
+				{ CachedBackgroundTileSize - A_SMALL_NUMBER, CachedBackgroundTileSize - A_SMALL_NUMBER },
 				{ CachedBackgroundTileSize, CachedBackgroundTileSize }))
 			{
 				return true;
