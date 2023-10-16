@@ -19,4 +19,5 @@ namespace CollisionHelpers {
 	bool CircleRect(float cx, float cy, float radius, float rx, float ry, float rw, float rh);
 
 	bool AABBCollision(const vec2& posA, const vec2& posB, const vec2& dimsA, const vec2& dimsB);
+
 }

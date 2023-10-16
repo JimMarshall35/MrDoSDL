@@ -66,6 +66,9 @@ private:
 	void OnNewLevelStarted(int levelNumber);
 	bool IsCellBelowEmpty(Apple* apple) const;
 	bool IsCellDirectlyBelowEmpty(Apple* apple) const;
+	bool IsMrDoBelow(Apple* apple) const;
+	bool IsAppleBelow(Apple* apple) const;
+	vec2 GetCellBelowPos(Apple* apple) const;
 private:
 	LISTENER(AppleManager, OnNewLevelStarted, int);
 private:

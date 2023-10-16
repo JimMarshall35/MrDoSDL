@@ -186,7 +186,7 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 				}
 			
 			}
-			else if(IsCellBelowEmpty(&apple))
+			else if(IsCellBelowEmpty(&apple) && !IsMrDoBelow(&apple))
 			{
 				apple.State = AppleState::Wobbling;
 			}
@@ -384,4 +384,48 @@ bool AppleManager::IsCellDirectlyBelowEmpty(Apple* apple) const
 	int cellBelowCorrdsY = cellBelowY / CachedBackgroundTileSize;
 	u8 cell = CachedTiledWorld->GetCellAtIndexValue({ cellBelowCoordsX, cellBelowCorrdsY });
 	return (cell & (1 << (u8)TileWallDirectionBit::Center)) == 0;
+}
+
+bool AppleManager::IsMrDoBelow(Apple* apple) const
+{
+	vec2 cellBelowPos = GetCellBelowPos(apple);
+	vec2 characterPos = CharacterRef->GetPosition();
+	if (CollisionHelpers::AABBCollision(
+		cellBelowPos,
+		characterPos,
+		{ CachedBackgroundTileSize, CachedBackgroundTileSize },
+		CachedSpriteDims))
+	{
+		return true;
+	}
+	return false;
+}
+
+bool AppleManager::IsAppleBelow(Apple* apple) const
+{
+	vec2 cellBelowPos = GetCellBelowPos(apple);
+	for (int i = 0; i < ThisLevelNumApplesAtStart; i++)
+	{
+		const Apple& otherApple = ApplePool[i];
+		if ((otherApple.State == AppleState::Settled) && (&otherApple != apple))
+		{
+			if (CollisionHelpers::AABBCollision(
+				cellBelowPos,
+				otherApple.Position,
+				{ CachedBackgroundTileSize, CachedBackgroundTileSize },
+				{ CachedBackgroundTileSize, CachedBackgroundTileSize }))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+vec2 AppleManager::GetCellBelowPos(Apple* apple) const
+{
+	vec2 appleCenter = apple->Position + vec2{ CachedSpriteDims.x / 2.0f, CachedSpriteDims.y / 2.0f };
+	uvec2 appleCoords = { appleCenter.x / CachedBackgroundTileSize, appleCenter.y / CachedBackgroundTileSize };
+	vec2 rVal = { appleCoords.x * CachedBackgroundTileSize, (appleCoords.y + 1)* CachedBackgroundTileSize };
+	return rVal;
 }
