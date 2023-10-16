@@ -277,7 +277,7 @@ void AppleManager::RecursivelyPushApples(Apple& apple)
 	for (int i = 0; i < ThisLevelNumApplesAtStart; i++)
 	{
 		Apple& otherApple = ApplePool[i];
-		if ((apple.State != AppleState::Inactive) && (&otherApple != &apple) && (otherApple.State != AppleState::Inactive) && (otherApple.Position.y == apple.Position.y))
+		if ((apple.State == AppleState::Settled) && (&otherApple != &apple) && (otherApple.State == AppleState::Settled) && (otherApple.Position.y == apple.Position.y))
 		{
 			if (CollisionHelpers::AABBCollision(
 				apple.Position,
