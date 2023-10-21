@@ -451,22 +451,22 @@ CollidingCellRelationship AppleManager::GetCollisionRelationshipWithMrDo(Apple* 
 		CachedSpriteDims))
 	{
 
-		if ((apple->Position.x > characterPos.x) && (apple->Position.y == characterPos.y))
+		if ((apple->Position.x > characterPos.x) && (round(apple->Position.y) == round(characterPos.y)))
 		{
 			// mr do is approaching from the left
 			return CollidingCellRelationship::Left;
 		}
-		else if ((apple->Position.x < characterPos.x) && (apple->Position.y == characterPos.y))
+		else if ((apple->Position.x < characterPos.x) && (round(apple->Position.y) == round(characterPos.y)))
 		{
 			// mr do is approaching from the right
 			return CollidingCellRelationship::Right;
 		}
-		if ((apple->Position.y > characterPos.y) && (apple->Position.x == characterPos.x))
+		if ((apple->Position.y > characterPos.y) && (round(apple->Position.x) == round(characterPos.x)))
 		{
 			// mr do is approaching from the top 
 			return CollidingCellRelationship::Above;
 		}
-		else if ((apple->Position.y < characterPos.y) && (apple->Position.x == characterPos.x))
+		else if ((apple->Position.y < characterPos.y) && (round(apple->Position.x) == round(characterPos.x)))
 		{
 			// mr do is approaching from below
 			return CollidingCellRelationship::Below;
