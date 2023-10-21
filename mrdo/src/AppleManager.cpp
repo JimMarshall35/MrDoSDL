@@ -236,6 +236,7 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 				if (apple.CrushedCharacter)
 				{
 					apple.CrushedCharacter->Kill(CharacterDeathReason::CrushedByApple);
+					apple.CrushedCharacter = nullptr;
 				}
 			}
 		}
