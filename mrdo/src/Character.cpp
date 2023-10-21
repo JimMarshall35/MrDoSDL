@@ -8,6 +8,7 @@
 #include "Event.h"
 #include "AppleManager.h"
 #include "CollisionHelpers.h"
+#include <cmath>
 
 Character::Character(
 	const std::shared_ptr<IAnimationAssetManager>& assetManager,
@@ -172,13 +173,13 @@ void Character::Update(float deltaTime, GameInputState inputState)
 
 	if (foundApple && foundApple->State == AppleManager::AppleState::Settled)
 	{
-		if ((CurrentLocation.y > foundApple->Position.y) && (CurrentLocation.x == foundApple->Position.x))
+		if ((CurrentLocation.y > foundApple->Position.y) && (round(CurrentLocation.x) == round(foundApple->Position.x)))
 		{
 			// we're approaching apple from below therefore it's blocking us - resolve collision
 			CurrentLocation.y = foundApple->Position.y + CachedSpriteDims.y;
 			bHasMoved = false;
 		}
-		else if ((CurrentLocation.y < foundApple->Position.y) && (CurrentLocation.x == foundApple->Position.x))
+		else if ((CurrentLocation.y < foundApple->Position.y) && (round(CurrentLocation.x) == round(foundApple->Position.x)))
 		{
 			// we're approaching apple from above therefore it's blocking us - resolve collision
 			CurrentLocation.y = foundApple->Position.y - CachedSpriteDims.y;

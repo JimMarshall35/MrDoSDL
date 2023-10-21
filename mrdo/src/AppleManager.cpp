@@ -388,12 +388,12 @@ bool AppleManager::IsCellDirectlyBelowEmpty(Apple* apple) const
 bool AppleManager::IsMrDoBelow(Apple* apple) const
 {
 	vec2 cellBelowPos = GetCellBelowPos(apple);
-	vec2 characterPos = CharacterRef->GetPosition();
+	vec2 characterPos = CharacterRef->GetPosition() + vec2{A_SMALL_NUMBER/2.0f, A_SMALL_NUMBER/2.0f};
 	if (CollisionHelpers::AABBCollision(
 		cellBelowPos,
 		characterPos,
 		{ CachedBackgroundTileSize, CachedBackgroundTileSize },
-		CachedSpriteDims))
+		CachedSpriteDims - vec2{A_SMALL_NUMBER, A_SMALL_NUMBER}))
 	{
 		return true;
 	}

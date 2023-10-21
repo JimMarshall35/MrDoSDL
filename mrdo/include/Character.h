@@ -38,8 +38,6 @@ struct CharacterInitOptions
 	MovementDirection SpawnFacing;
 };
 
-
-
 class Character
 {
 public:

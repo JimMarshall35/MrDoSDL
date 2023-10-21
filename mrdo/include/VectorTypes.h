@@ -7,12 +7,12 @@ struct vec2
 	float x;
 	float y;
 
-	vec2 operator-(const vec2& other)
+	vec2 operator-(const vec2& other) const
 	{
 		return { x - other.x, y - other.y };
 	}
 
-	vec2 operator+(const vec2& other)
+	vec2 operator+(const vec2& other) const
 	{
 		return { x + other.x, y + other.y };
 	}
