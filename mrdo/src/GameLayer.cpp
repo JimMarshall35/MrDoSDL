@@ -1,12 +1,14 @@
 #include "GameLayer.h"
 #include "TiledWorld.h"
+#include <cassert>
 
 std::string Game::LayerName = "Game";
 
 Game::Game(const std::shared_ptr<IFileSystem>& fileSystem, const std::shared_ptr<IConfigFile>& config, const std::shared_ptr<IBackgroundTileAssetManager>& backgroundAssetManager, const std::shared_ptr<IAnimationAssetManager>& animationManager)
 	:MyTiledWorld(std::make_shared<TiledWorld>(config, backgroundAssetManager)),
-	MyCharacter(animationManager, config, MyTiledWorld, NewLevelBegun),
-	MyAppleManager(animationManager, config, MyTiledWorld, NewLevelBegun)
+	MyCharacter(animationManager, config, MyTiledWorld, NewLevelBegun, ResetAfterDeath),
+	MyAppleManager(animationManager, config, MyTiledWorld, NewLevelBegun),
+	Phase(GamePhase::Playing)
 {
 	MyCharacter.SetAppleManager(&MyAppleManager);
 	MyAppleManager.SetCharacter(&MyCharacter);
@@ -14,8 +16,21 @@ Game::Game(const std::shared_ptr<IFileSystem>& fileSystem, const std::shared_ptr
 
 void Game::Update(float deltaT)
 {
-	MyCharacter.Update(deltaT, InputState);
-	MyAppleManager.Update(deltaT);
+	switch (Phase)
+	{
+	case GamePhase::Playing:
+		MyCharacter.Update(deltaT, InputState);
+		MyAppleManager.Update(deltaT);
+		break;
+	case GamePhase::DieAnimationPlaying:
+		MyCharacter.UpdatePlayingDeathAnimation(deltaT);
+		if (MyCharacter.IsAnimationFinished())
+		{
+			ResetAfterDeath(CurrentLevel);
+			Phase = GamePhase::Playing;
+		}
+		break;
+	}
 }
 
 bool Game::MasksPreviousUpdateableLayer() const
@@ -33,6 +48,7 @@ void Game::OnUpdatePush(void* data)
 	int level = (int)data;
 	MyTiledWorld->LoadLevel(level);
 	NewLevelBegun(level);
+	CurrentLevel = level;
 }
 
 void Game::OnUpdatePop()
@@ -86,4 +102,10 @@ void Game::OnInputPush(void* data)
 
 void Game::OnInputPop()
 {
+}
+
+void Game::RecieveMessage(const CharacterDied& message)
+{
+	assert(Phase == GamePhase::Playing);
+	Phase = GamePhase::DieAnimationPlaying;
 }

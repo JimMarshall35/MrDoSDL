@@ -10,3 +10,13 @@ enum class MovementDirection
 	Undefined,
 	MAX
 };
+
+enum class CollidingCellRelationship
+{
+	Above,
+	Below,
+	Left,
+	Right,
+	NotColliding,
+	Undefined
+};

@@ -144,61 +144,67 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 	{
 	case AppleState::Settled:
 		{
-			// possible transitions: falling, wobbling
+			bool pushing = false;
 			vec2 characterPos = CharacterRef->GetPosition();
-			if (CollisionHelpers::AABBCollision(
-				apple.Position + vec2{ 0, A_SMALL_NUMBER / 2.0f },
-				characterPos,
-				CachedSpriteDims - vec2{ 0, A_SMALL_NUMBER }, // take a small number from either side of our dims so we don't collide with apples to the left and right of us
-				CachedSpriteDims))
+			switch(GetCollisionRelationshipWithMrDo(&apple))
 			{
-				bool pushing = false;
-				if ((apple.Position.x > characterPos.x) && (apple.Position.y == characterPos.y))
+			case CollidingCellRelationship::Left:
+				// mr do is approaching from the left therefore pushing the apple - resolve collision
+				apple.Position.x = characterPos.x + CachedSpriteDims.x;
+				pushing = true;
+				break;
+			case CollidingCellRelationship::Right:
+				// mr do is approaching from the right therefore pushing the apple - resolve collision
+				apple.Position.x = characterPos.x - CachedSpriteDims.x;
+				pushing = true;
+				break;
+			case CollidingCellRelationship::Undefined:
+			case CollidingCellRelationship::NotColliding:
+				if (IsCellBelowEmpty(&apple) && !IsMrDoBelow(&apple) && !IsAppleBelow(&apple))
 				{
-					// mr do is approaching from the left therefore pushing the apple - resolve collision
-					apple.Position.x = characterPos.x + CachedSpriteDims.x;
-					pushing = true;
+					apple.State = AppleState::Wobbling;
 				}
-				else if ((apple.Position.x < characterPos.x) && (apple.Position.y == characterPos.y))
-				{
-					// mr do is approaching from the right therefore pushing the apple - resolve collision
-					apple.Position.x = characterPos.x - CachedSpriteDims.x;
-					pushing = true;
-				}
-
-				if (pushing)
-				{
-					PushedAppleStackSize = 0;
-					PushedAppleStack[PushedAppleStackSize++] = &apple;
-
-					RecursivelyPushApples(apple);
-					ClampPushedApples();
-				
-					Apple* lastApple = PushedAppleStack[PushedAppleStackSize - 1];
-
-					if (IsCellBelowEmpty(lastApple) && !IsAppleBelow(lastApple))
-					{
-						lastApple->State = AppleState::Sliding;
-						float lastAppleCenterX = lastApple->Position.x + CachedSpriteDims.x / 2.0f;
-						int cellBelowCoordsX = lastAppleCenterX / CachedBackgroundTileSize;
-						lastApple->SlideDestination = cellBelowCoordsX * CachedBackgroundTileSize;
-					}
-				}
-			
+				return;
 			}
-			else if(IsCellBelowEmpty(&apple) && !IsMrDoBelow(&apple) && !IsAppleBelow(&apple))
+			if (pushing)
 			{
-				apple.State = AppleState::Wobbling;
+				PushedAppleStackSize = 0;
+				PushedAppleStack[PushedAppleStackSize++] = &apple;
+
+				RecursivelyPushApples(apple);
+				ClampPushedApples();
+
+				Apple* lastApple = PushedAppleStack[PushedAppleStackSize - 1];
+
+				if (IsCellBelowEmpty(lastApple) && !IsAppleBelow(lastApple))
+				{
+					lastApple->State = AppleState::Sliding;
+					float lastAppleCenterX = lastApple->Position.x + CachedSpriteDims.x / 2.0f;
+					int cellBelowCoordsX = lastAppleCenterX / CachedBackgroundTileSize;
+					lastApple->SlideDestination = cellBelowCoordsX * CachedBackgroundTileSize;
+				}
 			}
-			// todo: check here to see if apple should transition to the falling state and make transition if required
 		}
 		break;
 	case AppleState::Falling:
 		// possible transiitons: Settled, Spliiting
 		{
+			CollidingCellRelationship collisionWithDo = GetCollisionRelationshipWithMrDo(&apple);
+			if (!apple.CrushedCharacter && collisionWithDo == CollidingCellRelationship::Below)
+			{
+				apple.CrushedCharacter = CharacterRef;
+				CharacterRef->Crush();
+			}
 			float fallAmountThisFrame = 1.0f * AppleFallSpeed * deltaT;
 			apple.Position.y += fallAmountThisFrame;
 			apple.DistanceFallen += fallAmountThisFrame;
+
+			if (apple.CrushedCharacter)
+			{
+				vec2 position = apple.CrushedCharacter->GetPosition();
+				apple.CrushedCharacter->SetPosition({ position.x, apple.Position.y + CachedSpriteDims.y });
+			}
+
 			if (!IsCellDirectlyBelowEmpty(&apple))
 			{
 				if (apple.DistanceFallen <= CachedBackgroundTileSize + CachedBackgroundTileSize * 0.5f)
@@ -227,6 +233,10 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 			if (apple.AnimationTimer >= AppleSplitTime)
 			{
 				apple.State = AppleState::Inactive;
+				if (apple.CrushedCharacter)
+				{
+					apple.CrushedCharacter->Kill(CharacterDeathReason::CrushedByApple);
+				}
 			}
 		}
 		break;
@@ -428,4 +438,42 @@ vec2 AppleManager::GetCellBelowPos(Apple* apple) const
 	uvec2 appleCoords = { appleCenter.x / CachedBackgroundTileSize, appleCenter.y / CachedBackgroundTileSize };
 	vec2 rVal = { appleCoords.x * CachedBackgroundTileSize, (appleCoords.y + 1)* CachedBackgroundTileSize };
 	return rVal;
+}
+
+CollidingCellRelationship AppleManager::GetCollisionRelationshipWithMrDo(Apple* apple) const
+{
+	vec2 characterPos = CharacterRef->GetPosition();
+	if (CollisionHelpers::AABBCollision(
+		apple->Position + vec2{ 0, A_SMALL_NUMBER / 2.0f },
+		characterPos,
+		CachedSpriteDims - vec2{ 0, A_SMALL_NUMBER }, // take a small number from either side of our dims so we don't collide with apples to the left and right of us
+		CachedSpriteDims))
+	{
+
+		if ((apple->Position.x > characterPos.x) && (apple->Position.y == characterPos.y))
+		{
+			// mr do is approaching from the left
+			return CollidingCellRelationship::Left;
+		}
+		else if ((apple->Position.x < characterPos.x) && (apple->Position.y == characterPos.y))
+		{
+			// mr do is approaching from the right
+			return CollidingCellRelationship::Right;
+		}
+		if ((apple->Position.y > characterPos.y) && (apple->Position.x == characterPos.x))
+		{
+			// mr do is approaching from the top 
+			return CollidingCellRelationship::Above;
+		}
+		else if ((apple->Position.y < characterPos.y) && (apple->Position.x == characterPos.x))
+		{
+			// mr do is approaching from below
+			return CollidingCellRelationship::Below;
+		}
+		return CollidingCellRelationship::Undefined;
+	}
+	else
+	{
+		return CollidingCellRelationship::NotColliding;
+	}
 }

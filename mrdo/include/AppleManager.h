@@ -5,6 +5,7 @@
 #include "VectorTypes.h"
 #include "EventListener.h"
 #include "SDL.h"
+#include "MovementTypes.h"
 
 class IConfigFile;
 class IAnimationAssetManager;
@@ -33,9 +34,10 @@ public:
 		vec2 Position;
 		AppleState State = AppleState::Inactive;
 		float SlideDestination;
-		float AnimationTimer = 0;;
+		float AnimationTimer = 0;
 		u32 OnAnimationFrame;
 		float DistanceFallen = 0.0f;
+		Character* CrushedCharacter = nullptr;
 	};
 public:
 	AppleManager(
@@ -69,13 +71,12 @@ private:
 	bool IsMrDoBelow(Apple* apple) const;
 	bool IsAppleBelow(Apple* apple) const;
 	vec2 GetCellBelowPos(Apple* apple) const;
+	CollidingCellRelationship GetCollisionRelationshipWithMrDo(Apple* apple) const;
 private:
 	LISTENER(AppleManager, OnNewLevelStarted, int);
 private:
 	vec2 CachedSpriteDims;
 	uvec2 CachedLevelSize = { 0,0 };
-
-
 	std::unique_ptr<Apple*[]> PushedAppleStack;
 	int PushedAppleStackSize = 0;
 	const std::shared_ptr<TiledWorld> CachedTiledWorld;

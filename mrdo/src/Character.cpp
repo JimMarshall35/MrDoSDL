@@ -8,32 +8,46 @@
 #include "Event.h"
 #include "AppleManager.h"
 #include "CollisionHelpers.h"
+#include "GameFramework.h"
 #include <cmath>
 
 Character::Character(
 	const std::shared_ptr<IAnimationAssetManager>& assetManager,
-	const std::shared_ptr<IConfigFile>& configFile,
-	const std::shared_ptr<TiledWorld>& tiledWorld,
-	Event<int>& levelLoaded)
+		const std::shared_ptr<IConfigFile>& configFile, 
+		const std::shared_ptr<TiledWorld>& tiledWorld,
+		Event<int>& onLevelLoaded,
+		Event<int>& onResetAfterDeath)
 	:MyCrystalBall(this, assetManager.get(), configFile.get(), tiledWorld.get()),
 	AnimationAssetManager(assetManager),
 	ConfigFile(configFile),
 	CachedTiledWorld(tiledWorld),
 	LOnNewLevelStarted(this),
-	CachedSpriteDims(vec2{ (float)configFile->GetAnimationsConfigData().TileSize, (float)configFile->GetAnimationsConfigData().TileSize })
+	CachedSpriteDims(vec2{ (float)configFile->GetAnimationsConfigData().TileSize, (float)configFile->GetAnimationsConfigData().TileSize }),
+	LOnResetAfterDeath(this)
 {
-	levelLoaded += &LOnNewLevelStarted;
+	onLevelLoaded += &LOnNewLevelStarted;
+	onResetAfterDeath += &LOnResetAfterDeath;
 	bIsMoving = false;
 	bHasMoved = false;
+	bBeingCrushed = false;
 
 	CharacterSpeed = ConfigFile->GetFloatValue("CharacterSpeed");
-	Animator.FPS = ConfigFile->GetFloatValue("CharacterAnimatorFPS");
 	PostThrowTimerLimit = ConfigFile->GetFloatValue("PostThrowTimerLimit");
+
+	DeathAnimationFPS = ConfigFile->GetFloatValue("CharacterDeathAnimatorFPS");
+	AliveAnimationsFPS = ConfigFile->GetFloatValue("CharacterAnimatorFPS");
+	Animator.FPS = AliveAnimationsFPS;
 	PopulateAnimFrames();
 }
 
 void Character::Update(float deltaTime, GameInputState inputState)
 {
+	if (bBeingCrushed)
+	{
+		// if we're being crushed then the apple crushing us performs our update
+		return;
+	}
+
 	if (inputState.CrystalBall && CrystalBallState == CrystalBallState::HasBall)
 	{
 		MyCrystalBall.Release();
@@ -233,6 +247,11 @@ void Character::PopulateAnimFrames()
 	AnimationAssetManager->MakeAnimationRectFramesFromName("MrDo_RunUp_Ball_Digging", RunningAnimFrames[1][2][0]);
 	AnimationAssetManager->MakeAnimationRectFramesFromName("MrDo_RunUp_NoBall_Pushing", RunningAnimFrames[0][1][0]);
 	AnimationAssetManager->MakeAnimationRectFramesFromName("MrDo_RunUp_Ball_Pushing", RunningAnimFrames[1][1][0]);
+
+	AnimationAssetManager->MakeAnimationRectFramesFromName("MrDo_Die", DieAnimFrames);
+
+	AnimationAssetManager->MakeSingleSpriteRectFrame("MrDo_Crushed", CrushedFrame);
+
 }
 
 MovementDirection Character::GetMovementDirection(GameInputState inputState)
@@ -396,7 +415,38 @@ void Character::MoveTowardsDestination(float deltaTime)
 	}
 }
 
+void Character::Kill(CharacterDeathReason deathReason)
+{
+	bBeingCrushed = false;
+	// set animator state for death animation
+	Animator.bIsAnimating = true;
+	Animator.CurrentAnimation = &DieAnimFrames;
+	Animator.OnAnimFrame = 0;
+	Animator.FPS = DeathAnimationFPS;
+	Animator.bLooping = false;
+	Animator.bFinished = false;
+	GameFramework::SendFrameworkMessage(CharacterDied{ deathReason });
+}
+
+void Character::Crush()
+{
+	assert(!bBeingCrushed);
+	bBeingCrushed = true;
+}
+
 void Character::OnNewLevelStarted(int levelNumber)
+{
+	OnResetAfterDeath(levelNumber);
+
+	CachedLevelDims.x = CachedTiledWorld->GetActiveLevelWidth(); // todo: sort these out - sort out size of levels in general
+	CachedLevelDims.y = CachedTiledWorld->GetActiveLevelHeight();
+
+	u8& spawnedAtTile = CachedTiledWorld->GetCellAtIndex(CurrentTile);
+
+	spawnedAtTile &= ~(1 << (u32)TileWallDirectionBit::Center); // knock out center wall of tile spawned in
+}
+
+void Character::OnResetAfterDeath(int levelNumber)
 {
 	const std::vector<LevelConfigData>& data = ConfigFile->GetLevelsConfigData();
 	const LevelConfigData& level = data[levelNumber];
@@ -406,12 +456,23 @@ void Character::OnNewLevelStarted(int levelNumber)
 	CurrentLocation = vec2{ (float)level.PlayerSpawnLocation.x * bgData.TileSize, (float)level.PlayerSpawnLocation.y * bgData.TileSize };
 	CurrentMovementDirection = (MovementDirection)level.PlayerSpawnFacing;
 
-	CachedLevelDims.x = CachedTiledWorld->GetActiveLevelWidth(); // todo: sort these out - sort out size of levels in general
-	CachedLevelDims.y = CachedTiledWorld->GetActiveLevelHeight();
+	// reset flags
+	bBeingCrushed = false;
+	bIsMoving = false;
+	bHasMoved = false;
+	bCanCatchBall = false;
 
-	u8& spawnedAtTile = CachedTiledWorld->GetCellAtIndex(CurrentTile);
+	// set animator state for gameplay
+	Animator.OnAnimFrame = 0;
+	Animator.FPS = AliveAnimationsFPS;
+	Animator.bLooping = true;
+	Animator.bFinished = false;
 
-	spawnedAtTile &= ~(1 << (u32)TileWallDirectionBit::Center); // knock out center wall of tile spawned in
+	// make sure ball is caught
+	if (MyCrystalBall.IsReleased())
+	{
+		CatchBall();
+	}
 }
 
 void Character::Draw(SDL_Surface* windowSurface, float scale) const
@@ -428,7 +489,21 @@ void Character::Draw(SDL_Surface* windowSurface, float scale) const
 	dst.h = tileSize * scale;
 	dst.x = CurrentLocation.x * scale;
 	dst.y = CurrentLocation.y * scale;
+
+	const SDL_Rect* rect;
+	if (bBeingCrushed)
+	{
+		rect = &CrushedFrame;
+	}
+	else
+	{
+		rect = &Animator.GetCurrentFrame();
+	}
 	
-	const SDL_Rect& rect = Animator.GetCurrentFrame();
-	SDL_BlitSurfaceScaled(surface, &rect, windowSurface, &dst);
+	SDL_BlitSurfaceScaled(surface, rect, windowSurface, &dst);
+}
+
+void Character::UpdatePlayingDeathAnimation(float deltaTime)
+{
+	Animator.Update(deltaTime / 1000.0f);
 }

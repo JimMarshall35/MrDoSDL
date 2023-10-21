@@ -7,6 +7,7 @@
 #include "InputManager.h"
 #include "VectorTypes.h"
 #include "Event.h"
+#include "GameFrameworkMessages.h"
 
 class IFileSystem;
 class IConfigFile;
@@ -14,8 +15,18 @@ class IBackgroundTileAssetManager;
 class IAnimationAssetManager;
 class TiledWorld;
 
-class Game : public UpdateableLayerBase, public DrawableLayerBase, public RecieveInputLayerBase
+class Game : 
+	public UpdateableLayerBase, 
+	public DrawableLayerBase, 
+	public RecieveInputLayerBase,
+	public GameFrameworkMessageRecipientBase<CharacterDied>
 {
+private:
+	enum class GamePhase
+	{
+		Playing,
+		DieAnimationPlaying
+	};
 public:
 	Game(
 		const std::shared_ptr<IFileSystem>& fileSystem, 
@@ -44,12 +55,17 @@ public:
 	virtual void OnInputPush(void* data) override;
 	virtual void OnInputPop() override;
 
+	// Inherited via GameFrameworkMessageRecipientBase
+	virtual void RecieveMessage(const CharacterDied& message) override;
+
 private:
-	Event<int> NewLevelBegun; // called when a level first loads
+	Event<int> NewLevelBegun;	// called when a level first loads
+	Event<int> ResetAfterDeath; // payload: current level
 	std::shared_ptr<TiledWorld> MyTiledWorld; // can't name them the same as the class name hence the stupid "My" prefix
 	Character MyCharacter;
 	AppleManager MyAppleManager;
 	static std::string LayerName;
 	GameInputState InputState;
-	
+	GamePhase Phase;
+	int CurrentLevel = 0;
 };

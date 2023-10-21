@@ -2,6 +2,10 @@
 
 void Animator::Update(float deltaT)
 {
+	if (!bLooping && bFinished)
+	{
+		return;
+	}
 	if (!bIsAnimating)
 	{
 		OnAnimFrame = 0;
@@ -13,8 +17,18 @@ void Animator::Update(float deltaT)
 		{
 			AccumulatedTime = 0.0f;
 			++OnAnimFrame;
-			if (OnAnimFrame >= CurrentAnimation->size()) {
-				OnAnimFrame = 0;
+			
+			if (OnAnimFrame >= CurrentAnimation->size()) 
+			{
+				if (bLooping)
+				{
+					OnAnimFrame = 0;
+				}
+				else
+				{
+					--OnAnimFrame;
+					bFinished = true;
+				}
 			}
 		}
 	}
