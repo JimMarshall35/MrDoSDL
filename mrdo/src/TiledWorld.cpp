@@ -1,12 +1,17 @@
 #include "TiledWorld.h"
 #include "IConfigFile.h"
 #include "IBackgroundTileAssetManager.h"
+#include "IAnimationAssetManager.h"
 #include <cassert>
 #include <stdlib.h>     /* abs */
 
-TiledWorld::TiledWorld(const std::shared_ptr<IConfigFile>& config, const std::shared_ptr<IBackgroundTileAssetManager>& bgtam)
+TiledWorld::TiledWorld(
+	const std::shared_ptr<IConfigFile>& config, 
+	const std::shared_ptr<IBackgroundTileAssetManager>& bgtam,
+	const std::shared_ptr<IAnimationAssetManager>& aam)
 	:Config(config),
 	BackgroundTileAssetManager(bgtam),
+	AnimationAssetManager(aam),
 	ActiveLevel(std::unique_ptr<u8[]>()),
 	CachedCellCaseToTileIndexLUT(BackgroundTileAssetManager->GetCellCaseToTileIndexLUT()),
 	ActiveLevelWidth(-1),
@@ -40,6 +45,7 @@ void TiledWorld::LoadLevel(int level)
 	ActiveLevel = std::make_unique<u8[]>(selectedLevel.TileData.size());
 	memcpy(ActiveLevel.get(), selectedLevel.TileData.data(), selectedLevel.TileData.size());
 	ActiveLevelTileset = BackgroundTileAssetManager->GetLevelTileset(selectedLevel.BackgroundTileset);
+	AnimationAssetManager->MakeSingleSpriteRectFrame("Cherry", CherryRect);
 }
 
 uvec2 TiledWorld::GetRequiredBaseWindowSize() const
@@ -52,6 +58,7 @@ uvec2 TiledWorld::GetRequiredBaseWindowSize() const
 void TiledWorld::DrawActiveLevel(SDL_Surface* window, float scale) const
 {
 	SDL_Surface* surface = BackgroundTileAssetManager->GetSurface();
+	SDL_Surface* animationManagerSurface = AnimationAssetManager->GetAnimationsSpriteSheetSurface();
 	SDL_Rect dst;
 	
 	dst.w = TileSize * scale;
@@ -61,10 +68,14 @@ void TiledWorld::DrawActiveLevel(SDL_Surface* window, float scale) const
 		for (int x = 0; x < ActiveLevelWidth; x++)
 		{
 			u8 cell = ActiveLevel[y * ActiveLevelWidth + x];
-			const SDL_Rect* rect = &ActiveLevelTileset[CachedCellCaseToTileIndexLUT[cell]];
+			const SDL_Rect* rect = &ActiveLevelTileset[CachedCellCaseToTileIndexLUT[cell & 0x1f]]; // 0x1f is all the bits set that represent walls and the middle of the tile
 			dst.x = x * TileSize * scale;
 			dst.y = y * TileSize * scale;
 			SDL_BlitSurfaceScaled(surface, rect, window, &dst);
+			if (cell & (1 << TileCherryBit))
+			{
+				SDL_BlitSurfaceScaled(animationManagerSurface, &CherryRect, window, &dst);
+			}
 		}
 	}
 }
@@ -177,4 +188,16 @@ bool TiledWorld::IsBarrierBetween(const ivec2& cell1, const ivec2& cell2) const
 		return (cell1Val & (u8)(1 << (u8)TileWallDirectionBit::Up)) || (cell2Val & (u8)(1 << (u8)TileWallDirectionBit::Down));
 	}
 
+}
+
+void TiledWorld::RemoveCherryAtTile(const ivec2& coords)
+{
+	u8& tile = GetCellAtIndex(coords);
+	tile &= 0x1f;
+}
+
+bool TiledWorld::IsCherryAtTile(const ivec2& coords) const
+{
+	u8 tile = GetCellAtIndexValue(coords);
+	return tile & (1 << TileCherryBit);
 }

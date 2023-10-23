@@ -86,6 +86,7 @@ void ConfigFile::PopulateLevelsConfigData()
 		data.NumCols = level["NumCols"];
 		data.NumRows = level["NumRows"];
 		data.BackgroundTileset = level["BackgroundTileset"];
+		data.NumMonsters = level["NumMonsters"];
 		json tileData = level["TileData"];
 		assert(levelsArray.is_array());
 		for (const json& tile : tileData)

@@ -10,7 +10,7 @@ Game::Game(const std::shared_ptr<IFileSystem>& fileSystem,
 	const std::shared_ptr<IBackgroundTileAssetManager>& backgroundAssetManager,
 	const std::shared_ptr<IAnimationAssetManager>& animationManager,
 	const std::shared_ptr<TextRenderer>& textRenderer)
-	:MyTiledWorld(std::make_shared<TiledWorld>(config, backgroundAssetManager)),
+	:MyTiledWorld(std::make_shared<TiledWorld>(config, backgroundAssetManager, animationManager)),
 	MyCharacter(animationManager, config, MyTiledWorld, NewLevelBegun, ResetAfterDeath),
 	MyAppleManager(animationManager, config, MyTiledWorld, NewLevelBegun),
 	Phase(GamePhase::Playing),

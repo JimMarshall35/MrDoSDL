@@ -202,7 +202,7 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 			if (apple.CrushedCharacter)
 			{
 				vec2 position = apple.CrushedCharacter->GetPosition();
-				apple.CrushedCharacter->SetPosition({ position.x, apple.Position.y + CachedSpriteDims.y });
+				apple.CrushedCharacter->SetPosition({ position.x, apple.Position.y + CachedSpriteDims.y / 2.0f });
 			}
 
 			if (!IsCellDirectlyBelowEmpty(&apple))
@@ -221,7 +221,6 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 					apple.OnAnimationFrame = 0.0f;
 					apple.State = AppleState::Splitting;
 				}
-				
 			}
 		}
 		break;

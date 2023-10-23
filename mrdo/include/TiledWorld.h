@@ -6,6 +6,7 @@
 
 class IConfigFile;
 class IBackgroundTileAssetManager;
+class IAnimationAssetManager;
 
 struct SDL_Surface;
 enum class TileWallDirectionBit : u8
@@ -17,10 +18,15 @@ enum class TileWallDirectionBit : u8
 	Center = 4
 };
 
+#define TileCherryBit 5
+
 class TiledWorld
 {
 public:
-	TiledWorld(const std::shared_ptr<IConfigFile>& config, const std::shared_ptr<IBackgroundTileAssetManager>& bgtam);
+	TiledWorld(
+		const std::shared_ptr<IConfigFile>& config, 
+		const std::shared_ptr<IBackgroundTileAssetManager>& bgtam,
+		const std::shared_ptr<IAnimationAssetManager>& aam);
 	void LoadLevel(int level);
 	uvec2 GetRequiredBaseWindowSize() const;
 	void DrawActiveLevel(SDL_Surface* window, float scale) const;
@@ -33,10 +39,12 @@ public:
 	bool IsBarrierBetween(const ivec2& cell1, const ivec2& cell2) const;
 	inline u8 GetHUDTileRowsBottom() const { return HUDTileRowsBottom; }
 	inline u8 GetHUDTileRowsTop() const { return HUDTileRowsTop; }
-
+	bool IsCherryAtTile(const ivec2& coords) const;
+	void RemoveCherryAtTile(const ivec2& coords);
 private:
 	std::shared_ptr<IConfigFile> Config;
 	std::shared_ptr<IBackgroundTileAssetManager> BackgroundTileAssetManager;
+	std::shared_ptr<IAnimationAssetManager> AnimationAssetManager;
 	std::unique_ptr<u8[]> ActiveLevel;
 	const u8* CachedCellCaseToTileIndexLUT;
 	int ActiveLevelWidth;
@@ -47,4 +55,5 @@ private:
 	int TileSize;
 	u8 HUDTileRowsTop;
 	u8 HUDTileRowsBottom;
+	SDL_Rect CherryRect;
 };

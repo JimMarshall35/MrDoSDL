@@ -342,7 +342,7 @@ void Character::SetNewDestinationCell(MovementDirection newDirection)
 
 void Character::MoveTowardsDestination(float deltaTime)
 {
-	
+	// TODO: this function BADLY needs refactoring
 	float tileSize = ConfigFile->GetBackgroundConfigData().TileSize;
 	float deltaTSeconds = deltaTime / 1000.0f;
 	vec2 dVec = MovementHelpers::GetDirectionVector(CurrentMovementDirection);
@@ -357,6 +357,11 @@ void Character::MoveTowardsDestination(float deltaTime)
 		{
 			// over half way to next tile - break walls
 			CachedTiledWorld->ConnectAdjacentCells(CurrentTile, DestinationTile);
+			if (CachedTiledWorld->IsCherryAtTile(DestinationTile))
+			{
+				CachedTiledWorld->RemoveCherryAtTile(DestinationTile);
+				// send cherry collected message here
+			}
 		}
 		if (CurrentLocation.y < CurrentTile.y * tileSize - tileSize)
 		{
@@ -372,6 +377,11 @@ void Character::MoveTowardsDestination(float deltaTime)
 		{
 			// over half way to next tile - break walls
 			CachedTiledWorld->ConnectAdjacentCells(CurrentTile, DestinationTile);
+			if (CachedTiledWorld->IsCherryAtTile(DestinationTile))
+			{
+				CachedTiledWorld->RemoveCherryAtTile(DestinationTile);
+				// send cherry collected message here
+			}
 		}
 		if (CurrentLocation.y > CurrentTile.y * tileSize + tileSize)
 		{
@@ -387,6 +397,11 @@ void Character::MoveTowardsDestination(float deltaTime)
 		{
 			// over half way to next tile - break walls
 			CachedTiledWorld->ConnectAdjacentCells(CurrentTile, DestinationTile);
+			if (CachedTiledWorld->IsCherryAtTile(DestinationTile))
+			{
+				CachedTiledWorld->RemoveCherryAtTile(DestinationTile);
+				// send cherry collected message here
+			}
 		}
 		if (CurrentLocation.x < CurrentTile.x * tileSize - tileSize)
 		{
@@ -402,6 +417,11 @@ void Character::MoveTowardsDestination(float deltaTime)
 		{
 			// over half way to next tile - break walls
 			CachedTiledWorld->ConnectAdjacentCells(CurrentTile, DestinationTile);
+			if (CachedTiledWorld->IsCherryAtTile(DestinationTile))
+			{
+				CachedTiledWorld->RemoveCherryAtTile(DestinationTile);
+				// send cherry collected message here
+			}
 		}
 		if (CurrentLocation.x > CurrentTile.x * tileSize + tileSize)
 		{

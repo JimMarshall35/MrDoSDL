@@ -43,7 +43,6 @@ struct FontConfigData : public SpriteSheetConfigData
 	u8 ColourKeyR;
 	u8 ColourKeyG;
 	u8 ColourKeyB;
-	bool AllCaps;
 	uvec2 BlockDims; // a "block" contains the whole alphabet's worth of characters
 	FontBlocks Blocks;
 	FontBlockMapping BlockMapping; // maps number of letter in block to which ascii code it is - first in pair is the number in the block, second the ascii code
@@ -57,6 +56,7 @@ struct LevelConfigData
 	int NumRows;
 	int NumCols;
 	int BackgroundTileset;
+	u32 NumMonsters;
 	uvec2 PlayerSpawnLocation;
 	u32 PlayerSpawnFacing;
 };
