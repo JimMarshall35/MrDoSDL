@@ -46,21 +46,35 @@ void FontAssetManager::PopulateFontRectMap(const FontConfigData& config)
 	int tileSize = config.TileSize;
 	for (const auto& pair : config.Blocks)
 	{
+		// block coords IN BLOCKS
 		uvec2 blockCoords = pair.second;
+
+		// top left corner of the block in pixels
 		uvec2 blockStartingPointPixels = {
 			blockCoords.x * blockDims.x * tileSize,
 			blockCoords.y * blockDims.y * tileSize
 		};
 
+		// array to write to
 		SDL_Rect* rects = Fonts[pair.first];
+		
 		for (const std::pair<u8, u8>& mapping : config.BlockMapping)
 		{
+			// index of letter - describes where it is on the image.
+			// top left corner is index 0, increases going right and down
 			u8 letterIndex = mapping.first;
-			u32 letterX = letterIndex % blockDims.x;
-			u32 letterY = letterIndex / blockDims.x;
+
+			// which ascii code does this index correspond to
 			u8 ascii = mapping.second;
 
+			// get coords of the letter in tiles within the block
+			u32 letterX = letterIndex % blockDims.x;
+			u32 letterY = letterIndex / blockDims.x;
+
+			// cordinate of letter tile top left in pixels
 			uvec2 letterRectTL = blockStartingPointPixels + uvec2{ letterX * config.TileSize, letterY * config.TileSize };
+			
+			// make rect and save to array
 			SDL_Rect r;
 			r.x = letterRectTL.x;
 			r.y = letterRectTL.y;

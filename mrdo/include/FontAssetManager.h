@@ -9,6 +9,7 @@
 class IConfigFile;
 struct FontConfigData;
 
+// each value in the map is a lookup table, indexed into by ascii characters in the string
 typedef std::map<std::string, SDL_Rect[256]> FontRectMap;
 
 class FontAssetManager : public IFontAssetManager
