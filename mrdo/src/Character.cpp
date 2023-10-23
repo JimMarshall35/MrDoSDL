@@ -481,6 +481,7 @@ void Character::OnResetAfterDeath(int levelNumber)
 	bIsMoving = false;
 	bHasMoved = false;
 	bCanCatchBall = false;
+	PushingState = PushingState::NotPushing;
 
 	// set animator state for gameplay
 	Animator.OnAnimFrame = 0;
