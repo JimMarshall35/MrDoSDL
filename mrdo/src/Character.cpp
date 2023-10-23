@@ -89,7 +89,7 @@ void Character::Update(float deltaTime, GameInputState inputState)
 				case MovementDirection::Up:
 					CurrentMovementDirection = newDir;
 					NextMovementDirection = newDir;
-					CurrentTile = DestinationTile;
+					//CurrentTile = DestinationTile;
 					SetNewDestinationCell(newDir);
 					break;
 				}
@@ -109,7 +109,7 @@ void Character::Update(float deltaTime, GameInputState inputState)
 				case MovementDirection::Right:
 					CurrentMovementDirection = newDir;
 					NextMovementDirection = newDir;
-					CurrentTile = DestinationTile;
+					//CurrentTile = DestinationTile;
 					SetNewDestinationCell(newDir);
 					break;
 				}
@@ -129,7 +129,7 @@ void Character::Update(float deltaTime, GameInputState inputState)
 				case MovementDirection::Left:
 					CurrentMovementDirection = newDir;
 					NextMovementDirection = newDir;
-					CurrentTile = DestinationTile;
+					//CurrentTile = DestinationTile;
 					SetNewDestinationCell(newDir);
 					break;
 				}
@@ -140,7 +140,7 @@ void Character::Update(float deltaTime, GameInputState inputState)
 				case MovementDirection::Down:
 					CurrentMovementDirection = newDir;
 					NextMovementDirection = newDir;
-					CurrentTile = DestinationTile;
+					//CurrentTile = DestinationTile;
 					SetNewDestinationCell(newDir);
 					break;
 				case MovementDirection::Left:

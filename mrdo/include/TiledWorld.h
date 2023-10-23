@@ -16,6 +16,7 @@ enum class TileWallDirectionBit : u8
 	Left = 3,
 	Center = 4
 };
+
 class TiledWorld
 {
 public:
