@@ -288,7 +288,7 @@ void Character::SetNewDestinationCell(MovementDirection newDirection)
 	case MovementDirection::Up:
 		{
 			ivec2 possibleDest = CurrentTile + ivec2{ 0,-1 };
-			if (possibleDest.y >= 0)
+			if (possibleDest.y >= CachedTiledWorld->GetHUDTileRowsTop())
 			{
 				DestinationTile = possibleDest;
 			}
@@ -301,7 +301,7 @@ void Character::SetNewDestinationCell(MovementDirection newDirection)
 	case MovementDirection::Down:
 		{
 			ivec2 possibleDest = CurrentTile + ivec2{ 0,1 };
-			if (possibleDest.y < CachedLevelDims.y)
+			if (possibleDest.y < CachedLevelDims.y - CachedTiledWorld->GetHUDTileRowsBottom())
 			{
 				DestinationTile = possibleDest;
 			}

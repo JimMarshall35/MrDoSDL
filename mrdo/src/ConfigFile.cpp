@@ -12,6 +12,7 @@ ConfigFile::ConfigFile(const std::shared_ptr<IFileSystem>& fileSystem)
 	PopulateBackgroundConfigDataStruct();
 	PopulateAnimationsConfigDataStruct();
 	PopulateLevelsConfigData();
+	PopulateFontConfigDataStruct();
 }
 
 const BackgroundTileConfigData& ConfigFile::GetBackgroundConfigData() const
@@ -104,6 +105,46 @@ void ConfigFile::PopulateLevelsConfigData()
 	}
 }
 
+void ConfigFile::PopulateFontConfigDataStruct()
+{
+	PopulateSpriteSheetBase(FontConfigData, "Font");
+	json font = ConfigFileJSON["Font"];
+	json blockDims = font["BlockDimensions"];
+	FontConfigData.BlockDims = uvec2{ blockDims["x"], blockDims["y"] };
+	json colourKey = font["ColourKey"];
+	FontConfigData.ColourKeyR = colourKey["r"];
+	FontConfigData.ColourKeyG = colourKey["g"];
+	FontConfigData.ColourKeyB = colourKey["b"];
+
+	if (font["AllCaps"])
+	{
+		assert(!font["AllLowercase"]);
+		FontConfigData.LetterAvailability = FontLetterAvailability::AllCaps;
+	}
+
+	if (font["AllLowercase"])
+	{
+		assert(!font["AllCaps"]);
+		FontConfigData.LetterAvailability = FontLetterAvailability::AllLowercase;
+	}
+
+	json blocks = font["Blocks"];
+	for (auto& item : font["Blocks"].items())
+	{
+		json value = item.value();
+		assert(value.is_object());
+		FontConfigData.Blocks[item.key()] = uvec2{ value["x"], value["y"] };
+	}
+
+	assert(font["BlockMapping"].is_array());
+	for (const json& item : font["BlockMapping"])
+	{
+		assert(item.is_array());
+		assert(item.size() >= 2);
+		FontConfigData.BlockMapping.push_back(std::pair<u8, u8>(item[0], item[1]));
+	}
+}
+
 const std::string& ConfigFile::GetStringValue(const std::string& key) const
 {
 	assert(ConfigFileJSON[key].is_string());
@@ -137,4 +178,9 @@ const float ConfigFile::GetFloatValue(const std::string& key) const
 const std::vector<LevelConfigData>& ConfigFile::GetLevelsConfigData() const
 {
 	return LevelsConfigData;
+}
+
+const FontConfigData& ConfigFile::GetFontConfigData() const
+{
+	return FontConfigData;
 }

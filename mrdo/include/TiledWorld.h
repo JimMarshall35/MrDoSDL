@@ -30,6 +30,9 @@ public:
 	u32 GetActiveLevelWidth() const { return ActiveLevelWidth; }
 	u32 GetActiveLevelHeight() const { return ActiveLevelHeight; }
 	bool IsBarrierBetween(const ivec2& cell1, const ivec2& cell2) const;
+	inline u8 GetHUDTileRowsBottom() const { return HUDTileRowsBottom; }
+	inline u8 GetHUDTileRowsTop() const { return HUDTileRowsTop; }
+
 private:
 	std::shared_ptr<IConfigFile> Config;
 	std::shared_ptr<IBackgroundTileAssetManager> BackgroundTileAssetManager;
@@ -41,4 +44,6 @@ private:
 	bool bLevelLoaded = false;
 	std::vector<SDL_Rect> ActiveLevelTileset;
 	int TileSize;
+	u8 HUDTileRowsTop;
+	u8 HUDTileRowsBottom;
 };

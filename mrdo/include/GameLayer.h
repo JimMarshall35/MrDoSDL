@@ -14,6 +14,7 @@ class IConfigFile;
 class IBackgroundTileAssetManager;
 class IAnimationAssetManager;
 class TiledWorld;
+class TextRenderer;
 
 class Game : 
 	public UpdateableLayerBase, 
@@ -32,7 +33,8 @@ public:
 		const std::shared_ptr<IFileSystem>& fileSystem, 
 		const std::shared_ptr<IConfigFile>& config,
 		const std::shared_ptr<IBackgroundTileAssetManager>& backgroundAssetManager,
-		const std::shared_ptr<IAnimationAssetManager>& animationManager);
+		const std::shared_ptr<IAnimationAssetManager>& animationManager,
+		const std::shared_ptr<TextRenderer>& textRenderer);
 
 	// Inherited via UpdateableLayerBase
 	virtual void Update(float deltaT) override;
@@ -68,4 +70,5 @@ private:
 	GameInputState InputState;
 	GamePhase Phase;
 	int CurrentLevel = 0;
+	const std::shared_ptr<TextRenderer> CachedTextRenderer;
 };

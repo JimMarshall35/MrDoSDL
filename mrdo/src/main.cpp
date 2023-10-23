@@ -11,7 +11,8 @@
 #include <iostream>
 #include "GameFramework.h"
 #include "GameLayer.h"
-//Screen dimension constants
+#include "FontAssetManager.h"
+#include "TextRenderer.h"
 
 
 int main(int argc, char* args[])
@@ -55,12 +56,14 @@ int main(int argc, char* args[])
 
             std::shared_ptr<IFileSystem> fileSystem = std::make_shared<FileSystem>(exePath);
             std::shared_ptr<IConfigFile> configFile = std::make_shared<ConfigFile>(fileSystem);
+            std::shared_ptr<IFontAssetManager> fontAssetManager = std::make_shared<FontAssetManager>(configFile, screenSurface);
+            std::shared_ptr<TextRenderer> textRenderer = std::make_shared<TextRenderer>(fontAssetManager);
             std::shared_ptr<BackgroundTileAssetManager> backgroundTileAssetManager = std::make_shared<BackgroundTileAssetManager>(configFile);
             InputManager inputManager(configFile);
 
             std::shared_ptr<IAnimationAssetManager> animationAssetManager = std::make_shared<AnimationAssetManager>(configFile, screenSurface);
             
-            Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager);
+            Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, textRenderer);
 
             GameFramework::PushLayers("Game", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0); // start at level 0
 
@@ -78,8 +81,9 @@ int main(int argc, char* args[])
                     GameFramework::Update(16);
                 }
 
-                SDL_FillSurfaceRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
+                SDL_FillSurfaceRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0, 0, 0));
                 GameFramework::Draw(screenSurface, scaleFactor);
+                
                 SDL_UpdateWindowSurface(window);
             }
         }

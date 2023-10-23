@@ -14,7 +14,9 @@ TiledWorld::TiledWorld(const std::shared_ptr<IConfigFile>& config, const std::sh
 	LevelLoaded(-1),
 	bLevelLoaded(false),
 	ActiveLevelTileset(std::vector<SDL_Rect>()),
-	TileSize(BackgroundTileAssetManager->GetBackgroundTileSize())
+	TileSize(BackgroundTileAssetManager->GetBackgroundTileSize()),
+	HUDTileRowsTop(config->GetUIntValue("HUDTileRowsTop")),
+	HUDTileRowsBottom(config->GetUIntValue("HUDTileRowsBottom"))
 {
 
 }
@@ -54,7 +56,7 @@ void TiledWorld::DrawActiveLevel(SDL_Surface* window, float scale) const
 	
 	dst.w = TileSize * scale;
 	dst.h = TileSize * scale;
-	for (int y = 0; y < ActiveLevelHeight; y++)
+	for (int y = 1; y < ActiveLevelHeight-1; y++)
 	{
 		for (int x = 0; x < ActiveLevelWidth; x++)
 		{

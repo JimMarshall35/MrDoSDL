@@ -19,6 +19,8 @@ struct BackgroundTileConfigData : public SpriteSheetConfigData
 
 typedef std::map<std::string, std::vector<uvec2>> AnimationMap;
 typedef std::map<std::string, uvec2> SingleSpriteMap;
+typedef std::map<std::string, uvec2> FontBlocks;
+typedef std::vector<std::pair<u8, u8>> FontBlockMapping;
 
 struct AnimationsConfigData : public SpriteSheetConfigData
 {
@@ -27,6 +29,25 @@ struct AnimationsConfigData : public SpriteSheetConfigData
 	u8 ColourKeyB;
 	AnimationMap Animations;
 	SingleSpriteMap SingleSprites;
+};
+
+enum class FontLetterAvailability
+{
+	AllAvailable,
+	AllCaps,
+	AllLowercase
+};
+
+struct FontConfigData : public SpriteSheetConfigData
+{
+	u8 ColourKeyR;
+	u8 ColourKeyG;
+	u8 ColourKeyB;
+	bool AllCaps;
+	uvec2 BlockDims; // a "block" contains the whole alphabet's worth of characters
+	FontBlocks Blocks;
+	FontBlockMapping BlockMapping; // maps number of letter in block to which ascii code it is - first in pair is the number in the block, second the ascii code
+	FontLetterAvailability LetterAvailability = FontLetterAvailability::AllAvailable;
 };
 
 struct LevelConfigData
@@ -45,6 +66,7 @@ class IConfigFile
 public:
 	virtual const BackgroundTileConfigData& GetBackgroundConfigData() const = 0;
 	virtual const AnimationsConfigData& GetAnimationsConfigData() const = 0;
+	virtual const FontConfigData& GetFontConfigData() const = 0;
 	virtual const std::vector<LevelConfigData>& GetLevelsConfigData() const = 0;
 	virtual const u32 GetUIntValue(const std::string& key) const = 0;
 	virtual const i32 GetIntValue(const std::string& key) const = 0;

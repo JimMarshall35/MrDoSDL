@@ -1,4 +1,6 @@
 {
+	"HUDTileRowsTop" : 1,
+	"HUDTileRowsBottom" : 1,
 	"CharacterAnimatorFPS" : 12.0,
 	"CharacterDeathAnimatorFPS" : 2.0,
 	"CharacterSpeed" : 0.06,
@@ -214,5 +216,94 @@
 			"Cherry" : {"x" : 12, "y" : 5},
 			"MrDo_Crushed" : {"x" : 0, "y" : 7}
 		}
+	},
+	"Font" :
+	{
+		"ColourKey" : {"r":5,"g":53,"b":0},
+		"TileSize" : 8,
+		"NumCols" : 52,
+		"NumRows" : 27,
+		"AssetPath" : "TextNewBackground.bmp",
+		"BlockDimensions" : {"x" : 26, "y" : 3},
+		"AllCaps" : true,
+		"AllLowercase" : false,
+		"Blocks" : {
+			"White_BlackBackground" : {"x" : 0, "y" : 0},
+			"Red_BlackBackground" : {"x" : 0, "y" : 1},
+			"Blue_BlackBackground" : {"x" : 0, "y" : 2},
+			"Green_BlackBackground" : {"x" : 0, "y" : 3},
+			"YellowGreen_BlackBackground" : {"x" : 0, "y" : 4},
+			"Yellow_BlackBackground" : {"x" : 0, "y" : 5},
+			"Orange_BlackBackground" : {"x" : 0, "y" : 6},
+			"Black_BlueBackground" : {"x" : 0, "y" : 7},
+			"Grey_BlackBackground" : {"x" : 0, "y" : 8},
+
+			"White_NoBackground" : {"x" : 1, "y" : 0},
+			"Red_NoBackground" : {"x" : 1, "y" : 1},
+			"Blue_NoBackground" : {"x" : 1, "y" : 2},
+			"Green_NoBackground" : {"x" : 1, "y" : 3},
+			"YellowGreen_NoBackground" : {"x" : 1, "y" : 4},
+			"Yellow_NoBackground" : {"x" : 1, "y" : 5},
+			"Orange_NoBackground" : {"x" : 1, "y" : 6},
+			"Black_NoBackground" : {"x" : 1, "y" : 7},
+			"Grey_NoBackground" : {"x" : 1, "y" : 8}
+		},
+		"BlockMapping" :
+		[
+			[0, 48],
+			[1, 49],
+			[2, 50],
+			[3, 51],
+			[4, 52],
+			[5, 53],
+			[6, 54],
+			[7, 55],
+			[8, 56],
+			[9, 57],
+			
+
+			[26, 65],
+			[27, 66],
+			[28, 67],
+			[29, 68],
+			[30, 69],
+			[31, 70],
+			[32, 71],
+			[33, 72],
+
+			[34, 73],
+			[35, 74],
+			[36, 75],
+			[37, 76],
+			[38, 77],
+			[39, 78],
+			[40, 79],
+			[41, 80],
+			[42, 81],
+			[43, 82],
+			[44, 83],
+			[45, 84],
+			[46, 85],
+			[47, 86],
+			[48, 87],
+			[49, 88],
+			[50, 89],
+			[51, 90],
+
+			[52, 63],
+			[53, 33],
+			[54, 38],
+			[55, 94],
+			[56, 46],
+			[57, 32],
+			[58, 45],
+			[60, 44],
+			[61, 161],
+			[62, 35],
+			[63, 64],
+			[64, 61],
+			[65, 40],
+			[66, 41]
+		]
 	}
 }
