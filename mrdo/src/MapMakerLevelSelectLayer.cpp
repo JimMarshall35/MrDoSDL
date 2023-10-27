@@ -5,6 +5,8 @@
 #include <string>
 #include <cassert>
 
+/* the code in this file sucks */
+
 static const std::string sLayerName = "MapMakerLevelSelectLayer";
 
 MapMakerLevelSelectLayer::MapMakerLevelSelectLayer(

@@ -87,7 +87,7 @@ int main(int argc, char* args[])
 
                 SDL_FillSurfaceRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0, 0, 0));
                 GameFramework::Draw(screenSurface, scaleFactor);
-                
+                GameFramework::EndFrame();
                 SDL_UpdateWindowSurface(window);
             }
         }

@@ -14,6 +14,13 @@ size_t GameFramework::m_drawableStackSize;
 size_t GameFramework::m_updateableStackSize;
 std::atomic<bool> GameFramework::m_newDataToReport;
 
+bool GameFramework::m_shouldPushNewLayerAtFrameEnd = false;
+std::string GameFramework::m_layerToPushAtFrameEnd = "";
+GameLayerType GameFramework::m_layerTypesToPushAtFrameEnd = GameLayerType::None;
+
+
+void* GameFramework::m_layerTypeDataToPushAtFrameEnd = nullptr;
+
 GameFramework::GameFramework()
 {
 	m_newDataToReport = false;
@@ -50,6 +57,15 @@ void GameFramework::RecieveInput(const GameInputState& input)
 	do {
 		m_inputStack[topOfStackIndex]->ReceiveInput(input);
 	} while (!m_inputStack[topOfStackIndex--]->MasksPreviousInputLayer());
+}
+
+void GameFramework::EndFrame()
+{
+	if (m_shouldPushNewLayerAtFrameEnd)
+	{
+		m_shouldPushNewLayerAtFrameEnd = false;
+		PushLayers(m_layerToPushAtFrameEnd, m_layerTypesToPushAtFrameEnd, m_layerTypeDataToPushAtFrameEnd);
+	}
 }
 
 
@@ -120,6 +136,14 @@ bool GameFramework::PushLayers(std::string name, GameLayerType whichLayers, void
 	}
 	m_newDataToReport = true;
 	return true;
+}
+
+void GameFramework::QueuePushLayersAtFrameEnd(std::string name, GameLayerType whichLayers, void* data)
+{
+	m_shouldPushNewLayerAtFrameEnd = true;
+	m_layerToPushAtFrameEnd = name;
+	m_layerTypesToPushAtFrameEnd = whichLayers;
+	m_layerTypeDataToPushAtFrameEnd = data;
 }
 
 bool GameFramework::PopLayers(GameLayerType whichLayers)

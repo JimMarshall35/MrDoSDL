@@ -40,7 +40,7 @@ Character::Character(
 	PopulateAnimFrames();
 }
 
-void Character::Update(float deltaTime, GameInputState inputState, GameInputState previousInputState)
+void Character::Update(float deltaTime, GameInputState inputState)
 {
 	if (bBeingCrushed)
 	{
@@ -48,7 +48,7 @@ void Character::Update(float deltaTime, GameInputState inputState, GameInputStat
 		return;
 	}
 
-	if (inputState.CrystalBall && !previousInputState.CrystalBall && CrystalBallState == CrystalBallState::HasBall)
+	if (inputState.CrystalBallPress() && CrystalBallState == CrystalBallState::HasBall)
 	{
 		MyCrystalBall.Release();
 		PostThrowTimer = 0.0f;

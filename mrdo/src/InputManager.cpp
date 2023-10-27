@@ -22,6 +22,12 @@ GameInputState InputManager::PollEvents()
 {
     SDL_Event event;
 
+    CurrentState.PreviousUp = CurrentState.Up;
+    CurrentState.PreviousDown = CurrentState.Down;
+    CurrentState.PreviousLeft = CurrentState.Left;
+    CurrentState.PreviousRight = CurrentState.Right;
+    CurrentState.PreviousCrystalBall = CurrentState.CrystalBall;
+
     /* Poll for events. SDL_PollEvent() returns 0 when there are no  */
     /* more events on the event queue, our while loop will exit when */
     /* that occurs.                                                  */

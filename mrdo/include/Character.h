@@ -48,7 +48,7 @@ public:
 		const std::shared_ptr<TiledWorld>& tiledWorld,
 		Event<int>& onLevelLoaded,
 		Event<int>& onResetAfterDeath);
-	void Update(float deltaTime, GameInputState inputState, GameInputState previousInputState);
+	void Update(float deltaTime, GameInputState inputState);
 	void UpdatePlayingDeathAnimation(float deltaTime);
 	void Draw(SDL_Surface* windowSurface, float scale) const;
 	vec2 GetPosition() const { return CurrentLocation; }

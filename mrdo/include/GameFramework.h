@@ -12,7 +12,8 @@ struct SDL_Surface;
 enum class GameLayerType : unsigned int {
 	Draw = 1,
 	Update = 2,
-	Input = 4
+	Input = 4,
+	None = 0
 };
 
 inline GameLayerType operator|(GameLayerType a, GameLayerType b)
@@ -70,8 +71,10 @@ public:
 	static void Update(double deltaT);
 	static void Draw(SDL_Surface* windowSurface, float scale);
 	static void RecieveInput(const GameInputState& input);
+	static void EndFrame();
 
 	static bool PushLayers(std::string name, GameLayerType whichLayers, void* data = nullptr);
+	static void QueuePushLayersAtFrameEnd(std::string name, GameLayerType whichLayers, void* data = nullptr);
 
 	static bool PopLayers(GameLayerType whichLayers);
 
@@ -103,6 +106,12 @@ private:
 	static UpdateableLayerBase* m_updateableStack[FRAMEWORK_STACKS_SIZE];
 
 	static std::atomic<bool> m_newDataToReport;
+
+	static bool m_shouldPushNewLayerAtFrameEnd;
+	static std::string m_layerToPushAtFrameEnd;
+	static GameLayerType m_layerTypesToPushAtFrameEnd;
+	static void* m_layerTypeDataToPushAtFrameEnd;
+
 };
 
 template<typename MessageT>

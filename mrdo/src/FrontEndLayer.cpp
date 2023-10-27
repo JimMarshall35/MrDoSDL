@@ -106,7 +106,7 @@ void FrontEndLayer::ReceiveInput(const GameInputState& input)
 	{
 		OnDownPress();
 	}
-	if (!LastFrameInput.CrystalBall && input.CrystalBall)
+	if (input.CrystalBallPress())
 	{
 		OnSelectPress();
 	}
@@ -153,5 +153,5 @@ void FrontEndLayer::OnSelectPress()
 {
 	const MenuOption& selectedOption = MenuOptions[SelectedMenuIndex];
 	SelectedMenuIndex = 0;
-	GameFramework::PushLayers(selectedOption.LayerToPushName, selectedOption.LayerTypesToPushName, selectedOption.PushLayerData);
+	GameFramework::QueuePushLayersAtFrameEnd(selectedOption.LayerToPushName, selectedOption.LayerTypesToPushName, selectedOption.PushLayerData);
 }
