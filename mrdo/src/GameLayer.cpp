@@ -25,7 +25,7 @@ void Game::Update(float deltaT)
 	switch (Phase)
 	{
 	case GamePhase::Playing:
-		MyCharacter.Update(deltaT, InputState);
+		MyCharacter.Update(deltaT, InputState, PreviousFrameInputState);
 		MyAppleManager.Update(deltaT);
 		break;
 	case GamePhase::DieAnimationPlaying:
@@ -55,6 +55,9 @@ void Game::OnUpdatePush(void* data)
 	MyTiledWorld->LoadLevel(level);
 	NewLevelBegun(level);
 	CurrentLevel = level;
+	// a bit of a hack. we assume the crystal ball button was used to enter the game - todo: improve input system
+	PreviousFrameInputState = { false, false, false, false, true, false }; 
+	InputState = { false, false, false, false, true, false };
 }
 
 void Game::OnUpdatePop()
@@ -90,6 +93,7 @@ void Game::OnDrawablePop()
 
 void Game::ReceiveInput(const GameInputState& input)
 {
+	PreviousFrameInputState = InputState;
 	InputState = input;
 }
 

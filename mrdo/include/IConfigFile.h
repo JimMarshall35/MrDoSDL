@@ -49,14 +49,21 @@ struct FontConfigData : public SpriteSheetConfigData
 	FontLetterAvailability LetterAvailability = FontLetterAvailability::AllAvailable;
 };
 
+struct MonsterSpawnerData
+{
+	uvec2 TilePosition;
+	u32 NumMonsters;
+};
+
 struct LevelConfigData
 {
+	std::string Name;
 	std::vector<uvec2> Apples;
 	std::vector<u8> TileData;
+	std::vector<MonsterSpawnerData> MonsterSpawners;
 	int NumRows;
 	int NumCols;
 	int BackgroundTileset;
-	u32 NumMonsters;
 	uvec2 PlayerSpawnLocation;
 	u32 PlayerSpawnFacing;
 };
@@ -68,6 +75,8 @@ public:
 	virtual const AnimationsConfigData& GetAnimationsConfigData() const = 0;
 	virtual const FontConfigData& GetFontConfigData() const = 0;
 	virtual const std::vector<LevelConfigData>& GetLevelsConfigData() const = 0;
+	virtual std::vector<LevelConfigData>& GetMapMakerLevelsConfigData() = 0;
+	virtual const LevelConfigData& GetBlankLevelTemplate() const = 0;
 	virtual const u32 GetUIntValue(const std::string& key) const = 0;
 	virtual const i32 GetIntValue(const std::string& key) const = 0;
 	virtual const float GetFloatValue(const std::string& key) const = 0;

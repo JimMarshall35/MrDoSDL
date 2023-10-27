@@ -12,6 +12,7 @@ enum GameInputKey
 	GameInputKey_Down,
 	GameInputKey_Left,
 	GameInputKey_CrystalBall,
+	GameInputKey_Back,
 	GameInputKey_NumKeys
 };
 
@@ -22,6 +23,7 @@ struct GameInputState
 	u8 Left : 1;
 	u8 Right : 1;
 	u8 CrystalBall : 1;
+	u8 Back : 1;
 	u8 Quit : 1;
 	bool AnyDirectionPressed()
 	{

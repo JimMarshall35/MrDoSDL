@@ -13,6 +13,8 @@
 #include "GameLayer.h"
 #include "FontAssetManager.h"
 #include "TextRenderer.h"
+#include "FrontEndLayer.h"
+#include "MapMakerLevelSelectLayer.h"
 
 
 int main(int argc, char* args[])
@@ -64,8 +66,10 @@ int main(int argc, char* args[])
             std::shared_ptr<IAnimationAssetManager> animationAssetManager = std::make_shared<AnimationAssetManager>(configFile, screenSurface);
             
             Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, textRenderer);
+            FrontEndLayer frontend(textRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+            MapMakerLevelSelectLayer mapMakerLevelSelect(textRenderer, configFile, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-            GameFramework::PushLayers("Game", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0); // start at level 0
+            GameFramework::PushLayers("FrontEnd", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0);
 
             bool quit = false; 
             u32 simulationTime = 0;

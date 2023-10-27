@@ -11,7 +11,9 @@ ConfigFile::ConfigFile(const std::shared_ptr<IFileSystem>& fileSystem)
 	ConfigFileJSON = json::parse(f);
 	PopulateBackgroundConfigDataStruct();
 	PopulateAnimationsConfigDataStruct();
-	PopulateLevelsConfigData();
+	PopulateLevelsConfigData(LevelsConfigData, "Levels");
+	PopulateLevelsConfigData(MapMakerLevelsConfigData, "MapMakerLevels");
+	BlankLevel = ParseLevelConfigData(ConfigFileJSON["BlankLevel"]);
 	PopulateFontConfigDataStruct();
 }
 
@@ -73,36 +75,15 @@ void ConfigFile::PopulateSpriteSheetBase(SpriteSheetConfigData& spriteSheet, con
 
 }
 
-void ConfigFile::PopulateLevelsConfigData()
+void ConfigFile::PopulateLevelsConfigData(std::vector<LevelConfigData>& vectorToAddTo, const std::string& configFileArrayName)
 {
-	json levelsArray = ConfigFileJSON["Levels"];
+	json levelsArray = ConfigFileJSON[configFileArrayName];
 	assert(levelsArray.is_array());
-	LevelsConfigData.clear();
+	vectorToAddTo.clear();
 	for (const json& level : levelsArray)
 	{
-		LevelConfigData data;
-		data.PlayerSpawnLocation = uvec2{ level["PlayerSpawnLocation"]["x"], level["PlayerSpawnLocation"]["y"] };
-		data.PlayerSpawnFacing = level["PlayerSpawnFacing"];
-		data.NumCols = level["NumCols"];
-		data.NumRows = level["NumRows"];
-		data.BackgroundTileset = level["BackgroundTileset"];
-		data.NumMonsters = level["NumMonsters"];
-		json tileData = level["TileData"];
-		assert(levelsArray.is_array());
-		for (const json& tile : tileData)
-		{
-			assert(tile.is_number_unsigned());
-			assert(tile < 256);
-			data.TileData.push_back(tile);
-		}
-
-		json apples = level["Apples"];
-		for (const json& apple : apples)
-		{
-			data.Apples.push_back(uvec2{ apple["x"], apple["y"] });
-		}
-
-		LevelsConfigData.push_back(data);
+		LevelConfigData data = ParseLevelConfigData(level);
+		vectorToAddTo.push_back(data);
 	}
 }
 
@@ -146,6 +127,54 @@ void ConfigFile::PopulateFontConfigDataStruct()
 	}
 }
 
+LevelConfigData ConfigFile::ParseLevelConfigData(const json& levelJson)
+{
+	assert(levelJson["PlayerSpawnLocation"].is_object());
+	assert(levelJson["PlayerSpawnLocation"]["x"].is_number_unsigned());
+	assert(levelJson["PlayerSpawnLocation"]["y"].is_number_unsigned());
+	assert(levelJson["PlayerSpawnFacing"].is_number_unsigned());
+	assert(levelJson["NumCols"].is_number_unsigned());
+	assert(levelJson["NumRows"].is_number_unsigned());
+	assert(levelJson["BackgroundTileset"].is_number_unsigned());
+	assert(levelJson["Name"].is_string());
+
+	LevelConfigData data;
+	data.PlayerSpawnLocation = uvec2{ levelJson["PlayerSpawnLocation"]["x"], levelJson["PlayerSpawnLocation"]["y"] };
+	data.PlayerSpawnFacing = levelJson["PlayerSpawnFacing"];
+	data.NumCols = levelJson["NumCols"];
+	data.NumRows = levelJson["NumRows"];
+	data.BackgroundTileset = levelJson["BackgroundTileset"];
+	data.Name = levelJson["Name"];
+	const json& tileData = levelJson["TileData"];
+	const json& monsterSpawnerData = levelJson["MonsterSpawners"];
+	
+	for (const json& monsterSpawner : monsterSpawnerData)
+	{
+		assert(monsterSpawner.is_object());
+		MonsterSpawnerData monsterSpawnerData;
+		assert(monsterSpawner["NumMonsters"].is_number_unsigned());
+		assert(monsterSpawner["x"].is_number_unsigned());
+		assert(monsterSpawner["y"].is_number_unsigned());
+		monsterSpawnerData.NumMonsters = monsterSpawner["NumMonsters"];
+		monsterSpawnerData.TilePosition = { monsterSpawner["x"], monsterSpawner["y"] };
+		data.MonsterSpawners.push_back(monsterSpawnerData);
+	}
+
+	for (const json& tile : tileData)
+	{
+		assert(tile.is_number_unsigned());
+		assert(tile < 256);
+		data.TileData.push_back(tile);
+	}
+
+	json apples = levelJson["Apples"];
+	for (const json& apple : apples)
+	{
+		data.Apples.push_back(uvec2{ apple["x"], apple["y"] });
+	}
+	return data;
+}
+
 const std::string& ConfigFile::GetStringValue(const std::string& key) const
 {
 	assert(ConfigFileJSON[key].is_string());
@@ -156,6 +185,11 @@ bool ConfigFile::GetBoolValue(const std::string& key) const
 {
 	assert(ConfigFileJSON[key].is_boolean());
 	return ConfigFileJSON[key];
+}
+
+const LevelConfigData& ConfigFile::GetBlankLevelTemplate() const
+{
+	return BlankLevel;
 }
 
 const u32 ConfigFile::GetUIntValue(const std::string& key) const
@@ -179,6 +213,11 @@ const float ConfigFile::GetFloatValue(const std::string& key) const
 const std::vector<LevelConfigData>& ConfigFile::GetLevelsConfigData() const
 {
 	return LevelsConfigData;
+}
+
+std::vector<LevelConfigData>& ConfigFile::GetMapMakerLevelsConfigData()
+{
+	return MapMakerLevelsConfigData;
 }
 
 const FontConfigData& ConfigFile::GetFontConfigData() const

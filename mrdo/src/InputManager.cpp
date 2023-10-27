@@ -9,10 +9,13 @@ InputManager::InputManager(const std::shared_ptr<IConfigFile>& config)
 	KeyBindings[GameInputKey_Down] = Config->GetUIntValue("DownKey");
 	KeyBindings[GameInputKey_Left] = Config->GetUIntValue("LeftKey");
 	KeyBindings[GameInputKey_CrystalBall] = Config->GetUIntValue("CrystalBallKey");
+    KeyBindings[GameInputKey_Back] = Config->GetUIntValue("BackKey");
     CurrentState.Up = false;
     CurrentState.Down = false;
     CurrentState.Left = false;
     CurrentState.Right = false;
+    CurrentState.Back = false;
+    CurrentState.Quit = false;
 }
 
 GameInputState InputManager::PollEvents()
@@ -50,6 +53,9 @@ GameInputState InputManager::PollEvents()
                             break;
                         case GameInputKey_CrystalBall:
                             CurrentState.CrystalBall = newStateToSet;
+                            break;
+                        case GameInputKey_Back:
+                            CurrentState.Back = newStateToSet;
                             break;
                         }
                     }

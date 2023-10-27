@@ -67,7 +67,8 @@ private:
 	Character MyCharacter;
 	AppleManager MyAppleManager;
 	static std::string LayerName;
-	GameInputState InputState;
+	GameInputState InputState = { false, false, false, false, true, false };
+	GameInputState PreviousFrameInputState = { false, false, false, false, true, false };
 	GamePhase Phase;
 	int CurrentLevel = 0;
 	const std::shared_ptr<TextRenderer> CachedTextRenderer;
