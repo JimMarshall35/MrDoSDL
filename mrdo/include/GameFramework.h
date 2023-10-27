@@ -75,6 +75,7 @@ public:
 
 	static bool PushLayers(std::string name, GameLayerType whichLayers, void* data = nullptr);
 	static void QueuePushLayersAtFrameEnd(std::string name, GameLayerType whichLayers, void* data = nullptr);
+	static void QueuePopLayersAtFrameEnd(GameLayerType whichLayers);
 
 	static bool PopLayers(GameLayerType whichLayers);
 
@@ -112,6 +113,8 @@ private:
 	static GameLayerType m_layerTypesToPushAtFrameEnd;
 	static void* m_layerTypeDataToPushAtFrameEnd;
 
+	static bool m_shouldPopLayersAtFrameEnd;
+	static GameLayerType m_layerTypesToPopAtFrameEnd;
 };
 
 template<typename MessageT>

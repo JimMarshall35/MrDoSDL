@@ -92,6 +92,10 @@ void Game::OnDrawablePop()
 void Game::ReceiveInput(const GameInputState& input)
 {
 	InputState = input;
+	if (input.BackPress())
+	{
+		GameFramework::QueuePopLayersAtFrameEnd(GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update);
+	}
 }
 
 bool Game::MasksPreviousInputLayer() const

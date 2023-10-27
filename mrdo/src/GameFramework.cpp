@@ -17,9 +17,10 @@ std::atomic<bool> GameFramework::m_newDataToReport;
 bool GameFramework::m_shouldPushNewLayerAtFrameEnd = false;
 std::string GameFramework::m_layerToPushAtFrameEnd = "";
 GameLayerType GameFramework::m_layerTypesToPushAtFrameEnd = GameLayerType::None;
-
-
 void* GameFramework::m_layerTypeDataToPushAtFrameEnd = nullptr;
+
+bool GameFramework::m_shouldPopLayersAtFrameEnd = true;
+GameLayerType GameFramework::m_layerTypesToPopAtFrameEnd = GameLayerType::None;
 
 GameFramework::GameFramework()
 {
@@ -61,15 +62,18 @@ void GameFramework::RecieveInput(const GameInputState& input)
 
 void GameFramework::EndFrame()
 {
+	if (m_shouldPopLayersAtFrameEnd)
+	{
+		m_shouldPopLayersAtFrameEnd = false;
+		PopLayers(m_layerTypesToPopAtFrameEnd);
+	}
+
 	if (m_shouldPushNewLayerAtFrameEnd)
 	{
 		m_shouldPushNewLayerAtFrameEnd = false;
 		PushLayers(m_layerToPushAtFrameEnd, m_layerTypesToPushAtFrameEnd, m_layerTypeDataToPushAtFrameEnd);
 	}
 }
-
-
-
 
 bool GameFramework::PushLayers(std::string name, GameLayerType whichLayers, void* data)
 {
@@ -144,6 +148,12 @@ void GameFramework::QueuePushLayersAtFrameEnd(std::string name, GameLayerType wh
 	m_layerToPushAtFrameEnd = name;
 	m_layerTypesToPushAtFrameEnd = whichLayers;
 	m_layerTypeDataToPushAtFrameEnd = data;
+}
+
+void GameFramework::QueuePopLayersAtFrameEnd(GameLayerType whichLayers)
+{
+	m_shouldPopLayersAtFrameEnd = true;
+	m_layerTypesToPopAtFrameEnd = whichLayers;
 }
 
 bool GameFramework::PopLayers(GameLayerType whichLayers)
