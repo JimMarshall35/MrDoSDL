@@ -16,7 +16,7 @@ TiledWorld::TiledWorld(
 	CachedCellCaseToTileIndexLUT(BackgroundTileAssetManager->GetCellCaseToTileIndexLUT()),
 	ActiveLevelWidth(-1),
 	ActiveLevelHeight(-1),
-	LevelLoaded(-1),
+	LevelLoaded({LevelSource::Undefined, -1}),
 	bLevelLoaded(false),
 	ActiveLevelTileset(std::vector<SDL_Rect>()),
 	TileSize(BackgroundTileAssetManager->GetBackgroundTileSize()),
@@ -26,9 +26,9 @@ TiledWorld::TiledWorld(
 
 }
 
-void TiledWorld::LoadLevel(int level)
+void TiledWorld::LoadLevel(const LevelLoadData* level)
 {
-	LevelLoaded = level;
+	LevelLoaded = *level;
 	if (!bLevelLoaded)
 	{
 		bLevelLoaded = true;
@@ -38,8 +38,8 @@ void TiledWorld::LoadLevel(int level)
 		assert(ActiveLevel.get());
 		ActiveLevel.reset();
 	}
-	const std::vector<LevelConfigData>& levels = Config->GetLevelsConfigData();
-	const LevelConfigData& selectedLevel = levels[level];
+	const std::vector<LevelConfigData>& levels = LevelLoaded.Source == LevelSource::ArcadeLevels ?  Config->GetLevelsConfigData() : Config->GetMapMakerLevelsConfigData();
+	const LevelConfigData& selectedLevel = levels[level->LevelIndex];
 	ActiveLevelWidth = selectedLevel.NumCols;
 	ActiveLevelHeight = selectedLevel.NumRows;
 	ActiveLevel = std::make_unique<u8[]>(selectedLevel.TileData.size());
@@ -126,12 +126,6 @@ void TiledWorld::ConnectAdjacentCells(const ivec2& cell1, const ivec2& cell2)
 	// both cells now have no center
 	cell1Val &= ~(1 << (u8)TileWallDirectionBit::Center);
 	cell2Val &= ~(1 << (u8)TileWallDirectionBit::Center);
-}
-
-int TiledWorld::GetLevelLoaded() const
-{
-	assert(bLevelLoaded);
-	return LevelLoaded;
 }
 
 u8& TiledWorld::GetCellAtIndex(const ivec2& coords)

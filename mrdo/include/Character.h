@@ -10,9 +10,9 @@
 #include "CrystalBall.h"
 #include "EventListener.h"
 #include "GameFrameworkMessages.h"
+#include "IConfigFile.h"
 
 class IAnimationAssetManager;
-class IConfigFile;
 class TiledWorld;
 class AppleManager;
 
@@ -46,8 +46,8 @@ public:
 		const std::shared_ptr<IAnimationAssetManager>& assetManager,
 		const std::shared_ptr<IConfigFile>& configFile, 
 		const std::shared_ptr<TiledWorld>& tiledWorld,
-		Event<int>& onLevelLoaded,
-		Event<int>& onResetAfterDeath);
+		Event<LevelLoadData>& onLevelLoaded,
+		Event<LevelLoadData>& onResetAfterDeath);
 	void Update(float deltaTime, GameInputState inputState);
 	void UpdatePlayingDeathAnimation(float deltaTime);
 	void Draw(SDL_Surface* windowSurface, float scale) const;
@@ -66,8 +66,8 @@ private:
 	MovementDirection GetMovementDirection(GameInputState inputState);
 	void SetNewDestinationCell(MovementDirection newDirection);
 	void MoveTowardsDestination(float deltaTime);
-	void OnNewLevelStarted(int levelNumber);
-	void OnResetAfterDeath(int levelNumber);
+	void OnNewLevelStarted(LevelLoadData level);
+	void OnResetAfterDeath(LevelLoadData level);
 private:
 	CrystalBall MyCrystalBall;
 	Animator Animator;
@@ -95,8 +95,8 @@ private:
 	u8 bCanCatchBall : 1;
 	u8 bBeingCrushed : 1;
 
-	LISTENER(Character, OnNewLevelStarted, int);
-	LISTENER(Character, OnResetAfterDeath, int);
+	LISTENER(Character, OnNewLevelStarted, LevelLoadData);
+	LISTENER(Character, OnResetAfterDeath, LevelLoadData);
 	vec2 CachedSpriteDims;
 
 	AppleManager* AppleManagerRef = nullptr;

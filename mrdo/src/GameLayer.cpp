@@ -51,10 +51,10 @@ const std::string& Game::GetUpdateableLayerName() const
 
 void Game::OnUpdatePush(void* data)
 {
-	int level = (int)data;
+	const LevelLoadData* level = (const LevelLoadData*)data;
 	MyTiledWorld->LoadLevel(level);
-	NewLevelBegun(level);
-	CurrentLevel = level;
+	NewLevelBegun(*level);
+	CurrentLevel = *level;
 	InputState = { false, false, false, false, true, false };
 }
 

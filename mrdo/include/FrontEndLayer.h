@@ -4,6 +4,10 @@
 #include <string>
 #include "CommonTypedefs.h"
 #include "InputManager.h"
+#include "IConfigFile.h"
+
+#define FrontEndPlayOptionIndex 0
+#define FrontEndMapMakerOptionIndex 1
 
 class TextRenderer;
 
@@ -58,9 +62,11 @@ private:
 	const u32 ScreenWidth;
 	const u32 ScreenHeight;
 	i32 SelectedMenuIndex;
+	LevelLoadData LevelLoad = { LevelSource::ArcadeLevels, 0 };
+
 	MenuOption MenuOptions[2] =
 	{
-		{"Play", "Game", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0},
+		{"Play", "Game", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, &LevelLoad},
 		{"MapMaker", "MapMakerLevelSelectLayer", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0}
 	};
 	u32 NumberOfOptions = 2;

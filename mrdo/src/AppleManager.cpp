@@ -13,7 +13,7 @@ AppleManager::AppleManager(
 	const std::shared_ptr<IAnimationAssetManager>& assetManager,
 	const std::shared_ptr<IConfigFile>& configFile,
 	const std::shared_ptr<TiledWorld>& tiledWorld,
-	Event<int>& onNewLevelStarted
+	Event<LevelLoadData>& onNewLevelStarted
 )
 	:CachedConfig(configFile),
 	AnimationAssetManager(assetManager),
@@ -358,10 +358,10 @@ void AppleManager::ClampPushedApples()
 	}
 }
 
-void AppleManager::OnNewLevelStarted(int levelNumber)
+void AppleManager::OnNewLevelStarted(LevelLoadData levelLoadData)
 {
-	const std::vector<LevelConfigData>& levels = CachedConfig->GetLevelsConfigData();
-	const LevelConfigData& startedLevel = levels[levelNumber];
+	const std::vector<LevelConfigData>& levels = levelLoadData.Source == LevelSource::ArcadeLevels ? CachedConfig->GetLevelsConfigData() : CachedConfig->GetMapMakerLevelsConfigData();
+	const LevelConfigData& startedLevel = levels[levelLoadData.LevelIndex];
 	ThisLevelNumApplesAtStart = startedLevel.Apples.size();
 	assert(ThisLevelNumApplesAtStart <= ApplePoolSize);
 	for (int i = 0; i < ThisLevelNumApplesAtStart; i++)

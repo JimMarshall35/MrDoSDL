@@ -8,9 +8,9 @@
 #include "VectorTypes.h"
 #include "Event.h"
 #include "GameFrameworkMessages.h"
+#include "IConfigFile.h"
 
 class IFileSystem;
-class IConfigFile;
 class IBackgroundTileAssetManager;
 class IAnimationAssetManager;
 class TiledWorld;
@@ -61,8 +61,8 @@ public:
 	virtual void RecieveMessage(const CharacterDied& message) override;
 
 private:
-	Event<int> NewLevelBegun;	// called when a level first loads
-	Event<int> ResetAfterDeath; // payload: current level
+	Event<LevelLoadData> NewLevelBegun;
+	Event<LevelLoadData> ResetAfterDeath;
 	std::shared_ptr<TiledWorld> MyTiledWorld; // can't name them the same as the class name hence the stupid "My" prefix
 	Character MyCharacter;
 	AppleManager MyAppleManager;
@@ -70,6 +70,6 @@ private:
 	GameInputState InputState = { false, false, false, false, true, false };
 	GameInputState PreviousFrameInputState = { false, false, false, false, true, false };
 	GamePhase Phase;
-	int CurrentLevel = 0;
+	LevelLoadData CurrentLevel = { LevelSource::Undefined, -1};
 	const std::shared_ptr<TextRenderer> CachedTextRenderer;
 };

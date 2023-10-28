@@ -55,6 +55,19 @@ struct MonsterSpawnerData
 	u32 NumMonsters;
 };
 
+enum class LevelSource
+{
+	Undefined,
+	ArcadeLevels,
+	MapMaker
+};
+
+struct LevelLoadData
+{
+	LevelSource Source;
+	i32 LevelIndex;
+};
+
 struct LevelConfigData
 {
 	std::string Name;

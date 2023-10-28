@@ -3,6 +3,7 @@
 #include <memory>
 #include "GameFramework.h"
 #include "VectorTypes.h"
+#include "IConfigFile.h"
 
 #define MMOptionIndexEdit 0
 #define MMOptionIndexPlay 1
@@ -11,10 +12,7 @@
 #define MMNumOptions 4
 
 
-
-class IConfigFile;
 class TextRenderer;
-struct LevelConfigData;
 class MapMakerLevelSelectedDialogue;
 
 typedef void(*OnOptionSelected)(MapMakerLevelSelectedDialogue*);
@@ -59,6 +57,7 @@ private:
 	static void OnDeleteSelected(MapMakerLevelSelectedDialogue* layer);
 	static void OnCancelSelected(MapMakerLevelSelectedDialogue* layer);
 private:
+	LevelLoadData LevelLoad = { LevelSource::MapMaker, 0 };
 	std::shared_ptr<IConfigFile> ConfigFile;
 	std::shared_ptr<TextRenderer> CachedTextRenderer;
 	LevelConfigData* SelectedLevel;

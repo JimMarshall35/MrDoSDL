@@ -1,7 +1,6 @@
 #include "MapMakerLevelSelectedDialogue.h"
 #include <string>
 #include "InputManager.h"
-#include "IConfigFile.h"
 #include "TextRenderer.h"
 
 static const std::string sLayerName = "MapMakerLevelSelectedDialogue";
@@ -94,6 +93,7 @@ void MapMakerLevelSelectedDialogue::OnInputPush(void* data)
 {
 	SelectedOption = MMOptionIndexEdit;
 	SelectedLevelIndex = (u32)data;
+	LevelLoad.LevelIndex = SelectedLevelIndex;
 	std::vector<LevelConfigData>& mapMakerLevels = ConfigFile->GetMapMakerLevelsConfigData();
 	SelectedLevel = &mapMakerLevels[SelectedLevelIndex];
 }
@@ -135,7 +135,8 @@ void MapMakerLevelSelectedDialogue::PopulateOptionsArray()
 
 void MapMakerLevelSelectedDialogue::OnPlaySelected(MapMakerLevelSelectedDialogue* layer)
 {
-	// todo: implement
+	GameFramework::QueuePopLayersAtFrameEnd(GameLayerType::Draw | GameLayerType::Input);
+	GameFramework::QueuePushLayersAtFrameEnd("Game", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, &layer->LevelLoad);
 }
 
 void MapMakerLevelSelectedDialogue::OnEditSelected(MapMakerLevelSelectedDialogue* layer)

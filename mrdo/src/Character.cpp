@@ -15,8 +15,8 @@ Character::Character(
 	const std::shared_ptr<IAnimationAssetManager>& assetManager,
 		const std::shared_ptr<IConfigFile>& configFile, 
 		const std::shared_ptr<TiledWorld>& tiledWorld,
-		Event<int>& onLevelLoaded,
-		Event<int>& onResetAfterDeath)
+		Event<LevelLoadData>& onLevelLoaded,
+		Event<LevelLoadData>& onResetAfterDeath)
 	:MyCrystalBall(this, assetManager.get(), configFile.get(), tiledWorld.get()),
 	AnimationAssetManager(assetManager),
 	ConfigFile(configFile),
@@ -454,9 +454,9 @@ void Character::Crush()
 	bBeingCrushed = true;
 }
 
-void Character::OnNewLevelStarted(int levelNumber)
+void Character::OnNewLevelStarted(LevelLoadData level)
 {
-	OnResetAfterDeath(levelNumber);
+	OnResetAfterDeath(level);
 
 	CachedLevelDims.x = CachedTiledWorld->GetActiveLevelWidth(); // todo: sort these out - sort out size of levels in general
 	CachedLevelDims.y = CachedTiledWorld->GetActiveLevelHeight();
@@ -468,10 +468,11 @@ void Character::OnNewLevelStarted(int levelNumber)
 	Animator.CurrentAnimation = &RunningAnimFrames[0][0][0];
 }
 
-void Character::OnResetAfterDeath(int levelNumber)
+void Character::OnResetAfterDeath(LevelLoadData levelLoadData)
 {
-	const std::vector<LevelConfigData>& data = ConfigFile->GetLevelsConfigData();
-	const LevelConfigData& level = data[levelNumber];
+	const std::vector<LevelConfigData>& data = levelLoadData.Source == LevelSource::ArcadeLevels ? ConfigFile->GetLevelsConfigData() : ConfigFile->GetMapMakerLevelsConfigData();
+
+	const LevelConfigData& level = data[levelLoadData.LevelIndex];
 	const BackgroundTileConfigData& bgData = ConfigFile->GetBackgroundConfigData();
 
 	CurrentTile = ivec2{ (int)level.PlayerSpawnLocation.x, (int)level.PlayerSpawnLocation.x };

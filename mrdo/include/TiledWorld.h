@@ -3,8 +3,8 @@
 #include "VectorTypes.h"
 #include <vector>
 #include "SDL.h"
+#include "IConfigFile.h"
 
-class IConfigFile;
 class IBackgroundTileAssetManager;
 class IAnimationAssetManager;
 
@@ -27,11 +27,10 @@ public:
 		const std::shared_ptr<IConfigFile>& config, 
 		const std::shared_ptr<IBackgroundTileAssetManager>& bgtam,
 		const std::shared_ptr<IAnimationAssetManager>& aam);
-	void LoadLevel(int level);
+	void LoadLevel(const LevelLoadData* level);
 	uvec2 GetRequiredBaseWindowSize() const;
 	void DrawActiveLevel(SDL_Surface* window, float scale) const;
 	void ConnectAdjacentCells(const ivec2& cell1, const ivec2& cell2);
-	int GetLevelLoaded() const;
 	u8& GetCellAtIndex(const ivec2& coords);	
 	u8 GetCellAtIndexValue(const ivec2& coords) const;
 	u32 GetActiveLevelWidth() const { return ActiveLevelWidth; }
@@ -49,7 +48,7 @@ private:
 	const u8* CachedCellCaseToTileIndexLUT;
 	int ActiveLevelWidth;
 	int ActiveLevelHeight;
-	int LevelLoaded;
+	LevelLoadData LevelLoaded;
 	bool bLevelLoaded = false;
 	std::vector<SDL_Rect> ActiveLevelTileset;
 	int TileSize;

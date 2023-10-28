@@ -6,16 +6,14 @@
 #include "EventListener.h"
 #include "SDL.h"
 #include "MovementTypes.h"
+#include "IConfigFile.h"
 
-class IConfigFile;
 class IAnimationAssetManager;
 class TiledWorld;
 class Character;
 
 template<typename T>
 class Event;
-
-struct LevelConfigData;
 
 class AppleManager
 {
@@ -44,7 +42,7 @@ public:
 		const std::shared_ptr<IAnimationAssetManager>& assetManager, 
 		const std::shared_ptr<IConfigFile>& configFile, 
 		const std::shared_ptr<TiledWorld>& tiledWorld,
-		Event<int>& onNewLevelStarted);
+		Event<LevelLoadData>& onNewLevelStarted);
 	void Update(float deltaT);
 	void Draw(SDL_Surface* windowSurface, float scale) const;
 	void SetCharacter(Character* character);
@@ -65,7 +63,7 @@ private:
 	std::vector<SDL_Rect> RightHalfSplitAnimation;
 	Character* CharacterRef;
 private:
-	void OnNewLevelStarted(int levelNumber);
+	void OnNewLevelStarted(LevelLoadData levelNumber);
 	bool IsCellBelowEmpty(Apple* apple) const;
 	bool IsCellDirectlyBelowEmpty(Apple* apple) const;
 	bool IsMrDoBelow(Apple* apple) const;
@@ -73,7 +71,7 @@ private:
 	vec2 GetCellBelowPos(Apple* apple) const;
 	CollidingCellRelationship GetCollisionRelationshipWithMrDo(Apple* apple) const;
 private:
-	LISTENER(AppleManager, OnNewLevelStarted, int);
+	LISTENER(AppleManager, OnNewLevelStarted, LevelLoadData);
 private:
 	vec2 CachedSpriteDims;
 	uvec2 CachedLevelSize = { 0,0 };
