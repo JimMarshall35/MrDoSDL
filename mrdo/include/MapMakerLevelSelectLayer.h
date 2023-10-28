@@ -25,22 +25,22 @@ public:
 	virtual void Update(float deltaT) override;
 	virtual bool MasksPreviousUpdateableLayer() const override;
 	virtual const std::string& GetUpdateableLayerName() const override;
-	virtual void OnUpdatePush(void* data) override;
-	virtual void OnUpdatePop() override;
+	virtual void OnUpdatePush(void* data) override {};
+	virtual void OnUpdatePop() override {};
 
 	// Inherited via DrawableLayerBase
 	virtual void Draw(SDL_Surface* windowSurface, float scale) const override;
 	virtual bool MasksPreviousDrawableLayer() const override;
 	virtual const std::string& GetDrawableLayerName() const override;
-	virtual void OnDrawablePush(void* data) override;
-	virtual void OnDrawablePop() override;
+	virtual void OnDrawablePush(void* data) override {};
+	virtual void OnDrawablePop() override {};
 
 	// Inherited via RecieveInputLayerBase
 	virtual void ReceiveInput(const GameInputState& input) override;
 	virtual bool MasksPreviousInputLayer() const override;
 	virtual const std::string& GetInputLayerName() const override;
-	virtual void OnInputPush(void* data) override;
-	virtual void OnInputPop() override;
+	virtual void OnInputPush(void* data) override {};
+	virtual void OnInputPop() override {};
 private:
 	void OnUpPress();
 	void OnDownPress();

@@ -22,14 +22,14 @@ public:
 	virtual bool MasksPreviousInputLayer() const override;
 	virtual const std::string& GetInputLayerName() const override;
 	virtual void OnInputPush(void* data) override;
-	virtual void OnInputPop() override;
+	virtual void OnInputPop() override {};
 
 	// Inherited via DrawableLayerBase
 	virtual void Draw(SDL_Surface* windowSurface, float scale) const override;
 	virtual bool MasksPreviousDrawableLayer() const override;
 	virtual const std::string& GetDrawableLayerName() const override;
-	virtual void OnDrawablePush(void* data) override;
-	virtual void OnDrawablePop() override;
+	virtual void OnDrawablePush(void* data) override {};
+	virtual void OnDrawablePop() override {};
 private:
 	std::shared_ptr<IConfigFile> ConfigFile;
 	std::shared_ptr<TextRenderer> CachedTextRenderer;

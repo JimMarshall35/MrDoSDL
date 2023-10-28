@@ -90,10 +90,6 @@ void MapMakerCreateNewLevelDialogue::OnInputPush(void* data)
 	CurrentSelection = 0;
 }
 
-void MapMakerCreateNewLevelDialogue::OnInputPop()
-{
-}
-
 void MapMakerCreateNewLevelDialogue::Draw(SDL_Surface* windowSurface, float scale) const
 {
 	float fontSize = CachedTextRenderer->GetTextTileSize();
@@ -153,12 +149,4 @@ bool MapMakerCreateNewLevelDialogue::MasksPreviousDrawableLayer() const
 const std::string& MapMakerCreateNewLevelDialogue::GetDrawableLayerName() const
 {
 	return sLayerName;
-}
-
-void MapMakerCreateNewLevelDialogue::OnDrawablePush(void* data)
-{
-}
-
-void MapMakerCreateNewLevelDialogue::OnDrawablePop()
-{
 }

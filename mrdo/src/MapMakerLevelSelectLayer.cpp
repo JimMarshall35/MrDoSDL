@@ -46,14 +46,6 @@ const std::string& MapMakerLevelSelectLayer::GetUpdateableLayerName() const
 	return sLayerName;
 }
 
-void MapMakerLevelSelectLayer::OnUpdatePush(void* data)
-{
-}
-
-void MapMakerLevelSelectLayer::OnUpdatePop()
-{
-}
-
 void MapMakerLevelSelectLayer::Draw(SDL_Surface* windowSurface, float scale) const
 {
 	float textTileSize = TextRendererPtr->GetTextTileSize();
@@ -130,14 +122,6 @@ const std::string& MapMakerLevelSelectLayer::GetDrawableLayerName() const
 	return sLayerName;
 }
 
-void MapMakerLevelSelectLayer::OnDrawablePush(void* data)
-{
-}
-
-void MapMakerLevelSelectLayer::OnDrawablePop()
-{
-}
-
 void MapMakerLevelSelectLayer::ReceiveInput(const GameInputState& input)
 {
 	if (input.UpPress())
@@ -168,13 +152,6 @@ const std::string& MapMakerLevelSelectLayer::GetInputLayerName() const
 	return sLayerName;
 }
 
-void MapMakerLevelSelectLayer::OnInputPush(void* data)
-{
-}
-
-void MapMakerLevelSelectLayer::OnInputPop()
-{
-}
 
 void MapMakerLevelSelectLayer::OnUpPress()
 {
@@ -253,5 +230,9 @@ void MapMakerLevelSelectLayer::OnSelectPress()
 	if (index == -1)
 	{
 		GameFramework::QueuePushLayersAtFrameEnd("MapMakerCreateNewLevelDialogue", GameLayerType::Draw | GameLayerType::Input);
+	}
+	else
+	{
+		GameFramework::QueuePushLayersAtFrameEnd("MapMakerLevelSelectedDialogue", GameLayerType::Draw | GameLayerType::Input, (void*)index);
 	}
 }
