@@ -55,5 +55,4 @@ private:
 	i32 CurrentOnScreenSelection[NumberOfMapMakerLevelsToShowAtOnce];
 	u32 CurrentNumberOnScreen = 1;
 	i32 FirstIndexInCurrent = -1;
-	GameInputState LastFrameInput = { false,false,false,false,false,false };
 };

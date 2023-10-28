@@ -15,6 +15,7 @@
 #include "TextRenderer.h"
 #include "FrontEndLayer.h"
 #include "MapMakerLevelSelectLayer.h"
+#include "MapMakerCreateNewLevelDialogue.h"
 
 
 int main(int argc, char* args[])
@@ -68,6 +69,7 @@ int main(int argc, char* args[])
             Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, textRenderer);
             FrontEndLayer frontend(textRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
             MapMakerLevelSelectLayer mapMakerLevelSelect(textRenderer, configFile, SCREEN_WIDTH, SCREEN_HEIGHT);
+            MapMakerCreateNewLevelDialogue mapMakerCreateNewLevelDialogue(textRenderer, configFile, SCREEN_WIDTH, SCREEN_HEIGHT);
 
             GameFramework::PushLayers("FrontEnd", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0);
 

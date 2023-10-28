@@ -43,10 +43,23 @@ void GameFramework::Draw(SDL_Surface* windowSurface, float scale)
 	if (m_drawableStackSize == 0) {
 		return;
 	}
-	auto topOfStackIndex = m_drawableStackSize - 1;
-	do {
-		m_drawableStack[topOfStackIndex]->Draw(windowSurface, scale);
-	} while (!m_drawableStack[topOfStackIndex--]->MasksPreviousDrawableLayer());
+
+	for (int i = 0; i < m_drawableStackSize; i++)
+	{
+		bool masked = false;
+		// if any layer further up the stack masks then this layer is not drawn
+		for (int j = i + 1; j < m_drawableStackSize; j++)
+		{
+			if (m_drawableStack[j]->MasksPreviousDrawableLayer())
+			{
+				masked = true;
+			}
+		}
+		if (!masked)
+		{
+			m_drawableStack[i]->Draw(windowSurface, scale);
+		}
+	}
 }
 
 void GameFramework::RecieveInput(const GameInputState& input)

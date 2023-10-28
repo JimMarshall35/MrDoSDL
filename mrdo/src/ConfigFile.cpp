@@ -175,6 +175,70 @@ LevelConfigData ConfigFile::ParseLevelConfigData(const json& levelJson)
 	return data;
 }
 
+void ConfigFile::RecreateMapMakerLevelsJSON()
+{
+	ConfigFileJSON["MapMakerLevels"].clear();
+	for (const LevelConfigData& lvl : MapMakerLevelsConfigData)
+	{
+
+		json lvlObject = json::object();
+		
+		// Name
+		lvlObject["Name"] = lvl.Name;
+
+		// PlayerSpawnLocation
+		json playerSpawnObject = json::object();
+		playerSpawnObject["x"] = lvl.PlayerSpawnLocation.x;
+		playerSpawnObject["y"] = lvl.PlayerSpawnLocation.y;
+		lvlObject["PlayerSpawnLocation"] = playerSpawnObject;
+
+		// PlayerSpawnFacing
+		lvlObject["PlayerSpawnFacing"] = lvl.PlayerSpawnFacing;
+		
+		// BackgroundTileset
+		lvlObject["BackgroundTileset"] = lvl.BackgroundTileset;
+		
+		// NumCols
+		lvlObject["NumCols"] = lvl.NumCols;
+
+		// NumRows
+		lvlObject["NumRows"] = lvl.NumRows;
+
+		// TileData
+		json tileDataJson = json::array();
+		for (u8 tile : lvl.TileData)
+		{
+			tileDataJson.push_back(tile);
+		}
+		lvlObject["TileData"] = tileDataJson;
+
+		// Apples
+		json applesJSON = json::array();
+		for (const uvec2& apple : lvl.Apples)
+		{
+			json appleObj = json::object();
+			appleObj["x"] = apple.x;
+			appleObj["y"] = apple.y;
+			applesJSON.push_back(appleObj);
+		}
+		lvlObject["Apples"] = applesJSON;
+
+		// MonsterSpawners
+		json monstersJSON = json::array();
+		for (const MonsterSpawnerData& monsterSpawner : lvl.MonsterSpawners)
+		{
+			json monsterSpawnerObj = json::object();
+			monsterSpawnerObj["x"] = monsterSpawner.TilePosition.x;
+			monsterSpawnerObj["y"] = monsterSpawner.TilePosition.y;
+			monsterSpawnerObj["NumMonsters"] = monsterSpawner.NumMonsters;
+			monstersJSON.push_back(monsterSpawnerObj);
+		}
+		lvlObject["MonsterSpawners"] = monstersJSON;
+
+		ConfigFileJSON["MapMakerLevels"].push_back(lvlObject);
+	}
+}
+
 const std::string& ConfigFile::GetStringValue(const std::string& key) const
 {
 	assert(ConfigFileJSON[key].is_string());
@@ -190,6 +254,13 @@ bool ConfigFile::GetBoolValue(const std::string& key) const
 const LevelConfigData& ConfigFile::GetBlankLevelTemplate() const
 {
 	return BlankLevel;
+}
+
+void ConfigFile::SaveAfterMapMakerLevelsChange()
+{
+	RecreateMapMakerLevelsJSON();
+	std::ofstream f(Filesystem->GetConfigFilePath());
+	f << ConfigFileJSON.dump(4);
 }
 
 const u32 ConfigFile::GetUIntValue(const std::string& key) const

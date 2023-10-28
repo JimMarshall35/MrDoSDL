@@ -22,6 +22,7 @@ public:
 	virtual const std::string& GetStringValue(const std::string& key) const override;
 	virtual bool GetBoolValue(const std::string& key) const override;
 	virtual const LevelConfigData& GetBlankLevelTemplate() const override;
+	virtual void SaveAfterMapMakerLevelsChange() override;
 private:
 	void PopulateBackgroundConfigDataStruct();
 	void PopulateAnimationsConfigDataStruct();
@@ -29,6 +30,7 @@ private:
 	void PopulateLevelsConfigData(std::vector<LevelConfigData>& vectorToAddTo, const std::string& configFileArrayName);
 	void PopulateFontConfigDataStruct();
 	static LevelConfigData ParseLevelConfigData(const json& levelJson);
+	void RecreateMapMakerLevelsJSON();
 private:
 	json ConfigFileJSON;
 	BackgroundTileConfigData BackgroundConfigData;

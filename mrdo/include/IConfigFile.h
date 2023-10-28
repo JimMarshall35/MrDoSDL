@@ -82,6 +82,6 @@ public:
 	virtual const float GetFloatValue(const std::string& key) const = 0;
 	virtual const std::string& GetStringValue(const std::string& key) const = 0;
 	virtual bool GetBoolValue(const std::string& key) const = 0;
-
+	virtual void SaveAfterMapMakerLevelsChange() = 0;
 
 };

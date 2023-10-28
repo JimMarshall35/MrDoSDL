@@ -140,20 +140,19 @@ void MapMakerLevelSelectLayer::OnDrawablePop()
 
 void MapMakerLevelSelectLayer::ReceiveInput(const GameInputState& input)
 {
-	if (!LastFrameInput.Up && input.Up)
+	if (input.UpPress())
 	{
 		OnUpPress();
 	}
-	if (!LastFrameInput.Down && input.Down)
+	if (input.DownPress())
 	{
 		OnDownPress();
 	}
-	if (!LastFrameInput.CrystalBall && input.CrystalBall)
+	if (input.CrystalBallPress())
 	{
 		OnSelectPress();
 	}
-	LastFrameInput = input;
-	if (input.Back)
+	if (input.BackPress())
 	{
 		GameFramework::PopLayers(GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update);
 	}
@@ -250,4 +249,9 @@ void MapMakerLevelSelectLayer::OnDownPress()
 
 void MapMakerLevelSelectLayer::OnSelectPress()
 {
+	i32 index = CurrentOnScreenSelection[IndexInOnscreenSelection];
+	if (index == -1)
+	{
+		GameFramework::QueuePushLayersAtFrameEnd("MapMakerCreateNewLevelDialogue", GameLayerType::Draw | GameLayerType::Input);
+	}
 }
