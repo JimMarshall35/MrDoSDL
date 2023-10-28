@@ -464,6 +464,8 @@ void Character::OnNewLevelStarted(int levelNumber)
 	u8& spawnedAtTile = CachedTiledWorld->GetCellAtIndex(CurrentTile);
 
 	spawnedAtTile &= ~(1 << (u32)TileWallDirectionBit::Center); // knock out center wall of tile spawned in
+
+	Animator.CurrentAnimation = &RunningAnimFrames[0][0][0];
 }
 
 void Character::OnResetAfterDeath(int levelNumber)
