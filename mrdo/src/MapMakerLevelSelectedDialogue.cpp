@@ -24,6 +24,7 @@ MapMakerLevelSelectedDialogue::MapMakerLevelSelectedDialogue(
 
 void MapMakerLevelSelectedDialogue::Draw(SDL_Surface* windowSurface, float scale) const
 {
+	CachedTextRenderer->SetCurrentFont("Yellow_BlackBackground");
 	for (int i = 0; i < MMNumOptions; i++)
 	{
 		const DialogueOption& option = Options[i];
