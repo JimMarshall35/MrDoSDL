@@ -3,7 +3,7 @@
 #include <memory>
 #include "GameFramework.h"
 #include "VectorTypes.h"
-#include "IConfigFile.h"
+#include "LevelLoadData.h"
 
 #define MMOptionIndexEdit 0
 #define MMOptionIndexPlay 1
@@ -14,6 +14,8 @@
 
 class TextRenderer;
 class MapMakerLevelSelectedDialogue;
+class IConfigFile;
+struct LevelConfigData;
 
 typedef void(*OnOptionSelected)(MapMakerLevelSelectedDialogue*);
 

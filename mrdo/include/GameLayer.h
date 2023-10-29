@@ -8,13 +8,14 @@
 #include "VectorTypes.h"
 #include "Event.h"
 #include "GameFrameworkMessages.h"
-#include "IConfigFile.h"
+#include "LevelLoadData.h"
 
 class IFileSystem;
 class IBackgroundTileAssetManager;
 class IAnimationAssetManager;
 class TiledWorld;
 class TextRenderer;
+class IConfigFile;
 
 class Game : 
 	public UpdateableLayerBase, 

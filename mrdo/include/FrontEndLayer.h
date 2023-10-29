@@ -4,7 +4,7 @@
 #include <string>
 #include "CommonTypedefs.h"
 #include "InputManager.h"
-#include "IConfigFile.h"
+#include "LevelLoadData.h"
 
 #define FrontEndPlayOptionIndex 0
 #define FrontEndMapMakerOptionIndex 1

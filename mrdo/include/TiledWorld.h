@@ -3,10 +3,11 @@
 #include "VectorTypes.h"
 #include <vector>
 #include "SDL.h"
-#include "IConfigFile.h"
+#include "LevelLoadData.h"
 
 class IBackgroundTileAssetManager;
 class IAnimationAssetManager;
+class IConfigFile;
 
 struct SDL_Surface;
 enum class TileWallDirectionBit : u8
@@ -40,6 +41,7 @@ public:
 	inline u8 GetHUDTileRowsTop() const { return HUDTileRowsTop; }
 	bool IsCherryAtTile(const ivec2& coords) const;
 	void RemoveCherryAtTile(const ivec2& coords);
+	void BreakTileCenter(const ivec2& coords);
 private:
 	std::shared_ptr<IConfigFile> Config;
 	std::shared_ptr<IBackgroundTileAssetManager> BackgroundTileAssetManager;

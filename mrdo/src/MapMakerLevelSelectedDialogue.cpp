@@ -2,6 +2,7 @@
 #include <string>
 #include "InputManager.h"
 #include "TextRenderer.h"
+#include "IConfigFile.h"
 
 static const std::string sLayerName = "MapMakerLevelSelectedDialogue";
 
@@ -141,7 +142,8 @@ void MapMakerLevelSelectedDialogue::OnPlaySelected(MapMakerLevelSelectedDialogue
 
 void MapMakerLevelSelectedDialogue::OnEditSelected(MapMakerLevelSelectedDialogue* layer)
 {
-	// todo: implement
+	GameFramework::QueuePopLayersAtFrameEnd(GameLayerType::Draw | GameLayerType::Input);
+	GameFramework::QueuePushLayersAtFrameEnd("MapMaker", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, &layer->LevelLoad);
 }
 
 void MapMakerLevelSelectedDialogue::OnDeleteSelected(MapMakerLevelSelectedDialogue* layer)

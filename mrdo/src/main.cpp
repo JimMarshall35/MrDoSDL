@@ -17,6 +17,7 @@
 #include "MapMakerLevelSelectLayer.h"
 #include "MapMakerCreateNewLevelDialogue.h"
 #include "MapMakerLevelSelectedDialogue.h"
+#include "MapMakerLayer.h"
 
 
 int main(int argc, char* args[])
@@ -67,11 +68,13 @@ int main(int argc, char* args[])
 
             std::shared_ptr<IAnimationAssetManager> animationAssetManager = std::make_shared<AnimationAssetManager>(configFile, screenSurface);
             
+            // game framework layers
             Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, textRenderer);
             FrontEndLayer frontend(textRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
             MapMakerLevelSelectLayer mapMakerLevelSelect(textRenderer, configFile, SCREEN_WIDTH, SCREEN_HEIGHT);
             MapMakerCreateNewLevelDialogue mapMakerCreateNewLevelDialogue(textRenderer, configFile, SCREEN_WIDTH, SCREEN_HEIGHT);
             MapMakerLevelSelectedDialogue mapMakerLevelSelectedDialogue(configFile, textRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+            MapMakerLayer MapMakerLayer(configFile, backgroundTileAssetManager, animationAssetManager, textRenderer);
 
             GameFramework::PushLayers("FrontEnd", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0);
 

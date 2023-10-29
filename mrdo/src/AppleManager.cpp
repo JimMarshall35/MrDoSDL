@@ -368,6 +368,10 @@ void AppleManager::OnNewLevelStarted(LevelLoadData levelLoadData)
 	{
 		ApplePool[i].State = AppleState::Settled;
 		ApplePool[i].Position = vec2{ (float)startedLevel.Apples[i].x * CachedBackgroundTileSize, (float)startedLevel.Apples[i].y * CachedBackgroundTileSize };
+		ApplePool[i].AnimationTimer = 0.0f;
+		ApplePool[i].OnAnimationFrame = 0;
+		ApplePool[i].DistanceFallen = 0.0f;
+		ApplePool[i].CrushedCharacter = nullptr;
 	}
 	CachedLevelSize.x = startedLevel.NumCols;
 	CachedLevelSize.y = startedLevel.NumRows;

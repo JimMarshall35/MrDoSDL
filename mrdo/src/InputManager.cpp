@@ -10,12 +10,14 @@ InputManager::InputManager(const std::shared_ptr<IConfigFile>& config)
 	KeyBindings[GameInputKey_Left] = Config->GetUIntValue("LeftKey");
 	KeyBindings[GameInputKey_CrystalBall] = Config->GetUIntValue("CrystalBallKey");
     KeyBindings[GameInputKey_Back] = Config->GetUIntValue("BackKey");
+    KeyBindings[GameInputKey_MapMakerChangeTool] = Config->GetUIntValue("MapMakerChangeToolKey");
     CurrentState.Up = false;
     CurrentState.Down = false;
     CurrentState.Left = false;
     CurrentState.Right = false;
     CurrentState.Back = false;
     CurrentState.Quit = false;
+    CurrentState.MapMakerChangeTool = false;
 }
 
 GameInputState InputManager::PollEvents()
@@ -28,6 +30,7 @@ GameInputState InputManager::PollEvents()
     CurrentState.PreviousRight = CurrentState.Right;
     CurrentState.PreviousCrystalBall = CurrentState.CrystalBall;
     CurrentState.PreviousBack = CurrentState.Back;
+    CurrentState.PreviousMapMakerChangeTool = CurrentState.MapMakerChangeTool;
 
     /* Poll for events. SDL_PollEvent() returns 0 when there are no  */
     /* more events on the event queue, our while loop will exit when */
@@ -63,6 +66,9 @@ GameInputState InputManager::PollEvents()
                             break;
                         case GameInputKey_Back:
                             CurrentState.Back = newStateToSet;
+                            break;
+                        case GameInputKey_MapMakerChangeTool:
+                            CurrentState.MapMakerChangeTool = newStateToSet;
                             break;
                         }
                     }

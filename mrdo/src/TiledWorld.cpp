@@ -190,6 +190,12 @@ void TiledWorld::RemoveCherryAtTile(const ivec2& coords)
 	tile &= 0x1f;
 }
 
+void TiledWorld::BreakTileCenter(const ivec2& coords)
+{
+	u8& cell = GetCellAtIndex(coords);
+	cell &= ~(1 << (u32)TileWallDirectionBit::Center);
+}
+
 bool TiledWorld::IsCherryAtTile(const ivec2& coords) const
 {
 	u8 tile = GetCellAtIndexValue(coords);

@@ -13,6 +13,7 @@ enum GameInputKey
 	GameInputKey_Left,
 	GameInputKey_CrystalBall,
 	GameInputKey_Back,
+	GameInputKey_MapMakerChangeTool,
 	GameInputKey_NumKeys
 };
 
@@ -25,6 +26,7 @@ struct GameInputState
 	u8 CrystalBall : 1;
 	u8 Back : 1;
 	u8 Quit : 1;
+	u8 MapMakerChangeTool : 1;
 
 	u8 PreviousUp : 1;
 	u8 PreviousDown : 1;
@@ -32,6 +34,7 @@ struct GameInputState
 	u8 PreviousRight : 1;
 	u8 PreviousCrystalBall : 1;
 	u8 PreviousBack : 1;
+	u8 PreviousMapMakerChangeTool : 1;
 
 	bool AnyDirectionPressed()
 	{
@@ -68,6 +71,10 @@ struct GameInputState
 		return !PreviousBack && Back;
 	}
 
+	bool MapMakerChangeToolPress() const
+	{
+		return !PreviousMapMakerChangeTool && MapMakerChangeTool;
+	}
 };
 
 
@@ -76,7 +83,6 @@ class InputManager
 public:
 	InputManager(const std::shared_ptr<IConfigFile>& config);
 	GameInputState PollEvents();
-	void HandleKeyEvent(const SDL_Event& event);
 private:
 	std::shared_ptr<IConfigFile> Config;
 	SDL_Keycode KeyBindings[GameInputKey_NumKeys];

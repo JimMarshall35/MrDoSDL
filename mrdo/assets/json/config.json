@@ -11,6 +11,7 @@
 	"RightKey" : 79,
 	"BackKey" : 41,
 	"CrystalBallKey" : 224,
+	"MapMakerChangeToolKey" : 226,
 	"CrystalBallRadiusPixels" : 3,
 	"NumCrystalBallUpdates" : 3,
 	"PostThrowTimerLimit" : 500.0,
@@ -406,7 +407,8 @@
 			"CrystalBall_BounceUp" : {"x" : 12, "y" : 0},
 			"CrystalBall_BounceDown" : {"x" : 13, "y" : 0},
 			"Cherry" : {"x" : 12, "y" : 5},
-			"MrDo_Crushed" : {"x" : 0, "y" : 7}
+			"MrDo_Crushed" : {"x" : 0, "y" : 7},
+			"MapMakerCursor" : {"x" : 15, "y" : 0}
 		}
 	},
 	"Font" :

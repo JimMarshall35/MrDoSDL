@@ -466,6 +466,10 @@ void Character::OnNewLevelStarted(LevelLoadData level)
 	spawnedAtTile &= ~(1 << (u32)TileWallDirectionBit::Center); // knock out center wall of tile spawned in
 
 	Animator.CurrentAnimation = &RunningAnimFrames[0][0][0];
+	if (bCanCatchBall)
+	{
+		CatchBall();
+	}
 }
 
 void Character::OnResetAfterDeath(LevelLoadData levelLoadData)

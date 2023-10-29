@@ -6,11 +6,13 @@
 #include "EventListener.h"
 #include "SDL.h"
 #include "MovementTypes.h"
-#include "IConfigFile.h"
+#include "LevelLoadData.h"
+
 
 class IAnimationAssetManager;
 class TiledWorld;
 class Character;
+class IConfigFile;
 
 template<typename T>
 class Event;

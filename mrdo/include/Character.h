@@ -10,11 +10,12 @@
 #include "CrystalBall.h"
 #include "EventListener.h"
 #include "GameFrameworkMessages.h"
-#include "IConfigFile.h"
+#include "LevelLoadData.h"
 
 class IAnimationAssetManager;
 class TiledWorld;
 class AppleManager;
+class IConfigFile;
 
 template<typename T>
 class Event;
