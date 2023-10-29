@@ -53,6 +53,10 @@ struct MonsterSpawnerData
 {
 	uvec2 TilePosition;
 	u32 NumMonsters;
+	bool operator==(const MonsterSpawnerData& other) const
+	{
+		return TilePosition == other.TilePosition;
+	}
 };
 
 struct LevelConfigData

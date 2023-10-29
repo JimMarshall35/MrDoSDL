@@ -42,6 +42,8 @@ public:
 	bool IsCherryAtTile(const ivec2& coords) const;
 	void RemoveCherryAtTile(const ivec2& coords);
 	void BreakTileCenter(const ivec2& coords);
+	void FillTile(const ivec2& coords);
+	void AddCherry(const ivec2& coords);
 private:
 	std::shared_ptr<IConfigFile> Config;
 	std::shared_ptr<IBackgroundTileAssetManager> BackgroundTileAssetManager;

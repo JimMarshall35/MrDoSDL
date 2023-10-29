@@ -4,6 +4,8 @@
 #include "InputManager.h"
 #include "TextRenderer.h"
 #include <string>
+#include <algorithm>
+#include <cassert>
 
 struct LevelLoadData;
 static const std::string sLayerName = "MapMaker";
@@ -28,6 +30,9 @@ MapMakerLayer::MapMakerLayer(const std::shared_ptr<IConfigFile>& config,
 	MMTiledWorld(config, bgtam, aam)
 {
 	aam->MakeSingleSpriteRectFrame("MapMakerCursor", CursorSprite);
+	aam->MakeSingleSpriteRectFrame("MonsterSpawner", MonsterSpawnerSprite);
+	aam->MakeSingleSpriteRectFrame("Apple", AppleSprite);
+	aam->MakeSingleSpriteRectFrame("MMPlayerStartIcon", PlayerStartSprite);
 	BackgroundTileSize = config->GetBackgroundConfigData().TileSize;
 }
 
@@ -50,8 +55,9 @@ void MapMakerLayer::OnUpdatePush(void* data)
 	const LevelLoadData* level = (const LevelLoadData*)data;
 	MMLevelLoadData = *level;
 	MMTiledWorld.LoadLevel(level);
-	const LevelConfigData& lvlConfig = ConfigFile->GetMapMakerLevelsConfigData()[level->LevelIndex];
+	LevelConfigData& lvlConfig = ConfigFile->GetMapMakerLevelsConfigData()[level->LevelIndex];
 	LevelDims = ivec2{ lvlConfig.NumCols, lvlConfig.NumRows };
+	EditedLevel = &lvlConfig;
 }
 
 void MapMakerLayer::OnUpdatePop()
@@ -64,13 +70,30 @@ void MapMakerLayer::Draw(SDL_Surface* windowSurface, float scale) const
 	CachedTextRenderer->RenderText({ 0,0 }, ToolNames[CurrentTool], windowSurface, scale);
 	MMTiledWorld.DrawActiveLevel(windowSurface, scale);
 	SDL_Rect dst;
+	SDL_Surface* srcSurface = AnimationAssetManager->GetAnimationsSpriteSheetSurface();
 	dst.w = BackgroundTileSize * scale;
 	dst.h = BackgroundTileSize * scale;
 	dst.x = CursorPos.x * BackgroundTileSize * scale;
 	dst.y = CursorPos.y * BackgroundTileSize * scale;
-
-	SDL_Surface* srcSurface = AnimationAssetManager->GetAnimationsSpriteSheetSurface();
 	SDL_BlitSurfaceScaled(srcSurface, &CursorSprite, windowSurface, &dst);
+
+	dst.x = EditedLevel->PlayerSpawnLocation.x * BackgroundTileSize * scale;
+	dst.y = EditedLevel->PlayerSpawnLocation.y * BackgroundTileSize * scale;
+	SDL_BlitSurfaceScaled(srcSurface, &PlayerStartSprite, windowSurface, &dst);
+
+	for (const uvec2& apple : EditedLevel->Apples)
+	{
+		dst.x = apple.x * BackgroundTileSize * scale;
+		dst.y = apple.y * BackgroundTileSize * scale;
+		SDL_BlitSurfaceScaled(srcSurface, &AppleSprite, windowSurface, &dst);
+	}
+
+	for (const MonsterSpawnerData& spawner : EditedLevel->MonsterSpawners)
+	{
+		dst.x = spawner.TilePosition.x * BackgroundTileSize * scale;
+		dst.y = spawner.TilePosition.y * BackgroundTileSize * scale;
+		SDL_BlitSurfaceScaled(srcSurface, &AppleSprite, windowSurface, &dst);
+	}
 }
 
 bool MapMakerLayer::MasksPreviousDrawableLayer() const
@@ -94,6 +117,7 @@ void MapMakerLayer::OnDrawablePop()
 void MapMakerLayer::ReceiveInput(const GameInputState& input)
 {
 	ivec2 previousCursorPos = CursorPos;
+	bool hasMoved = false;
 	if (input.UpPress())
 	{
 		--CursorPos.y;
@@ -101,9 +125,9 @@ void MapMakerLayer::ReceiveInput(const GameInputState& input)
 		{
 			CursorPos.y = 1;
 		}
-		else if (CurrentTool == MM_BreakTile && input.CrystalBall)
+		else
 		{
-			MMTiledWorld.ConnectAdjacentCells(previousCursorPos, CursorPos);
+			hasMoved = true;
 		}
 	}
 	if (input.DownPress())
@@ -113,9 +137,9 @@ void MapMakerLayer::ReceiveInput(const GameInputState& input)
 		{
 			CursorPos.y = LevelDims.y - 2;
 		}
-		else if (CurrentTool == MM_BreakTile && input.CrystalBall)
+		else 
 		{
-			MMTiledWorld.ConnectAdjacentCells(previousCursorPos, CursorPos);
+			hasMoved = true;
 		}
 	}
 	if (input.LeftPress())
@@ -125,9 +149,9 @@ void MapMakerLayer::ReceiveInput(const GameInputState& input)
 		{
 			CursorPos.x = 0;
 		}
-		else if (CurrentTool == MM_BreakTile && input.CrystalBall)
+		else
 		{
-			MMTiledWorld.ConnectAdjacentCells(previousCursorPos, CursorPos);
+			hasMoved = true;
 		}
 	}
 	if (input.RightPress())
@@ -137,9 +161,9 @@ void MapMakerLayer::ReceiveInput(const GameInputState& input)
 		{
 			CursorPos.x = LevelDims.x - 1;
 		}
-		else if (CurrentTool == MM_BreakTile && input.CrystalBall)
+		else
 		{
-			MMTiledWorld.ConnectAdjacentCells(previousCursorPos, CursorPos);
+			hasMoved = true;
 		}
 	}
 	if (input.MapMakerChangeToolPress())
@@ -156,6 +180,57 @@ void MapMakerLayer::ReceiveInput(const GameInputState& input)
 		{
 		case MM_BreakTile:
 			MMTiledWorld.BreakTileCenter(CursorPos);
+			break;
+		case MM_FillTile:
+			MMTiledWorld.FillTile(CursorPos);
+			break;
+		case MM_AddCherry:
+			if (MMTiledWorld.IsCherryAtTile(CursorPos))
+			{
+				MMTiledWorld.RemoveCherryAtTile(CursorPos);
+			}
+			else
+			{
+				MMTiledWorld.AddCherry(CursorPos);
+			}
+			break;
+		case MM_AddPlayerStart:
+			EditedLevel->PlayerSpawnLocation.x = CursorPos.x;
+			EditedLevel->PlayerSpawnLocation.y = CursorPos.y;
+			break;
+		case MM_AddApple:
+			if (AppleAtCoords(CursorPos))
+			{
+				RemoveApple(CursorPos);
+			}
+			else
+			{
+				AddApple(CursorPos);
+			}
+			break;
+		}
+	}
+
+	if (hasMoved && input.CrystalBall)
+	{
+		// moved cursor while holding down crystal ball key
+		switch (CurrentTool)
+		{
+		case MM_BreakTile:
+			MMTiledWorld.ConnectAdjacentCells(previousCursorPos, CursorPos);
+			break;
+		case MM_FillTile:
+			MMTiledWorld.FillTile(CursorPos);
+			break;
+		case MM_AddCherry:
+			if (MMTiledWorld.IsCherryAtTile(CursorPos))
+			{
+				MMTiledWorld.RemoveCherryAtTile(CursorPos);
+			}
+			else
+			{
+				MMTiledWorld.AddCherry(CursorPos);
+			}
 			break;
 		}
 	}
@@ -177,4 +252,80 @@ void MapMakerLayer::OnInputPush(void* data)
 
 void MapMakerLayer::OnInputPop()
 {
+}
+
+void MapMakerLayer::AddApple(const ivec2& coords)
+{
+	assert(coords.x >= 0);
+	assert(coords.y >= 0);
+	uvec2 asUvec = uvec2{ (u32)coords.x, (u32)coords.y };
+	auto itr = std::find(EditedLevel->Apples.begin(), EditedLevel->Apples.end(), asUvec);
+	if (itr == EditedLevel->Apples.end())
+	{
+		EditedLevel->Apples.push_back(asUvec);
+	}
+}
+
+void MapMakerLayer::RemoveApple(const ivec2& coords)
+{
+	assert(coords.x >= 0);
+	assert(coords.y >= 0);
+	uvec2 asUvec = uvec2{ (u32)coords.x, (u32)coords.y };
+	auto itr = std::find(EditedLevel->Apples.begin(), EditedLevel->Apples.end(), asUvec);
+	if (itr != EditedLevel->Apples.end())
+	{
+		EditedLevel->Apples.erase(itr);
+	}
+}
+
+bool MapMakerLayer::AppleAtCoords(const ivec2& coords)
+{
+	assert(coords.x >= 0);
+	assert(coords.y >= 0);
+	uvec2 asUvec = uvec2{ (u32)coords.x, (u32)coords.y };
+	auto itr = std::find(EditedLevel->Apples.begin(), EditedLevel->Apples.end(), asUvec);
+	return itr != EditedLevel->Apples.end();
+}
+
+void MapMakerLayer::AddMonsterSpawner(const ivec2& coords)
+{
+	assert(coords.x >= 0);
+	assert(coords.y >= 0);
+	uvec2 asUvec = uvec2{ (u32)coords.x, (u32)coords.y };
+	MonsterSpawnerData msData;
+	msData.TilePosition = asUvec;
+	auto itr = std::find(EditedLevel->MonsterSpawners.begin(), EditedLevel->MonsterSpawners.end(), msData);
+	if (itr == EditedLevel->MonsterSpawners.end())
+	{
+		EditedLevel->MonsterSpawners.push_back(msData);
+	}
+}
+
+void MapMakerLayer::RemoveMonsterSpawner(const ivec2& coords)
+{
+	assert(coords.x >= 0);
+	assert(coords.y >= 0);
+	uvec2 asUvec = uvec2{ (u32)coords.x, (u32)coords.y };
+	MonsterSpawnerData msData;
+	msData.TilePosition = asUvec;
+	auto itr = std::find(EditedLevel->MonsterSpawners.begin(), EditedLevel->MonsterSpawners.end(), msData);
+	if (itr != EditedLevel->MonsterSpawners.end())
+	{
+		EditedLevel->MonsterSpawners.erase(itr);
+	}
+}
+
+MonsterSpawnerData* MapMakerLayer::MonsterSpawnerAtCoords(const ivec2& coords)
+{
+	assert(coords.x >= 0);
+	assert(coords.y >= 0);
+	uvec2 asUvec = uvec2{ (u32)coords.x, (u32)coords.y };
+	MonsterSpawnerData msData;
+	msData.TilePosition = asUvec;
+	auto itr = std::find(EditedLevel->MonsterSpawners.begin(), EditedLevel->MonsterSpawners.end(), msData);
+	if (itr == EditedLevel->MonsterSpawners.end())
+	{
+		return nullptr;
+	}
+	return &(*itr);
 }

@@ -17,7 +17,7 @@ struct vec2
 		return { x + other.x, y + other.y };
 	}
 
-	vec2 operator*(const float other)
+	vec2 operator*(const float other) const
 	{
 		return { x * other, y * other };
 	}
@@ -29,21 +29,21 @@ struct vec2
 		y += other.y;
 	}
 
-	bool operator==(const vec2& other)
+	bool operator==(const vec2& other) const
 	{
 		return (x == other.x) && (y == other.y);
 	}
-	bool operator!=(const vec2& other)
+	bool operator!=(const vec2& other) const
 	{
 		return !((x == other.x) && (y == other.y));
 	}
 
-	float Magnitude()
+	float Magnitude() const
 	{
 		return sqrt(x * x + y * y);
 	}
 
-	vec2 Normalized()
+	vec2 Normalized() const
 	{
 		float mag = Magnitude();
 		return { x / mag, y / mag };
@@ -54,15 +54,15 @@ struct ivec2
 {
 	i32 x;
 	i32 y;
-	ivec2 operator+(const ivec2& other)
+	ivec2 operator+(const ivec2& other) const
 	{
 		return { x + other.x, y + other.y };
 	}
-	bool operator==(const ivec2& other)
+	bool operator==(const ivec2& other) const
 	{
 		return (x == other.x) && (y == other.y);
 	}
-	bool operator!=(const ivec2& other)
+	bool operator!=(const ivec2& other) const
 	{
 		return !((x == other.x) && (y == other.y));
 	}
@@ -72,15 +72,16 @@ struct uvec2
 {
 	u32 x;
 	u32 y;
-	uvec2 operator+(const uvec2& other)
+	uvec2 operator+(const uvec2& other) const
 	{
 		return { x + other.x, y + other.y };
 	}
-	bool operator==(const uvec2& other)
+	bool operator==(const uvec2& other) const
 	{
 		return (x == other.x) && (y == other.y);
 	}
-	bool operator!=(const uvec2& other)
+
+	bool operator!=(const uvec2& other) const
 	{
 		return !((x == other.x) && (y == other.y));
 	}

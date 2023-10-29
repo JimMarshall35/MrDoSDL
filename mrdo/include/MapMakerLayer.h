@@ -18,6 +18,7 @@ enum MapMakerTool
 	MM_NumTools
 };
 
+struct MonsterSpawnerData;
 struct LevelConfigData;
 class IConfigFile;
 class IAnimationAssetManager;
@@ -55,7 +56,14 @@ public:
 	virtual const std::string& GetInputLayerName() const override;
 	virtual void OnInputPush(void* data) override;
 	virtual void OnInputPop() override;
+private:
+	void AddApple(const ivec2& coords);
+	void RemoveApple(const ivec2& coords);
+	bool AppleAtCoords(const ivec2& coords);
 
+	void AddMonsterSpawner(const ivec2& coords);
+	void RemoveMonsterSpawner(const ivec2& coords);
+	MonsterSpawnerData* MonsterSpawnerAtCoords(const ivec2& coords);
 private:
 	std::shared_ptr<IConfigFile> ConfigFile;
 	std::shared_ptr<IAnimationAssetManager> AnimationAssetManager;
@@ -65,6 +73,9 @@ private:
 	LevelLoadData MMLevelLoadData;
 	ivec2 CursorPos = { 1,1 };
 	SDL_Rect CursorSprite;
+	SDL_Rect MonsterSpawnerSprite;
+	SDL_Rect AppleSprite;
+	SDL_Rect PlayerStartSprite;
 	int BackgroundTileSize;
 	ivec2 LevelDims = { 0,0 };
 	int CurrentTool = MM_BreakTile;

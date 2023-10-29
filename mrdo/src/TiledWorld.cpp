@@ -196,6 +196,39 @@ void TiledWorld::BreakTileCenter(const ivec2& coords)
 	cell &= ~(1 << (u32)TileWallDirectionBit::Center);
 }
 
+void TiledWorld::FillTile(const ivec2& coords)
+{
+	u8& cell = GetCellAtIndex(coords);
+	cell |= 0x1f;
+	ivec2 coordsCopy = coords; // for fuck sake
+	if (coords.x - 1 >= 0)
+	{
+		u8& neighbourcell = GetCellAtIndex(coordsCopy + ivec2{ -1,0 });
+		neighbourcell |= (1 << (u32)TileWallDirectionBit::Right);
+	}
+	if (coords.x < ActiveLevelWidth)
+	{
+		u8& neighbourcell = GetCellAtIndex(coordsCopy + ivec2{ 1,0 });
+		neighbourcell |= (1 << (u32)TileWallDirectionBit::Left);
+	}
+	if (coords.y - 1 >= 0)
+	{
+		u8& neighbourcell = GetCellAtIndex(coordsCopy + ivec2{ 0,-1 });
+		neighbourcell |= (1 << (u32)TileWallDirectionBit::Down);
+	}
+	if (coords.y + 1 < ActiveLevelHeight)
+	{
+		u8& neighbourcell = GetCellAtIndex(coordsCopy + ivec2{ 0,1 });
+		neighbourcell |= (1 << (u32)TileWallDirectionBit::Up);
+	}
+}
+
+void TiledWorld::AddCherry(const ivec2& coords)
+{
+	u8& cell = GetCellAtIndex(coords);
+	cell |= (1 << TileCherryBit);
+}
+
 bool TiledWorld::IsCherryAtTile(const ivec2& coords) const
 {
 	u8 tile = GetCellAtIndexValue(coords);
