@@ -9,6 +9,7 @@
 #include "Event.h"
 #include "GameFrameworkMessages.h"
 #include "LevelLoadData.h"
+#include "EnemyManager.h"
 
 class IFileSystem;
 class IBackgroundTileAssetManager;
@@ -67,9 +68,9 @@ private:
 	std::shared_ptr<TiledWorld> MyTiledWorld; // can't name them the same as the class name hence the stupid "My" prefix
 	Character MyCharacter;
 	AppleManager MyAppleManager;
+	EnemyManager MyEnemyManager;
 	static std::string LayerName;
 	GameInputState InputState = { false, false, false, false, true, false };
-	GameInputState PreviousFrameInputState = { false, false, false, false, true, false };
 	GamePhase Phase;
 	LevelLoadData CurrentLevel = { LevelSource::Undefined, -1};
 	const std::shared_ptr<TextRenderer> CachedTextRenderer;

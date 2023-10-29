@@ -13,6 +13,7 @@ Game::Game(const std::shared_ptr<IFileSystem>& fileSystem,
 	:MyTiledWorld(std::make_shared<TiledWorld>(config, backgroundAssetManager, animationManager)),
 	MyCharacter(animationManager, config, MyTiledWorld, NewLevelBegun, ResetAfterDeath),
 	MyAppleManager(animationManager, config, MyTiledWorld, NewLevelBegun),
+	MyEnemyManager(config, animationManager, NewLevelBegun, ResetAfterDeath),
 	Phase(GamePhase::Playing),
 	CachedTextRenderer(textRenderer)
 {
@@ -27,6 +28,7 @@ void Game::Update(float deltaT)
 	case GamePhase::Playing:
 		MyCharacter.Update(deltaT, InputState);
 		MyAppleManager.Update(deltaT);
+		MyEnemyManager.Update(deltaT);
 		break;
 	case GamePhase::DieAnimationPlaying:
 		MyCharacter.UpdatePlayingDeathAnimation(deltaT);
@@ -67,6 +69,7 @@ void Game::Draw(SDL_Surface* windowSurface, float scale) const
 	MyTiledWorld->DrawActiveLevel(windowSurface, scale);
 	MyCharacter.Draw(windowSurface, scale);
 	MyAppleManager.Draw(windowSurface, scale);
+	MyEnemyManager.Draw(windowSurface, scale);
 	CachedTextRenderer->RenderText({ 0,0 }, "HeLlO WoRlD ^", windowSurface, scale);
 }
 
