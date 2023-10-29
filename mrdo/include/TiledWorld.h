@@ -8,6 +8,7 @@
 class IBackgroundTileAssetManager;
 class IAnimationAssetManager;
 class IConfigFile;
+struct LevelConfigData;
 
 struct SDL_Surface;
 enum class TileWallDirectionBit : u8
@@ -44,6 +45,8 @@ public:
 	void BreakTileCenter(const ivec2& coords);
 	void FillTile(const ivec2& coords);
 	void AddCherry(const ivec2& coords);
+	void FreeLevel();
+	void CopyToLevelConfigData(LevelConfigData& dst);
 private:
 	std::shared_ptr<IConfigFile> Config;
 	std::shared_ptr<IBackgroundTileAssetManager> BackgroundTileAssetManager;
@@ -59,4 +62,5 @@ private:
 	u8 HUDTileRowsTop;
 	u8 HUDTileRowsBottom;
 	SDL_Rect CherryRect;
+	int CurrentTileset = -1;
 };

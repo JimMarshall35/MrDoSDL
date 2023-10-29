@@ -479,7 +479,7 @@ void Character::OnResetAfterDeath(LevelLoadData levelLoadData)
 	const LevelConfigData& level = data[levelLoadData.LevelIndex];
 	const BackgroundTileConfigData& bgData = ConfigFile->GetBackgroundConfigData();
 
-	CurrentTile = ivec2{ (int)level.PlayerSpawnLocation.x, (int)level.PlayerSpawnLocation.x };
+	CurrentTile = ivec2{ (int)level.PlayerSpawnLocation.x, (int)level.PlayerSpawnLocation.y };
 	CurrentLocation = vec2{ (float)level.PlayerSpawnLocation.x * bgData.TileSize, (float)level.PlayerSpawnLocation.y * bgData.TileSize };
 	CurrentMovementDirection = (MovementDirection)level.PlayerSpawnFacing;
 

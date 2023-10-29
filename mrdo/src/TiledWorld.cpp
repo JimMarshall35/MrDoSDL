@@ -23,7 +23,7 @@ TiledWorld::TiledWorld(
 	HUDTileRowsTop(config->GetUIntValue("HUDTileRowsTop")),
 	HUDTileRowsBottom(config->GetUIntValue("HUDTileRowsBottom"))
 {
-
+	AnimationAssetManager->MakeSingleSpriteRectFrame("Cherry", CherryRect);
 }
 
 void TiledWorld::LoadLevel(const LevelLoadData* level)
@@ -44,8 +44,9 @@ void TiledWorld::LoadLevel(const LevelLoadData* level)
 	ActiveLevelHeight = selectedLevel.NumRows;
 	ActiveLevel = std::make_unique<u8[]>(selectedLevel.TileData.size());
 	memcpy(ActiveLevel.get(), selectedLevel.TileData.data(), selectedLevel.TileData.size());
+	CurrentTileset = selectedLevel.BackgroundTileset;
 	ActiveLevelTileset = BackgroundTileAssetManager->GetLevelTileset(selectedLevel.BackgroundTileset);
-	AnimationAssetManager->MakeSingleSpriteRectFrame("Cherry", CherryRect);
+	
 }
 
 uvec2 TiledWorld::GetRequiredBaseWindowSize() const
@@ -227,6 +228,27 @@ void TiledWorld::AddCherry(const ivec2& coords)
 {
 	u8& cell = GetCellAtIndex(coords);
 	cell |= (1 << TileCherryBit);
+}
+
+void TiledWorld::FreeLevel()
+{
+	if (ActiveLevel.get())
+	{
+		assert(bLevelLoaded);
+		ActiveLevel.reset();
+		bLevelLoaded = false;
+	}
+}
+
+void TiledWorld::CopyToLevelConfigData(LevelConfigData& dst)
+{
+	assert(dst.NumCols == ActiveLevelWidth);
+	assert(dst.NumRows == ActiveLevelHeight);
+	assert(dst.TileData.size() == ActiveLevelHeight * ActiveLevelWidth);
+	assert(bLevelLoaded);
+	assert(CurrentTileset >= 0);
+	memcpy(dst.TileData.data(), ActiveLevel.get(), ActiveLevelHeight * ActiveLevelWidth);
+	dst.BackgroundTileset = CurrentTileset;
 }
 
 bool TiledWorld::IsCherryAtTile(const ivec2& coords) const

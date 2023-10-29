@@ -6,6 +6,7 @@
 #include <string>
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 
 struct LevelLoadData;
 static const std::string sLayerName = "MapMaker";
@@ -62,6 +63,10 @@ void MapMakerLayer::OnUpdatePush(void* data)
 
 void MapMakerLayer::OnUpdatePop()
 {
+	std::cout << "saving level: " << EditedLevel->Name << "\n";
+	MMTiledWorld.CopyToLevelConfigData(*EditedLevel);
+	MMTiledWorld.FreeLevel();
+	ConfigFile->SaveAfterMapMakerLevelsChange();
 }
 
 void MapMakerLayer::Draw(SDL_Surface* windowSurface, float scale) const
@@ -92,7 +97,7 @@ void MapMakerLayer::Draw(SDL_Surface* windowSurface, float scale) const
 	{
 		dst.x = spawner.TilePosition.x * BackgroundTileSize * scale;
 		dst.y = spawner.TilePosition.y * BackgroundTileSize * scale;
-		SDL_BlitSurfaceScaled(srcSurface, &AppleSprite, windowSurface, &dst);
+		SDL_BlitSurfaceScaled(srcSurface, &MonsterSpawnerSprite, windowSurface, &dst);
 	}
 }
 
@@ -208,7 +213,21 @@ void MapMakerLayer::ReceiveInput(const GameInputState& input)
 				AddApple(CursorPos);
 			}
 			break;
+		case MM_AddMonsterSpawner:
+			if (MonsterSpawnerAtCoords(CursorPos))
+			{
+				RemoveMonsterSpawner(CursorPos);
+			}
+			else
+			{
+				AddMonsterSpawner(CursorPos);
+			}
+			break;
 		}
+	}
+	if (input.BackPress())
+	{
+		GameFramework::QueuePopLayersAtFrameEnd(GameLayerType::Update | GameLayerType::Draw | GameLayerType::Input);
 	}
 
 	if (hasMoved && input.CrystalBall)
@@ -294,6 +313,7 @@ void MapMakerLayer::AddMonsterSpawner(const ivec2& coords)
 	uvec2 asUvec = uvec2{ (u32)coords.x, (u32)coords.y };
 	MonsterSpawnerData msData;
 	msData.TilePosition = asUvec;
+	msData.NumMonsters = 5;
 	auto itr = std::find(EditedLevel->MonsterSpawners.begin(), EditedLevel->MonsterSpawners.end(), msData);
 	if (itr == EditedLevel->MonsterSpawners.end())
 	{
