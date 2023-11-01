@@ -52,7 +52,7 @@ void EnemyManager::Update(float deltaTime)
 void EnemyManager::Draw(SDL_Surface* windowSurface, float scale) const
 {
 	//path finding demo begin
-	static uvec2 buffer[100];
+	/*static uvec2 buffer[100];
 	ivec2 tile = CachedCharacter->GetTile();
 	u32 numOutputted = 0;
 	PathFinding::DoAstar(EnemySpawnerPool[0].TileCoords, uvec2{ (u32)tile.x,(u32)tile.y }, buffer, numOutputted, 100, CachedTiledWorld.get());
@@ -66,7 +66,7 @@ void EnemyManager::Draw(SDL_Surface* windowSurface, float scale) const
 		dst.x = pathStep.x * BackgroundTileSize * scale;
 		dst.y = pathStep.y * BackgroundTileSize * scale;
 		SDL_BlitSurfaceScaled(srcSurface, &SpawnerTileSprite, windowSurface, &dst);
-	}
+	}*/
 	// path finding demo end
 	for (int i = 0; i < NumEnemySpawnersThisLevel; i++)
 	{
