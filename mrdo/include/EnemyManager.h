@@ -11,6 +11,8 @@
 
 class IConfigFile;
 class IAnimationAssetManager;
+class Character;
+class TiledWorld;
 
 class EnemyManager
 {
@@ -49,8 +51,10 @@ public:
 	EnemyManager(
 		const std::shared_ptr<IConfigFile>& configFile,
 		const std::shared_ptr<IAnimationAssetManager>& animationAssetManager,
+		const std::shared_ptr<TiledWorld>& tiledWorld,
 		Event<LevelLoadData>& onLevelLoaded,
-		Event<LevelLoadData>& onResetAfterDeath);
+		Event<LevelLoadData>& onResetAfterDeath,
+		Character* character);
 	void Update(float deltaTime);
 	void Draw(SDL_Surface* windowSurface, float scale) const;
 
@@ -68,6 +72,7 @@ private:
 private:
 	std::shared_ptr<IConfigFile> ConfigFile;
 	std::shared_ptr<IAnimationAssetManager> AnimationAssetManager;
+	std::shared_ptr<TiledWorld> CachedTiledWorld;
 	u32 EnemySpawnerPoolSize;
 	u32 EnemyPoolSize;
 	std::unique_ptr<EnemySpawner[]> EnemySpawnerPool;
@@ -82,4 +87,5 @@ private:
 	u32 NumEnemiesSpawned = 0;
 	static std::vector<SDL_Rect> NormalEnemyAnimationTable[2][4];
 	static SDL_Rect SpawnerTileSprite;
+	Character* CachedCharacter;
 };

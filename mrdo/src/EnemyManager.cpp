@@ -1,19 +1,26 @@
 #include "EnemyManager.h"
 #include "IAnimationAssetManager.h"
 #include "IConfigFile.h"
+#include "Character.h"
+#include "PathFinding.h"
+#include "TiledWorld.h"
 
 std::vector<SDL_Rect> EnemyManager::NormalEnemyAnimationTable[2][4];
 SDL_Rect EnemyManager::SpawnerTileSprite;
 
+
 EnemyManager::EnemyManager(
 	const std::shared_ptr<IConfigFile>& configFile,
 	const std::shared_ptr<IAnimationAssetManager>& animationAssetManager,
+	const std::shared_ptr<TiledWorld>& tiledWorld,
 	Event<LevelLoadData>& onLevelLoaded,
-	Event<LevelLoadData>& onResetAfterDeath)
+	Event<LevelLoadData>& onResetAfterDeath,
+	Character* character)
 	:LOnLevelBegun(this),
 	LOnResetAfterDeath(this),
 	ConfigFile(configFile),
 	AnimationAssetManager(animationAssetManager),
+	CachedTiledWorld(tiledWorld),
 	EnemySpawnerPoolSize(configFile->GetUIntValue("MonsterSpawnerPoolSize")),
 	EnemyPoolSize(configFile->GetUIntValue("MonsterPoolSize")),
 	EnemySpawnerPool(std::make_unique<EnemySpawner[]>(EnemySpawnerPoolSize)),
@@ -21,7 +28,8 @@ EnemyManager::EnemyManager(
 	BackgroundTileSize(configFile->GetBackgroundConfigData().TileSize),
 	SpawnEnemyInterval(configFile->GetFloatValue("SpawnEnemyInterval")),
 	SpawnEnemyFlashInterval(configFile->GetFloatValue("SpawnEnemyFlashInterval")),
-	FlashesBeforeSpawn(configFile->GetUIntValue("FlashesBeforeSpawn"))
+	FlashesBeforeSpawn(configFile->GetUIntValue("FlashesBeforeSpawn")),
+	CachedCharacter(character)
 {
 	onLevelLoaded += &LOnLevelBegun;
 	onResetAfterDeath += &LOnResetAfterDeath;
@@ -43,6 +51,23 @@ void EnemyManager::Update(float deltaTime)
 
 void EnemyManager::Draw(SDL_Surface* windowSurface, float scale) const
 {
+	//path finding demo begin
+	static uvec2 buffer[100];
+	ivec2 tile = CachedCharacter->GetTile();
+	u32 numOutputted = 0;
+	PathFinding::DoAstar(EnemySpawnerPool[0].TileCoords, uvec2{ (u32)tile.x,(u32)tile.y }, buffer, numOutputted, 100, CachedTiledWorld.get());
+	for (int i = 0; i < numOutputted; i++)
+	{
+		SDL_Rect dst;
+		SDL_Surface* srcSurface = AnimationAssetManager->GetAnimationsSpriteSheetSurface();
+		dst.w = BackgroundTileSize * scale;
+		dst.h = BackgroundTileSize * scale;
+		const uvec2& pathStep = buffer[i];
+		dst.x = pathStep.x * BackgroundTileSize * scale;
+		dst.y = pathStep.y * BackgroundTileSize * scale;
+		SDL_BlitSurfaceScaled(srcSurface, &SpawnerTileSprite, windowSurface, &dst);
+	}
+	// path finding demo end
 	for (int i = 0; i < NumEnemySpawnersThisLevel; i++)
 	{
 		const EnemySpawner& spawner = EnemySpawnerPool[i];
@@ -96,6 +121,7 @@ void EnemyManager::OnLevelBegun(LevelLoadData level)
 	}
 	MaxEnemiesThisLevel = monstersThisLevel;
 	NumEnemiesSpawned = 0;
+	PathFinding::ResizeNodeMap(startedLevel.NumCols, startedLevel.NumRows);
 }
 
 void EnemyManager::OnResetAfterDeath(LevelLoadData level)
