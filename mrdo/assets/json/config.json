@@ -4,6 +4,7 @@
 	"CharacterAnimatorFPS" : 12.0,
 	"CharacterDeathAnimatorFPS" : 2.0,
 	"CharacterSpeed" : 0.06,
+	"EnemySpeed" : 0.02,
 	"CrystalBallSpeed" : 0.25,
 	"UpKey" : 82,
 	"DownKey" : 81,
@@ -24,6 +25,7 @@
 	"AppleSplitTime" : 500.0,
 	"SpawnEnemyInterval" : 3000.0,
 	"SpawnEnemyFlashInterval" : 200.0,
+	"EnemyPathBufferSize" : 50,
 	"FlashesBeforeSpawn" : 5,
 	"BlankLevel" : 
 	{ 
@@ -69,7 +71,7 @@
             "BackgroundTileset": 0,
             "MonsterSpawners": [
                 {
-                    "NumMonsters": 5,
+                    "NumMonsters": 1,
                     "x": 5,
                     "y": 7
                 }

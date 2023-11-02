@@ -4,6 +4,8 @@
 #include "Character.h"
 #include "PathFinding.h"
 #include "TiledWorld.h"
+#include "MovementHelpers.h"
+#include <cassert>
 
 std::vector<SDL_Rect> EnemyManager::NormalEnemyAnimationTable[2][4];
 SDL_Rect EnemyManager::SpawnerTileSprite;
@@ -12,7 +14,7 @@ SDL_Rect EnemyManager::SpawnerTileSprite;
 EnemyManager::EnemyManager(
 	const std::shared_ptr<IConfigFile>& configFile,
 	const std::shared_ptr<IAnimationAssetManager>& animationAssetManager,
-	const std::shared_ptr<TiledWorld>& tiledWorld,
+	TiledWorld* tiledWorld,
 	Event<LevelLoadData>& onLevelLoaded,
 	Event<LevelLoadData>& onResetAfterDeath,
 	Character* character)
@@ -29,12 +31,15 @@ EnemyManager::EnemyManager(
 	SpawnEnemyInterval(configFile->GetFloatValue("SpawnEnemyInterval")),
 	SpawnEnemyFlashInterval(configFile->GetFloatValue("SpawnEnemyFlashInterval")),
 	FlashesBeforeSpawn(configFile->GetUIntValue("FlashesBeforeSpawn")),
-	CachedCharacter(character)
+	CachedCharacter(character),
+	PathBufferSize(configFile->GetUIntValue("EnemyPathBufferSize")),
+	EnemySpeed(configFile->GetFloatValue("EnemySpeed"))
 {
 	onLevelLoaded += &LOnLevelBegun;
 	onResetAfterDeath += &LOnResetAfterDeath;
 	AnimationAssetManager->MakeSingleSpriteRectFrame("MonsterSpawner", SpawnerTileSprite);
 	PopulateAnimationTables();
+	InitialiseEnemyPool();
 }
 
 void EnemyManager::Update(float deltaTime)
@@ -47,15 +52,23 @@ void EnemyManager::Update(float deltaTime)
 			UpdateSingleSpawner(deltaTime, spawner);
 		}
 	}
+	for (int i = 0; i < NumEnemiesSpawned; i++)
+	{
+		Enemy& enemy = EnemyPool[i];
+		if (enemy.bActive)
+		{
+			UpdateSingleEnemy(deltaTime, enemy);
+		}
+	}
 }
 
 void EnemyManager::Draw(SDL_Surface* windowSurface, float scale) const
 {
 	//path finding demo begin
-	/*static uvec2 buffer[100];
+	static uvec2 buffer[100];
 	ivec2 tile = CachedCharacter->GetTile();
 	u32 numOutputted = 0;
-	PathFinding::DoAstar(EnemySpawnerPool[0].TileCoords, uvec2{ (u32)tile.x,(u32)tile.y }, buffer, numOutputted, 100, CachedTiledWorld.get());
+	PathFinding::DoAstar(EnemySpawnerPool[0].TileCoords, uvec2{ (u32)tile.x,(u32)tile.y }, buffer, numOutputted, 100, CachedTiledWorld);
 	for (int i = 0; i < numOutputted; i++)
 	{
 		SDL_Rect dst;
@@ -66,15 +79,16 @@ void EnemyManager::Draw(SDL_Surface* windowSurface, float scale) const
 		dst.x = pathStep.x * BackgroundTileSize * scale;
 		dst.y = pathStep.y * BackgroundTileSize * scale;
 		SDL_BlitSurfaceScaled(srcSurface, &SpawnerTileSprite, windowSurface, &dst);
-	}*/
+	}
 	// path finding demo end
+	SDL_Rect dst;
+	SDL_Surface* srcSurface = AnimationAssetManager->GetAnimationsSpriteSheetSurface();
 	for (int i = 0; i < NumEnemySpawnersThisLevel; i++)
 	{
 		const EnemySpawner& spawner = EnemySpawnerPool[i];
 		if (spawner.NumberOfEnemiesLeftToSpawn > 0)
 		{
-			SDL_Rect dst;
-			SDL_Surface* srcSurface = AnimationAssetManager->GetAnimationsSpriteSheetSurface();
+			
 			dst.w = BackgroundTileSize * scale;
 			dst.h = BackgroundTileSize * scale;
 			dst.x = spawner.TileCoords.x * BackgroundTileSize * scale;
@@ -98,6 +112,19 @@ void EnemyManager::Draw(SDL_Surface* windowSurface, float scale) const
 		else
 		{
 			// draw the bonus item here 
+		}
+	}
+
+	for (int i = 0; i < NumEnemiesSpawned; i++)
+	{
+		if (EnemyPool[i].bActive)
+		{
+			Enemy& enemy = EnemyPool[i];
+			dst.w = BackgroundTileSize * scale;
+			dst.h = BackgroundTileSize * scale;
+			dst.x = enemy.Pos.x * scale;
+			dst.y = enemy.Pos.y * scale;
+			SDL_BlitSurfaceScaled(srcSurface, &NormalEnemyAnimationTable[0][(i32)enemy.CurrentDirection][0], windowSurface, &dst);
 		}
 	}
 }
@@ -196,4 +223,139 @@ void EnemyManager::SpawnEnemy(EnemySpawner& spawner)
 	spawned.OriginSpawner = &spawner;
 	spawned.Type = EnemyType::Normal;
 	spawned.Pos = { spawner.TileCoords.x * (float)BackgroundTileSize, spawner.TileCoords.y * (float)BackgroundTileSize };
+	const ivec2& characterTile = CachedCharacter->GetTile();
+	
+	spawned.CurrentCell = spawner.TileCoords;
+
+	SetNewPath(spawned, characterTile);
+	SetEnemyDestinationWorldSpace(spawned);
+	SetEnemyDirection(spawned);
+}
+
+void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
+{
+	//move towards next path node
+	vec2 moveDirection = (enemy.Destination - enemy.Pos).Normalized();
+	float* coordinateToChangePtr = nullptr;
+	float changeDirection = 1.0f;
+	switch (enemy.CurrentDirection)
+	{
+	case MovementDirection::Up:
+		coordinateToChangePtr = &enemy.Pos.y;
+		changeDirection = -1.0f;
+		break;
+	case MovementDirection::Right:
+		coordinateToChangePtr = &enemy.Pos.x;
+		break;
+	case MovementDirection::Down:
+		coordinateToChangePtr = &enemy.Pos.y;
+		break;
+	case MovementDirection::Left:
+		coordinateToChangePtr = &enemy.Pos.x;
+		changeDirection = -1.0f;
+		break;
+	}
+
+	(*coordinateToChangePtr) += deltaTime * EnemySpeed * changeDirection;
+	bool passedIntoNextCell = false;
+	float overshootAmount = 0.0f;
+	switch (enemy.CurrentDirection)
+	{
+	case MovementDirection::Up:
+		passedIntoNextCell = enemy.Pos.y <= enemy.Destination.y;
+		overshootAmount = enemy.Destination.y - enemy.Pos.y;
+		break;
+	case MovementDirection::Right:
+		passedIntoNextCell = enemy.Pos.x >= enemy.Destination.x;
+		overshootAmount = enemy.Pos.x - enemy.Destination.x;
+		break;
+	case MovementDirection::Down:
+		passedIntoNextCell = enemy.Pos.y >= enemy.Destination.y;
+		overshootAmount = enemy.Pos.y - enemy.Destination.y;
+
+		break;
+	case MovementDirection::Left:
+		passedIntoNextCell = enemy.Pos.x <= enemy.Destination.x;
+		overshootAmount = enemy.Destination.x - enemy.Pos.x;
+		break;
+	}
+	assert(overshootAmount < (float)CachedTiledWorld->GetTileSize());
+	if (passedIntoNextCell)
+	{
+		enemy.Pos = enemy.Destination;
+		enemy.CurrentCell = enemy.PathBuffer[enemy.PathBufferDestinationIndex];
+
+		if (--enemy.PathBufferDestinationIndex < 0)
+		{
+			const ivec2& characterTile = CachedCharacter->GetTile();
+			SetNewPath(enemy, characterTile);
+		}
+
+		SetEnemyDestinationWorldSpace(enemy);
+		SetEnemyDirection(enemy);
+
+		// apply amount overshot
+		vec2 newMovementVector = MovementHelpers::GetDirectionVector(enemy.CurrentDirection);
+		enemy.Pos += newMovementVector * overshootAmount;
+	}
+
+	/*
+	
+	*/
+}
+void EnemyManager::SetEnemyDestinationWorldSpace(Enemy& enemy)
+{
+	const uvec2& dest = enemy.PathBuffer[enemy.PathBufferDestinationIndex];
+	enemy.Destination = { dest.x * (float)BackgroundTileSize, dest.y * (float)BackgroundTileSize };
+}
+
+void EnemyManager::InitialiseEnemyPool()
+{
+	for (int i = 0; i < EnemyPoolSize; i++)
+	{
+		EnemyPool[i].PathBuffer = std::make_unique<uvec2[]>(PathBufferSize);
+	}
+}
+
+void EnemyManager::SetNewPath(Enemy& enemy, const ivec2& newDestinationCell)
+{
+	PathFinding::DoAstar(
+		enemy.CurrentCell,
+		uvec2{ (u32)newDestinationCell.x, (u32)newDestinationCell.y },
+		enemy.PathBuffer.get(),
+		enemy.PathBufferCurrentSize,
+		PathBufferSize,
+		CachedTiledWorld
+	);
+	enemy.PathBufferDestinationIndex = enemy.PathBufferCurrentSize - 1;
+}
+
+void EnemyManager::SetEnemyDirection(Enemy& enemy)
+{
+	const uvec2& current = enemy.CurrentCell;
+	const uvec2& destination = enemy.PathBuffer[enemy.PathBufferDestinationIndex];
+
+	int dx = current.x - destination.x;
+	int dy = current.y - destination.y;
+	assert((dx >= -1) && (dx <= 1));
+	assert((dy >= -1) && (dy <= 1));
+	assert((dx == 0) || (dy == 0));
+
+	if (dx == 1)
+	{
+		enemy.CurrentDirection = MovementDirection::Left;
+	}
+	else if (dx == -1)
+	{
+		enemy.CurrentDirection = MovementDirection::Right;
+	}
+	else if (dy == 1)
+	{
+		enemy.CurrentDirection = MovementDirection::Up;
+	}
+	else if (dy == -1)
+	{
+		enemy.CurrentDirection = MovementDirection::Down;
+	}
+
 }

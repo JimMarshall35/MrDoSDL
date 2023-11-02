@@ -37,6 +37,7 @@ public:
 	u8 GetCellAtIndexValue(const ivec2& coords) const;
 	u32 GetActiveLevelWidth() const { return ActiveLevelWidth; }
 	u32 GetActiveLevelHeight() const { return ActiveLevelHeight; }
+	int GetTileSize() const { return TileSize; }
 	bool IsBarrierBetween(const ivec2& cell1, const ivec2& cell2) const;
 	inline u8 GetHUDTileRowsBottom() const { return HUDTileRowsBottom; }
 	inline u8 GetHUDTileRowsTop() const { return HUDTileRowsTop; }

@@ -43,7 +43,12 @@ private:
 		EnemySpawner* OriginSpawner;
 		EnemyType Type;
 		vec2 Pos;
+		vec2 Destination;
 		MovementDirection CurrentDirection;
+		std::unique_ptr<uvec2[]> PathBuffer;
+		u32 PathBufferCurrentSize;
+		i32 PathBufferDestinationIndex;
+		uvec2 CurrentCell;
 		u8 bPushing : 1;
 		u8 bActive : 1;
 	};
@@ -51,7 +56,7 @@ public:
 	EnemyManager(
 		const std::shared_ptr<IConfigFile>& configFile,
 		const std::shared_ptr<IAnimationAssetManager>& animationAssetManager,
-		const std::shared_ptr<TiledWorld>& tiledWorld,
+		TiledWorld* tiledWorld,
 		Event<LevelLoadData>& onLevelLoaded,
 		Event<LevelLoadData>& onResetAfterDeath,
 		Character* character);
@@ -64,6 +69,11 @@ private:
 	void PopulateAnimationTables();
 	void UpdateSingleSpawner(float deltaTime, EnemySpawner& spawner);
 	void SpawnEnemy(EnemySpawner& spawner);
+	void UpdateSingleEnemy(float deltaTime, Enemy& enemy);
+	void InitialiseEnemyPool();
+	void SetNewPath(Enemy& enemy, const ivec2& newDestinationCell);
+	void SetEnemyDirection(Enemy& enemy);
+	void SetEnemyDestinationWorldSpace(Enemy& enemy);
 
 private:
 	LISTENER(EnemyManager, OnLevelBegun, LevelLoadData);
@@ -72,7 +82,7 @@ private:
 private:
 	std::shared_ptr<IConfigFile> ConfigFile;
 	std::shared_ptr<IAnimationAssetManager> AnimationAssetManager;
-	std::shared_ptr<TiledWorld> CachedTiledWorld;
+	TiledWorld* CachedTiledWorld;
 	u32 EnemySpawnerPoolSize;
 	u32 EnemyPoolSize;
 	std::unique_ptr<EnemySpawner[]> EnemySpawnerPool;
@@ -88,4 +98,7 @@ private:
 	static std::vector<SDL_Rect> NormalEnemyAnimationTable[2][4];
 	static SDL_Rect SpawnerTileSprite;
 	Character* CachedCharacter;
+	u32 PathBufferSize;
+	float EnemySpeed;
+	float CachedTileSize;
 };
