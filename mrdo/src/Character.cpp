@@ -445,6 +445,10 @@ void Character::Kill(CharacterDeathReason deathReason)
 	Animator.FPS = DeathAnimationFPS;
 	Animator.bLooping = false;
 	Animator.bFinished = false;
+	if (bCanCatchBall)
+	{
+		CatchBall();
+	}
 	GameFramework::SendFrameworkMessage(CharacterDied{ deathReason });
 }
 

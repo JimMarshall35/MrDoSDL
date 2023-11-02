@@ -5,6 +5,7 @@
 #include "PathFinding.h"
 #include "TiledWorld.h"
 #include "MovementHelpers.h"
+#include "CollisionHelpers.h"
 #include <cassert>
 
 std::vector<SDL_Rect> EnemyManager::NormalEnemyAnimationTable[2][4];
@@ -35,6 +36,7 @@ EnemyManager::EnemyManager(
 	PathBufferSize(configFile->GetUIntValue("EnemyPathBufferSize")),
 	EnemySpeed(configFile->GetFloatValue("EnemySpeed"))
 {
+	CachedTileSize = ConfigFile->GetAnimationsConfigData().TileSize;
 	onLevelLoaded += &LOnLevelBegun;
 	onResetAfterDeath += &LOnResetAfterDeath;
 	AnimationAssetManager->MakeSingleSpriteRectFrame("MonsterSpawner", SpawnerTileSprite);
@@ -64,23 +66,6 @@ void EnemyManager::Update(float deltaTime)
 
 void EnemyManager::Draw(SDL_Surface* windowSurface, float scale) const
 {
-	//path finding demo begin
-	static uvec2 buffer[100];
-	ivec2 tile = CachedCharacter->GetTile();
-	u32 numOutputted = 0;
-	PathFinding::DoAstar(EnemySpawnerPool[0].TileCoords, uvec2{ (u32)tile.x,(u32)tile.y }, buffer, numOutputted, 100, CachedTiledWorld);
-	for (int i = 0; i < numOutputted; i++)
-	{
-		SDL_Rect dst;
-		SDL_Surface* srcSurface = AnimationAssetManager->GetAnimationsSpriteSheetSurface();
-		dst.w = BackgroundTileSize * scale;
-		dst.h = BackgroundTileSize * scale;
-		const uvec2& pathStep = buffer[i];
-		dst.x = pathStep.x * BackgroundTileSize * scale;
-		dst.y = pathStep.y * BackgroundTileSize * scale;
-		SDL_BlitSurfaceScaled(srcSurface, &SpawnerTileSprite, windowSurface, &dst);
-	}
-	// path finding demo end
 	SDL_Rect dst;
 	SDL_Surface* srcSurface = AnimationAssetManager->GetAnimationsSpriteSheetSurface();
 	for (int i = 0; i < NumEnemySpawnersThisLevel; i++)
@@ -124,7 +109,7 @@ void EnemyManager::Draw(SDL_Surface* windowSurface, float scale) const
 			dst.h = BackgroundTileSize * scale;
 			dst.x = enemy.Pos.x * scale;
 			dst.y = enemy.Pos.y * scale;
-			SDL_BlitSurfaceScaled(srcSurface, &NormalEnemyAnimationTable[0][(i32)enemy.CurrentDirection][0], windowSurface, &dst);
+			SDL_BlitSurfaceScaled(srcSurface, &enemy.EnemyAnimator.GetCurrentFrame(), windowSurface, &dst);
 		}
 	}
 }
@@ -226,6 +211,8 @@ void EnemyManager::SpawnEnemy(EnemySpawner& spawner)
 	const ivec2& characterTile = CachedCharacter->GetTile();
 	
 	spawned.CurrentCell = spawner.TileCoords;
+	spawned.EnemyAnimator.bIsAnimating = true;
+	spawned.EnemyAnimator.FPS = 4;
 
 	SetNewPath(spawned, characterTile);
 	SetEnemyDestinationWorldSpace(spawned);
@@ -298,10 +285,13 @@ void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
 		vec2 newMovementVector = MovementHelpers::GetDirectionVector(enemy.CurrentDirection);
 		enemy.Pos += newMovementVector * overshootAmount;
 	}
+	enemy.EnemyAnimator.CurrentAnimation = &NormalEnemyAnimationTable[enemy.bPushing][(u32)enemy.CurrentDirection];
+	enemy.EnemyAnimator.Update(deltaTime / 1000.f);
+	if (CollisionHelpers::AABBCollision(enemy.Pos, CachedCharacter->GetPosition(), { CachedTileSize ,CachedTileSize },  { CachedTileSize, CachedTileSize }))
+	{
+		CachedCharacter->Kill(CharacterDeathReason::KilledByMonster);
+	}
 
-	/*
-	
-	*/
 }
 void EnemyManager::SetEnemyDestinationWorldSpace(Enemy& enemy)
 {

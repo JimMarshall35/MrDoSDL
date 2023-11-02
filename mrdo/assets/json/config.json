@@ -71,7 +71,7 @@
             "BackgroundTileset": 0,
             "MonsterSpawners": [
                 {
-                    "NumMonsters": 1,
+                    "NumMonsters": 5,
                     "x": 5,
                     "y": 7
                 }

@@ -7,6 +7,7 @@
 #include "Event.h"
 #include "MovementTypes.h"
 #include "SDL.h"
+#include "Animator.h"
 #include <vector>
 
 class IConfigFile;
@@ -49,6 +50,7 @@ private:
 		u32 PathBufferCurrentSize;
 		i32 PathBufferDestinationIndex;
 		uvec2 CurrentCell;
+		Animator EnemyAnimator;
 		u8 bPushing : 1;
 		u8 bActive : 1;
 	};
