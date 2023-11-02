@@ -494,6 +494,7 @@
 			"MrDo_Crushed" : {"x" : 0, "y" : 7},
 			"MapMakerCursor" : {"x" : 15, "y" : 0},
 			"MonsterSpawner" : {"x" : 13, "y" : 8},
+			"CrushedMonster" : {"x" : 12, "y" : 8},
 			"Apple" : {"x" : 13, "y" : 3},
 			"MMPlayerStartIcon" : {"x":0,"y":0}
 		}

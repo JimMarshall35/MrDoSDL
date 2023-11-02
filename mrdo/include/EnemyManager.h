@@ -9,51 +9,56 @@
 #include "SDL.h"
 #include "Animator.h"
 #include <vector>
+#include <functional>
 
 class IConfigFile;
 class IAnimationAssetManager;
 class Character;
 class TiledWorld;
 
+enum class EnemyType
+{
+	Normal,
+	Digger,
+	ExtraMan,
+	Ghost
+};
+enum class EnemySpawnerState
+{
+	Idle,
+	Flashing
+};
+struct EnemySpawner
+{
+	u32 NumberOfEnemiesLeftToSpawn;
+	uvec2 TileCoords;
+	EnemySpawnerState State;
+	float Timer;
+	u32 FlashCounter;
+	u8 bFlashState : 1;
+};
+struct Enemy
+{
+	EnemySpawner* OriginSpawner;
+	EnemyType Type;
+	vec2 Pos;
+	vec2 Destination;
+	MovementDirection CurrentDirection;
+	std::unique_ptr<uvec2[]> PathBuffer;
+	u32 PathBufferCurrentSize;
+	i32 PathBufferDestinationIndex;
+	uvec2 CurrentCell;
+	Animator EnemyAnimator;
+	u8 bPushing : 1;
+	u8 bActive : 1;
+	u8 bCrushed : 1;
+};
+typedef std::function<void(Enemy&)> EnemyIterator;
+
 class EnemyManager
 {
-private:
-	enum class EnemyType
-	{
-		Normal,
-		Digger,
-		ExtraMan,
-		Ghost
-	};
-	enum class EnemySpawnerState
-	{
-		Idle,
-		Flashing
-	};
-	struct EnemySpawner
-	{
-		u32 NumberOfEnemiesLeftToSpawn;
-		uvec2 TileCoords;
-		EnemySpawnerState State;
-		float Timer;
-		u32 FlashCounter;
-		u8 bFlashState : 1;
-	};
-	struct Enemy
-	{
-		EnemySpawner* OriginSpawner;
-		EnemyType Type;
-		vec2 Pos;
-		vec2 Destination;
-		MovementDirection CurrentDirection;
-		std::unique_ptr<uvec2[]> PathBuffer;
-		u32 PathBufferCurrentSize;
-		i32 PathBufferDestinationIndex;
-		uvec2 CurrentCell;
-		Animator EnemyAnimator;
-		u8 bPushing : 1;
-		u8 bActive : 1;
-	};
+public:
+	
 public:
 	EnemyManager(
 		const std::shared_ptr<IConfigFile>& configFile,
@@ -64,6 +69,10 @@ public:
 		Character* character);
 	void Update(float deltaTime);
 	void Draw(SDL_Surface* windowSurface, float scale) const;
+	void IterateActiveEnemies(EnemyIterator iter) const;
+	int GetActiveLevelMaxEnemies() const;
+	void CrushEnemy(Enemy* enemy);
+	void KillEnemy(Enemy* enemy);
 
 private:
 	void OnLevelBegun(LevelLoadData level);
@@ -99,6 +108,7 @@ private:
 	u32 NumEnemiesSpawned = 0;
 	static std::vector<SDL_Rect> NormalEnemyAnimationTable[2][4];
 	static SDL_Rect SpawnerTileSprite;
+	static SDL_Rect CrushedMonsterSprite;
 	Character* CachedCharacter;
 	u32 PathBufferSize;
 	float EnemySpeed;

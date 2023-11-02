@@ -10,6 +10,7 @@
 
 std::vector<SDL_Rect> EnemyManager::NormalEnemyAnimationTable[2][4];
 SDL_Rect EnemyManager::SpawnerTileSprite;
+SDL_Rect EnemyManager::CrushedMonsterSprite;
 
 
 EnemyManager::EnemyManager(
@@ -40,6 +41,7 @@ EnemyManager::EnemyManager(
 	onLevelLoaded += &LOnLevelBegun;
 	onResetAfterDeath += &LOnResetAfterDeath;
 	AnimationAssetManager->MakeSingleSpriteRectFrame("MonsterSpawner", SpawnerTileSprite);
+	AnimationAssetManager->MakeSingleSpriteRectFrame("CrushedMonster", CrushedMonsterSprite),
 	PopulateAnimationTables();
 	InitialiseEnemyPool();
 }
@@ -57,7 +59,7 @@ void EnemyManager::Update(float deltaTime)
 	for (int i = 0; i < NumEnemiesSpawned; i++)
 	{
 		Enemy& enemy = EnemyPool[i];
-		if (enemy.bActive)
+		if (enemy.bActive && !enemy.bCrushed)
 		{
 			UpdateSingleEnemy(deltaTime, enemy);
 		}
@@ -109,9 +111,48 @@ void EnemyManager::Draw(SDL_Surface* windowSurface, float scale) const
 			dst.h = BackgroundTileSize * scale;
 			dst.x = enemy.Pos.x * scale;
 			dst.y = enemy.Pos.y * scale;
-			SDL_BlitSurfaceScaled(srcSurface, &enemy.EnemyAnimator.GetCurrentFrame(), windowSurface, &dst);
+			if (EnemyPool[i].bCrushed)
+			{
+				SDL_BlitSurfaceScaled(srcSurface, &CrushedMonsterSprite, windowSurface, &dst);
+			}
+			else
+			{
+				SDL_BlitSurfaceScaled(srcSurface, &enemy.EnemyAnimator.GetCurrentFrame(), windowSurface, &dst);
+			}
+			
 		}
 	}
+}
+
+void EnemyManager::IterateActiveEnemies(EnemyIterator iter) const
+{
+	for (int i = 0; i < NumEnemiesSpawned; i++)
+	{
+		if (EnemyPool[i].bActive)
+		{
+			iter(EnemyPool[i]);
+		}
+	}
+}
+
+int EnemyManager::GetActiveLevelMaxEnemies() const
+{
+	
+	return MaxEnemiesThisLevel;
+}
+
+void EnemyManager::CrushEnemy(Enemy* enemy)
+{
+	assert(!enemy->bCrushed);
+	enemy->bCrushed = true;
+}
+
+void EnemyManager::KillEnemy(Enemy* enemy)
+{
+	assert(enemy->bActive);
+	enemy->bActive = false;
+	assert(enemy->OriginSpawner);
+	//enemy->OriginSpawner->NumberOfEnemiesLeftToSpawn--;
 }
 
 void EnemyManager::OnLevelBegun(LevelLoadData level)
@@ -213,6 +254,7 @@ void EnemyManager::SpawnEnemy(EnemySpawner& spawner)
 	spawned.CurrentCell = spawner.TileCoords;
 	spawned.EnemyAnimator.bIsAnimating = true;
 	spawned.EnemyAnimator.FPS = 4;
+	spawned.bCrushed = false;
 
 	SetNewPath(spawned, characterTile);
 	SetEnemyDestinationWorldSpace(spawned);
@@ -287,7 +329,10 @@ void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
 	}
 	enemy.EnemyAnimator.CurrentAnimation = &NormalEnemyAnimationTable[enemy.bPushing][(u32)enemy.CurrentDirection];
 	enemy.EnemyAnimator.Update(deltaTime / 1000.f);
-	if (CollisionHelpers::AABBCollision(enemy.Pos, CachedCharacter->GetPosition(), { CachedTileSize ,CachedTileSize },  { CachedTileSize, CachedTileSize }))
+	if (CollisionHelpers::AABBCollision(enemy.Pos + vec2{A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f},
+		CachedCharacter->GetPosition() + vec2{A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER/2.0f},
+		{ CachedTileSize - A_SMALL_NUMBER ,CachedTileSize - A_SMALL_NUMBER },
+		{ CachedTileSize - A_SMALL_NUMBER, CachedTileSize - A_SMALL_NUMBER }))
 	{
 		CachedCharacter->Kill(CharacterDeathReason::KilledByMonster);
 	}

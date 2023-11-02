@@ -7,13 +7,14 @@
 #include "Character.h"
 #include "CollisionHelpers.h"
 #include "TiledWorld.h"
-
+#include "EnemyManager.h"
 
 AppleManager::AppleManager(
 	const std::shared_ptr<IAnimationAssetManager>& assetManager,
 	const std::shared_ptr<IConfigFile>& configFile,
 	const std::shared_ptr<TiledWorld>& tiledWorld,
-	Event<LevelLoadData>& onNewLevelStarted
+	Event<LevelLoadData>& onNewLevelStarted,
+	EnemyManager* enemyManager
 )
 	:CachedConfig(configFile),
 	AnimationAssetManager(assetManager),
@@ -27,7 +28,8 @@ AppleManager::AppleManager(
 	AppleSlideSpeed(configFile->GetFloatValue("AppleSlideSpeed")),
 	AppleFallSpeed(configFile->GetFloatValue("AppleFallSpeed")),
 	AppleWobbleTime(configFile->GetFloatValue("AppleWobbleTime")),
-	AppleSplitTime(configFile->GetFloatValue("AppleSplitTime"))
+	AppleSplitTime(configFile->GetFloatValue("AppleSplitTime")),
+	CachedEnemyManager(enemyManager)
 {
 	onNewLevelStarted += &LOnNewLevelStarted;
 	CachedBackgroundTileSize = configFile->GetBackgroundConfigData().TileSize;
@@ -195,6 +197,24 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 				apple.CrushedCharacter = CharacterRef;
 				CharacterRef->Crush();
 			}
+
+			CachedEnemyManager->IterateActiveEnemies([this, &apple](Enemy& enemy) {
+				if (enemy.bCrushed)
+				{
+					return;
+				}
+				float dims = CachedSpriteDims.x;
+				if (CollisionHelpers::AABBCollision(
+					enemy.Pos + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
+					apple.Position + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
+					{ dims - A_SMALL_NUMBER ,dims - A_SMALL_NUMBER },
+					{ dims - A_SMALL_NUMBER, dims - A_SMALL_NUMBER }))
+				{
+					apple.CrushedEnemies[apple.numCrushedEnemies++] = &enemy;
+					CachedEnemyManager->CrushEnemy(&enemy);
+				}
+			});
+
 			float fallAmountThisFrame = 1.0f * AppleFallSpeed * deltaT;
 			apple.Position.y += fallAmountThisFrame;
 			apple.DistanceFallen += fallAmountThisFrame;
@@ -203,6 +223,11 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 			{
 				vec2 position = apple.CrushedCharacter->GetPosition();
 				apple.CrushedCharacter->SetPosition({ position.x, apple.Position.y + CachedSpriteDims.y / 2.0f });
+			}
+			for (int i = 0; i < apple.numCrushedEnemies; i++)
+			{
+				Enemy* enemy = apple.CrushedEnemies[i];
+				enemy->Pos.y = apple.Position.y + CachedSpriteDims.y / 2.0f;
 			}
 
 			if (!IsCellDirectlyBelowEmpty(&apple))
@@ -236,6 +261,10 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 				{
 					apple.CrushedCharacter->Kill(CharacterDeathReason::CrushedByApple);
 					apple.CrushedCharacter = nullptr;
+				}
+				for (int i = 0; i < apple.numCrushedEnemies; i++)
+				{
+					CachedEnemyManager->KillEnemy(apple.CrushedEnemies[i]);
 				}
 			}
 		}
@@ -364,6 +393,14 @@ void AppleManager::OnNewLevelStarted(LevelLoadData levelLoadData)
 	const LevelConfigData& startedLevel = levels[levelLoadData.LevelIndex];
 	ThisLevelNumApplesAtStart = startedLevel.Apples.size();
 	assert(ThisLevelNumApplesAtStart <= ApplePoolSize);
+
+	// get max number of monsters
+	int maxMonstersThisLevel = 0;
+	for (const MonsterSpawnerData& spawnerData : startedLevel.MonsterSpawners)
+	{
+		maxMonstersThisLevel += spawnerData.NumMonsters;
+	}
+
 	for (int i = 0; i < ThisLevelNumApplesAtStart; i++)
 	{
 		ApplePool[i].State = AppleState::Settled;
@@ -372,9 +409,16 @@ void AppleManager::OnNewLevelStarted(LevelLoadData levelLoadData)
 		ApplePool[i].OnAnimationFrame = 0;
 		ApplePool[i].DistanceFallen = 0.0f;
 		ApplePool[i].CrushedCharacter = nullptr;
+		if (ApplePool[i].CrushedEnemies.get())
+		{
+			ApplePool[i].CrushedEnemies.reset();
+		}
+		ApplePool[i].CrushedEnemies = std::make_unique<Enemy* []>(maxMonstersThisLevel);
+		ApplePool[i].numCrushedEnemies = 0;
 	}
 	CachedLevelSize.x = startedLevel.NumCols;
 	CachedLevelSize.y = startedLevel.NumRows;
+
 }
 
 bool AppleManager::IsCellBelowEmpty(Apple* apple) const

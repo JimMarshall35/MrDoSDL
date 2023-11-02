@@ -17,6 +17,9 @@ class IConfigFile;
 template<typename T>
 class Event;
 
+struct Enemy;
+class EnemyManager;
+
 class AppleManager
 {
 public:
@@ -29,6 +32,7 @@ public:
 		Splitting,
 		Sliding
 	};
+
 	struct Apple
 	{
 		vec2 Position;
@@ -38,13 +42,16 @@ public:
 		u32 OnAnimationFrame;
 		float DistanceFallen = 0.0f;
 		Character* CrushedCharacter = nullptr;
+		std::unique_ptr<Enemy*[]> CrushedEnemies;
+		u32 numCrushedEnemies = 0;
 	};
 public:
 	AppleManager(
 		const std::shared_ptr<IAnimationAssetManager>& assetManager, 
 		const std::shared_ptr<IConfigFile>& configFile, 
 		const std::shared_ptr<TiledWorld>& tiledWorld,
-		Event<LevelLoadData>& onNewLevelStarted);
+		Event<LevelLoadData>& onNewLevelStarted,
+		EnemyManager* enemyManager);
 	void Update(float deltaT);
 	void Draw(SDL_Surface* windowSurface, float scale) const;
 	void SetCharacter(Character* character);
@@ -84,4 +91,5 @@ private:
 	float AppleFallSpeed;
 	float AppleWobbleTime;
 	float AppleSplitTime;
+	EnemyManager* CachedEnemyManager;
 };
