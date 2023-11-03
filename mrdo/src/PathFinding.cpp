@@ -7,6 +7,7 @@
 #include "VectorTypes.h"
 #include <list>
 #include "TiledWorld.h"
+#include "ConfigFile.h"
 
 namespace PathFinding
 {
@@ -23,6 +24,8 @@ namespace PathFinding
 	static u32 NodesMapWidth = 0;
 
 	static u32 NodesMapHeight = 0;
+
+	static PtrMinHeap<AStarNode, float>* PriorityQueue = nullptr;
 
 	void ResetNodeMapState()
 	{
@@ -53,6 +56,20 @@ namespace PathFinding
 		NodesMapWidth = newWidth;
 		NodesMapHeight = newHeight;
 		ResetNodeMapState();
+	}
+
+	void Initialise(int priorityQueueSize)
+	{
+		assert(PriorityQueue == nullptr);
+		PriorityQueue = new PtrMinHeap<AStarNode, float>(priorityQueueSize,
+			[](const AStarNode& nodeA, const AStarNode& nodeB) { return nodeA.GlobalScore < nodeB.GlobalScore; });
+
+	}
+
+	void DeInit()
+	{
+		assert(PriorityQueue);
+		delete PriorityQueue;
 	}
 
 	typedef std::function<void(AStarNode*)> NodeNeighbourIterator;
@@ -97,6 +114,7 @@ namespace PathFinding
 	void DoAstar(const uvec2& start, const uvec2& finish, uvec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld)
 	{
 		// based on https://github.com/OneLoneCoder/Javidx9/blob/master/ConsoleGameEngine/SmallerProjects/OneLoneCoder_PathFinding_AStar.cpp
+		// changed data structure used from list to min heap
 		auto distance = [](const uvec2& a, const uvec2& b) // For convenience
 		{
 			return sqrtf((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
@@ -112,34 +130,39 @@ namespace PathFinding
 		startNode->LocalScore = 0;
 		startNode->GlobalScore = heuristic(startNode, finishNode);
 
-		// todo: implement a custom fixed size list and sort
-		std::list<AStarNode*> listNotTestedNodes;
-		listNotTestedNodes.push_back(startNode);
+		assert(PriorityQueue->IsEmpty());
+		PriorityQueue->Insert(startNode);
 
 		AStarNode* currentNode = nullptr;
 
-		while (!listNotTestedNodes.empty() && currentNode != finishNode)
+		while (!PriorityQueue->IsEmpty() && currentNode != finishNode)
 		{
-			listNotTestedNodes.sort([](const AStarNode* lhs, const AStarNode* rhs) { return lhs->GlobalScore < rhs->GlobalScore; });
 			// Front of listNotTestedNodes is potentially the lowest distance node. Our
 			// list may also contain nodes that have been visited, so ditch these...
-			while (!listNotTestedNodes.empty() && listNotTestedNodes.front()->bVisited)
-				listNotTestedNodes.pop_front();
+			while (!PriorityQueue->IsEmpty() && PriorityQueue->Front()->bVisited)
+			{
+				PriorityQueue->ExtractMin();
+			}
 
 			// ...or abort because there are no valid nodes left to test
-			if (listNotTestedNodes.empty())
+			if (PriorityQueue->IsEmpty())
+			{
 				break;
+			}
+				
 
-			currentNode = listNotTestedNodes.front();
+			currentNode = PriorityQueue->Front();
 			currentNode->bVisited = true; // We only explore a node once
 
 
 			// Check each of this node's neighbours...
-			auto iterator = [finishNode, &heuristic, &currentNode, &listNotTestedNodes](AStarNode* nodeNeighbour)
+			auto iterator = [finishNode, &heuristic, &currentNode](AStarNode* nodeNeighbour)
 			{
 				
 				if (!nodeNeighbour->bVisited)
-					listNotTestedNodes.push_back(nodeNeighbour);
+				{
+					PriorityQueue->Insert(nodeNeighbour);
+				}
 
 				// Calculate the neighbours potential lowest parent distance
 				float fPossiblyLowerGoal = currentNode->LocalScore + heuristic(currentNode, nodeNeighbour);
@@ -163,7 +186,7 @@ namespace PathFinding
 
 			IterateNodeNeighbours(currentNode, tiledWorld, iterator);
 		}
-		
+		PriorityQueue->Clear();
 		// write path to output buffer, by following the chain of parent pointers
 		outPathBufferSize = 0;
 		currentNode = finishNode;

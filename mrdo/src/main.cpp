@@ -18,6 +18,7 @@
 #include "MapMakerCreateNewLevelDialogue.h"
 #include "MapMakerLevelSelectedDialogue.h"
 #include "MapMakerLayer.h"
+#include "PathFinding.h"
 
 
 int main(int argc, char* args[])
@@ -78,6 +79,8 @@ int main(int argc, char* args[])
 
             GameFramework::PushLayers("FrontEnd", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0);
 
+            PathFinding::Initialise(configFile->GetUIntValue("PathFindingPriorityQueueSize"));
+
             bool quit = false; 
             u32 simulationTime = 0;
             u32 realTime = 0;
@@ -97,6 +100,8 @@ int main(int argc, char* args[])
                 GameFramework::EndFrame();
                 SDL_UpdateWindowSurface(window);
             }
+
+            PathFinding::DeInit();
         }
     }
     //Destroy window
@@ -104,6 +109,7 @@ int main(int argc, char* args[])
 
     //Quit SDL subsystems
     SDL_Quit();
+
 
     return 0;
 }

@@ -27,6 +27,7 @@
 	"SpawnEnemyFlashInterval" : 200.0,
 	"EnemyPathBufferSize" : 50,
 	"FlashesBeforeSpawn" : 5,
+	"PathFindingPriorityQueueSize" : 100,
 	"BlankLevel" : 
 	{ 
 		"Name" : "BlankLevelTemplate",

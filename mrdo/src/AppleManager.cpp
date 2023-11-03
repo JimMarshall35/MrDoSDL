@@ -207,7 +207,7 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 				if (CollisionHelpers::AABBCollision(
 					enemy.Pos + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
 					apple.Position + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
-					{ dims - A_SMALL_NUMBER ,dims - A_SMALL_NUMBER },
+					{ dims - A_SMALL_NUMBER, dims - A_SMALL_NUMBER },
 					{ dims - A_SMALL_NUMBER, dims - A_SMALL_NUMBER }))
 				{
 					apple.CrushedEnemies[apple.numCrushedEnemies++] = &enemy;
