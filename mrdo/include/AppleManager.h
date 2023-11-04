@@ -42,8 +42,13 @@ public:
 		u32 OnAnimationFrame;
 		float DistanceFallen = 0.0f;
 		Character* CrushedCharacter = nullptr;
-		std::unique_ptr<Enemy*[]> CrushedEnemies;
-		u32 numCrushedEnemies = 0;
+		std::unique_ptr<Enemy*[]> EnemyBuffer;
+		u32 EnemyBufferCurrentSize = 0;
+	};
+	struct SettledAppleEnemyCollision
+	{
+		CollidingCellRelationship CellRelationship;
+		Enemy* CollidedEnemy;
 	};
 public:
 	AppleManager(
@@ -59,7 +64,7 @@ public:
 private:
 	void UpdateSingleApple(float deltaT, Apple& apple);
 	void RecursivelyPushApples(Apple& applePushed);
-	void ClampPushedApples();
+	void ClampPushedApples(bool pushedByEnemy = false);
 private:
 	std::shared_ptr<IConfigFile> CachedConfig;
 	const std::shared_ptr<IAnimationAssetManager> AnimationAssetManager;
@@ -71,6 +76,9 @@ private:
 	std::vector<SDL_Rect> LeftHalfSplitAnimation;
 	std::vector<SDL_Rect> RightHalfSplitAnimation;
 	Character* CharacterRef;
+	std::unique_ptr<SettledAppleEnemyCollision[]> EnemyCollisionRelationships;
+	size_t NumCollidingEnemies = 0;
+	size_t MaxMonstersThisLevel = 0;
 private:
 	void OnNewLevelStarted(LevelLoadData levelNumber);
 	bool IsCellBelowEmpty(Apple* apple) const;
@@ -78,7 +86,10 @@ private:
 	bool IsMrDoBelow(Apple* apple) const;
 	bool IsAppleBelow(Apple* apple) const;
 	vec2 GetCellBelowPos(Apple* apple) const;
+	CollidingCellRelationship GetCollisionRelationshipBase(Apple* apple, const vec2& pos, const vec2& dims) const;
 	CollidingCellRelationship GetCollisionRelationshipWithMrDo(Apple* apple) const;
+	void PopulateEnemyCollisionRelationships(Apple* apple);
+	bool ResolveEnemyCollisions(Apple* apple);
 private:
 	LISTENER(AppleManager, OnNewLevelStarted, LevelLoadData);
 private:

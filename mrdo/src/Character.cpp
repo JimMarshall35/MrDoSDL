@@ -16,8 +16,9 @@ Character::Character(
 		const std::shared_ptr<IConfigFile>& configFile, 
 		const std::shared_ptr<TiledWorld>& tiledWorld,
 		Event<LevelLoadData>& onLevelLoaded,
-		Event<LevelLoadData>& onResetAfterDeath)
-	:MyCrystalBall(this, assetManager.get(), configFile.get(), tiledWorld.get()),
+		Event<LevelLoadData>& onResetAfterDeath,
+		EnemyManager* enemyManager)
+	:MyCrystalBall(this, assetManager.get(), configFile.get(), tiledWorld.get(), enemyManager),
 	AnimationAssetManager(assetManager),
 	ConfigFile(configFile),
 	CachedTiledWorld(tiledWorld),

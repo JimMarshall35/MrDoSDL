@@ -140,6 +140,58 @@ AppleManager::Apple* AppleManager::FindActiveAppleByPredicate(std::function<bool
 	return nullptr;
 }
 
+void AppleManager::PopulateEnemyCollisionRelationships(Apple* apple)
+{
+	NumCollidingEnemies = 0;
+	CachedEnemyManager->IterateActiveEnemies([this, apple](Enemy& enemy) {
+		if (enemy.bActive && !enemy.bCrushed)
+		{
+			CollidingCellRelationship result = GetCollisionRelationshipBase(apple, enemy.Pos, CachedSpriteDims);
+
+			
+			switch (result)
+			{
+			case CollidingCellRelationship::Undefined:
+			case CollidingCellRelationship::NotColliding:
+				break;
+			default:
+				EnemyCollisionRelationships[NumCollidingEnemies++] = { result, &enemy };
+				break;
+			}
+		}
+	});
+}
+
+bool AppleManager::ResolveEnemyCollisions(Apple* apple)
+{
+	bool pushed = false;
+	for (int i = 0; i < NumCollidingEnemies; i++)
+	{
+		SettledAppleEnemyCollision& col = EnemyCollisionRelationships[i];
+		switch (col.CellRelationship)
+		{
+		case CollidingCellRelationship::Left:
+			// enemy is approaching from the left therefore pushing the apple - resolve collision
+			apple->Position.x = col.CollidedEnemy->Pos.x + CachedSpriteDims.x;
+			pushed = true;
+			break;
+		case CollidingCellRelationship::Right:
+			// enemy is approaching from the right therefore pushing the apple - resolve collision
+			apple->Position.x = col.CollidedEnemy->Pos.x - CachedSpriteDims.x;
+			pushed = true;
+			break;
+		case CollidingCellRelationship::Above:
+			col.CollidedEnemy->Pos.y = apple->Position.y - CachedSpriteDims.y;
+			break;
+		case CollidingCellRelationship::Below:
+			//col.CollidedEnemy->Pos.y = apple->Position.y + CachedSpriteDims.y;
+			break;
+		}
+	}
+	return pushed;
+}
+
+
 void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 {
 	switch (apple.State)
@@ -166,9 +218,14 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 				{
 					apple.State = AppleState::Wobbling;
 				}
-				return;
+				break;
 			}
-			if (pushing)
+			NumCollidingEnemies = 0;
+			PopulateEnemyCollisionRelationships(&apple);
+			bool pushedByEnemy = ResolveEnemyCollisions(&apple);
+			
+
+			if (pushing || pushedByEnemy)
 			{
 				PushedAppleStackSize = 0;
 				PushedAppleStack[PushedAppleStackSize++] = &apple;
@@ -210,7 +267,7 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 					{ dims - A_SMALL_NUMBER, dims - A_SMALL_NUMBER },
 					{ dims - A_SMALL_NUMBER, dims - A_SMALL_NUMBER }))
 				{
-					apple.CrushedEnemies[apple.numCrushedEnemies++] = &enemy;
+					apple.EnemyBuffer[apple.EnemyBufferCurrentSize++] = &enemy;
 					CachedEnemyManager->CrushEnemy(&enemy);
 				}
 			});
@@ -224,9 +281,9 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 				vec2 position = apple.CrushedCharacter->GetPosition();
 				apple.CrushedCharacter->SetPosition({ position.x, apple.Position.y + CachedSpriteDims.y / 2.0f });
 			}
-			for (int i = 0; i < apple.numCrushedEnemies; i++)
+			for (int i = 0; i < apple.EnemyBufferCurrentSize; i++)
 			{
-				Enemy* enemy = apple.CrushedEnemies[i];
+				Enemy* enemy = apple.EnemyBuffer[i];
 				enemy->Pos.y = apple.Position.y + CachedSpriteDims.y / 2.0f;
 			}
 
@@ -262,9 +319,9 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 					apple.CrushedCharacter->Kill(CharacterDeathReason::CrushedByApple);
 					apple.CrushedCharacter = nullptr;
 				}
-				for (int i = 0; i < apple.numCrushedEnemies; i++)
+				for (int i = 0; i < apple.EnemyBufferCurrentSize; i++)
 				{
-					CachedEnemyManager->KillEnemy(apple.CrushedEnemies[i]);
+					CachedEnemyManager->KillEnemy(apple.EnemyBuffer[i]);
 				}
 			}
 		}
@@ -335,19 +392,45 @@ void AppleManager::RecursivelyPushApples(Apple& apple)
 				PushedAppleStack[PushedAppleStackSize++] = &otherApple;
 				RecursivelyPushApples(otherApple);
 			}
+			//else
+			{
+				CachedEnemyManager->IterateActiveEnemies([this, &apple](Enemy& enemy) {
+					if (enemy.bCrushed)
+					{
+						return;
+					}
+					float dims = CachedSpriteDims.x;
+					if (CollisionHelpers::AABBCollision(
+						enemy.Pos + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
+						apple.Position + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
+						{ dims - A_SMALL_NUMBER, dims - A_SMALL_NUMBER },
+						{ dims - A_SMALL_NUMBER, dims - A_SMALL_NUMBER }))
+					{
+						if (apple.Position.x < enemy.Pos.x)
+						{
+							enemy.Pos.x = apple.Position.x + CachedSpriteDims.x + A_SMALL_NUMBER;
+						}
+						else
+						{
+							enemy.Pos.x = apple.Position.x - CachedSpriteDims.x - A_SMALL_NUMBER;
+						}
+					}
+				});
+			}
 		}
 	}
 }
 
-void AppleManager::ClampPushedApples()
+void AppleManager::ClampPushedApples(bool pushedByEnemy)
 {
 	assert(PushedAppleStackSize);
 	vec2 characterPos = CharacterRef->GetPosition();
 	Apple* endApple = PushedAppleStack[PushedAppleStackSize - 1];
 	float tileMaxX = (CachedLevelSize.x - 1) * CachedBackgroundTileSize;
 
+	CollidingCellRelationship relationship = GetCollisionRelationshipWithMrDo(endApple);
 	// does the end epple in the stack need to be clamped
-	if (endApple->Position.x > tileMaxX || endApple->Position.x < 0)
+	if (endApple->Position.x > tileMaxX || endApple->Position.x < 0 || relationship != CollidingCellRelationship::NotColliding)
 	{
 		// clamp the last apple being pushed to the edges of the screen
 		if (endApple->Position.x > tileMaxX)
@@ -359,11 +442,29 @@ void AppleManager::ClampPushedApples()
 			endApple->Position.x = 0;
 		}
 
+		
+		switch (relationship)
+		{
+		case CollidingCellRelationship::NotColliding:
+			break;
+		default:
+			if (characterPos.x < endApple->Position.x)
+			{
+				endApple->Position.x = characterPos.x + CachedSpriteDims.x;
+			}
+			else
+			{
+				endApple->Position.x = characterPos.x - CachedSpriteDims.x;
+			}
+			break;
+		}
+
 		// propagate collision resolution to all the other apples
 		for (int i = PushedAppleStackSize - 2; i >= 0; i--)
 		{
 			Apple* apple = PushedAppleStack[i];
 			Apple* previousApple = PushedAppleStack[i + 1];
+			
 			if (apple->Position.x < previousApple->Position.x)
 			{
 				apple->Position.x = previousApple->Position.x - CachedSpriteDims.x;
@@ -371,7 +472,7 @@ void AppleManager::ClampPushedApples()
 			else
 			{
 				apple->Position.x = previousApple->Position.x + CachedSpriteDims.x;
-			}
+			}				
 		}
 
 		// propagate collision resolution to mr do
@@ -384,6 +485,32 @@ void AppleManager::ClampPushedApples()
 		{
 			CharacterRef->SetPosition({ firstApple->Position.x + CachedSpriteDims.x, characterPos.y });
 		}
+
+		for (int i = 0; i < NumCollidingEnemies; i++)
+		{
+			const SettledAppleEnemyCollision& collision = EnemyCollisionRelationships[i];
+
+			if (collision.CollidedEnemy->Pos.x < firstApple->Position.x)
+			{
+				collision.CollidedEnemy->Pos.x = firstApple->Position.x - CachedSpriteDims.x;
+				u8 cell = CachedTiledWorld->GetCellAtIndexValue(ivec2{ lroundf(collision.CollidedEnemy->Pos.x / (float)CachedBackgroundTileSize), lroundf((collision.CollidedEnemy->Pos.y + A_SMALL_NUMBER) / (float)CachedBackgroundTileSize) });
+				u8 currentCell = CachedTiledWorld->GetCellAtIndexValue({ (int)collision.CollidedEnemy->CurrentCell.x, (int)collision.CollidedEnemy->CurrentCell.y });;
+				if (cell & (1 << (int)TileWallDirectionBit::Right) || currentCell & (1 << (int)TileWallDirectionBit::Left))
+				{
+					collision.CollidedEnemy->Pos.x = lroundf(collision.CollidedEnemy->Pos.x / (float)CachedBackgroundTileSize) * (float)CachedBackgroundTileSize;
+				}
+			}
+			else
+			{
+				collision.CollidedEnemy->Pos.x = firstApple->Position.x + CachedSpriteDims.x;
+				u8 cell = CachedTiledWorld->GetCellAtIndexValue(ivec2{ lroundf(collision.CollidedEnemy->Pos.x / (float)CachedBackgroundTileSize), lroundf((collision.CollidedEnemy->Pos.y + A_SMALL_NUMBER) / (float)CachedBackgroundTileSize) });
+				u8 currentCell = CachedTiledWorld->GetCellAtIndexValue({ (int)collision.CollidedEnemy->CurrentCell.x, (int)collision.CollidedEnemy->CurrentCell.y });;
+				if (cell & (1 << (int)TileWallDirectionBit::Left) || currentCell & (1 << (int)TileWallDirectionBit::Right))
+				{
+					collision.CollidedEnemy->Pos.x = lroundf(collision.CollidedEnemy->Pos.x / (float)CachedBackgroundTileSize) * (float)CachedBackgroundTileSize;
+				}
+			}
+		}
 	}
 }
 
@@ -395,12 +522,22 @@ void AppleManager::OnNewLevelStarted(LevelLoadData levelLoadData)
 	assert(ThisLevelNumApplesAtStart <= ApplePoolSize);
 
 	// get max number of monsters
-	int maxMonstersThisLevel = 0;
+	MaxMonstersThisLevel = 0;
 	for (const MonsterSpawnerData& spawnerData : startedLevel.MonsterSpawners)
 	{
-		maxMonstersThisLevel += spawnerData.NumMonsters;
+		MaxMonstersThisLevel += spawnerData.NumMonsters;
 	}
 
+	if (!EnemyCollisionRelationships.get())
+	{
+		EnemyCollisionRelationships = std::make_unique<SettledAppleEnemyCollision[]>(MaxMonstersThisLevel);
+	}
+	else
+	{
+		EnemyCollisionRelationships.reset();
+		EnemyCollisionRelationships = std::make_unique<SettledAppleEnemyCollision[]>(MaxMonstersThisLevel);
+	}
+	
 	for (int i = 0; i < ThisLevelNumApplesAtStart; i++)
 	{
 		ApplePool[i].State = AppleState::Settled;
@@ -409,12 +546,12 @@ void AppleManager::OnNewLevelStarted(LevelLoadData levelLoadData)
 		ApplePool[i].OnAnimationFrame = 0;
 		ApplePool[i].DistanceFallen = 0.0f;
 		ApplePool[i].CrushedCharacter = nullptr;
-		if (ApplePool[i].CrushedEnemies.get())
+		if (ApplePool[i].EnemyBuffer.get())
 		{
-			ApplePool[i].CrushedEnemies.reset();
+			ApplePool[i].EnemyBuffer.reset();
 		}
-		ApplePool[i].CrushedEnemies = std::make_unique<Enemy* []>(maxMonstersThisLevel);
-		ApplePool[i].numCrushedEnemies = 0;
+		ApplePool[i].EnemyBuffer = std::make_unique<Enemy*[]>(MaxMonstersThisLevel);
+		ApplePool[i].EnemyBufferCurrentSize = 0;
 	}
 	CachedLevelSize.x = startedLevel.NumCols;
 	CachedLevelSize.y = startedLevel.NumRows;
@@ -488,32 +625,32 @@ vec2 AppleManager::GetCellBelowPos(Apple* apple) const
 	return rVal;
 }
 
-CollidingCellRelationship AppleManager::GetCollisionRelationshipWithMrDo(Apple* apple) const
+CollidingCellRelationship AppleManager::GetCollisionRelationshipBase(Apple* apple, const vec2& pos, const vec2& dims) const
 {
 	vec2 characterPos = CharacterRef->GetPosition();
 	if (CollisionHelpers::AABBCollision(
-		apple->Position + vec2{ 0, A_SMALL_NUMBER / 2.0f },
-		characterPos,
-		CachedSpriteDims - vec2{ 0, A_SMALL_NUMBER }, // take a small number from either side of our dims so we don't collide with apples to the left and right of us
-		CachedSpriteDims))
+		apple->Position + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
+		pos,
+		CachedSpriteDims - vec2{ A_SMALL_NUMBER, A_SMALL_NUMBER }, // take a small number from either side of our dims so we don't collide with apples to the left and right of us
+		dims))
 	{
 
-		if ((apple->Position.x > characterPos.x) && (round(apple->Position.y) == round(characterPos.y)))
+		if ((apple->Position.x > pos.x) && (round(apple->Position.y) == round(pos.y)))
 		{
 			// mr do is approaching from the left
 			return CollidingCellRelationship::Left;
 		}
-		else if ((apple->Position.x < characterPos.x) && (round(apple->Position.y) == round(characterPos.y)))
+		else if ((apple->Position.x < pos.x) && (round(apple->Position.y) == round(pos.y)))
 		{
 			// mr do is approaching from the right
 			return CollidingCellRelationship::Right;
 		}
-		if ((apple->Position.y > characterPos.y) && (round(apple->Position.x) == round(characterPos.x)))
+		if ((apple->Position.y > pos.y) && (round(apple->Position.x) == round(pos.x)))
 		{
 			// mr do is approaching from the top 
 			return CollidingCellRelationship::Above;
 		}
-		else if ((apple->Position.y < characterPos.y) && (round(apple->Position.x) == round(characterPos.x)))
+		else if ((apple->Position.y < pos.y) && (round(apple->Position.x) == round(pos.x)))
 		{
 			// mr do is approaching from below
 			return CollidingCellRelationship::Below;
@@ -524,4 +661,10 @@ CollidingCellRelationship AppleManager::GetCollisionRelationshipWithMrDo(Apple* 
 	{
 		return CollidingCellRelationship::NotColliding;
 	}
+
+}
+
+CollidingCellRelationship AppleManager::GetCollisionRelationshipWithMrDo(Apple* apple) const
+{
+	return GetCollisionRelationshipBase(apple, CharacterRef->GetPosition(), CachedSpriteDims);
 }

@@ -16,6 +16,7 @@ class IAnimationAssetManager;
 class TiledWorld;
 class AppleManager;
 class IConfigFile;
+class EnemyManager;
 
 template<typename T>
 class Event;
@@ -48,7 +49,8 @@ public:
 		const std::shared_ptr<IConfigFile>& configFile, 
 		const std::shared_ptr<TiledWorld>& tiledWorld,
 		Event<LevelLoadData>& onLevelLoaded,
-		Event<LevelLoadData>& onResetAfterDeath);
+		Event<LevelLoadData>& onResetAfterDeath,
+		EnemyManager* enemyManger);
 	void Update(float deltaTime, GameInputState inputState);
 	void UpdatePlayingDeathAnimation(float deltaTime);
 	void Draw(SDL_Surface* windowSurface, float scale) const;

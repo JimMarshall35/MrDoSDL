@@ -7,11 +7,12 @@ class Character;
 class IAnimationAssetManager;
 class IConfigFile;
 class TiledWorld;
+class EnemyManager;
 
 class CrystalBall
 {
 public:
-	CrystalBall(Character* owner, IAnimationAssetManager* anim, IConfigFile* configFile, TiledWorld* tiledWorld);
+	CrystalBall(Character* owner, IAnimationAssetManager* anim, IConfigFile* configFile, TiledWorld* tiledWorld, EnemyManager* enemyManager);
 	void Draw(SDL_Surface* windowSurface, float scale) const;
 	void Release();
 	void Update(float deltaT);
@@ -33,4 +34,5 @@ private:
 	TiledWorld* CachedTiledWorld;
 	u32 CrystalBallRadius;
 	u32 NumUpdatesPerFrame;
+	EnemyManager* CachedEnemyManager;
 };

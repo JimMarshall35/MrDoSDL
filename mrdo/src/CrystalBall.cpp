@@ -9,15 +9,17 @@
 #include <cassert>
 #include <math.h>
 #include <algorithm>
+#include "EnemyManager.h"
 
-CrystalBall::CrystalBall(Character* owner, IAnimationAssetManager* anim, IConfigFile* configFile, TiledWorld* tiledWorld)
+CrystalBall::CrystalBall(Character* owner, IAnimationAssetManager* anim, IConfigFile* configFile, TiledWorld* tiledWorld, EnemyManager* enemyManager)
 	:Owner(owner),
 	Position({0,0}),
 	AnimationAssetManager(anim),
 	ConfigFile(configFile),
 	bIsReleased(false),
 	CachedTileSize(ConfigFile->GetBackgroundConfigData().TileSize),
-	CachedTiledWorld(tiledWorld)
+	CachedTiledWorld(tiledWorld),
+	CachedEnemyManager(enemyManager)
 {
 	AnimationAssetManager->MakeSingleSpriteRectFrame("CrystalBall_BounceUp", BounceUpSprite);
 	AnimationAssetManager->MakeSingleSpriteRectFrame("CrystalBall_BounceDown", BounceDownSprite);
