@@ -537,5 +537,14 @@ void CrystalBall::UpdateInternal(float deltaT)
 		{
 			Owner->CatchBall();
 		}
+		CachedEnemyManager->IterateActiveEnemies([&ballCenter, this](Enemy& enemy) {
+			if (CollisionHelpers::CircleRect(ballCenter.x, ballCenter.y, (float)CrystalBallRadius, enemy.Pos.x, enemy.Pos.y, CachedTileSize, CachedTileSize))
+			{
+				CachedEnemyManager->KillEnemy(&enemy);
+				// should go into cooldown here 
+				Owner->CatchBall(true);
+			}
+
+		});
 	}
 }

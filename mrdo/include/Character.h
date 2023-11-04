@@ -58,7 +58,7 @@ public:
 	void SetPosition(const vec2& pos) { CurrentLocation = pos; }
 
 	MovementDirection GetCurrentMovementDirection() const { return CurrentMovementDirection; }
-	void CatchBall();
+	void CatchBall(bool forceCatch = false);
 	const ivec2& GetTile() const { return CurrentTile; }
 	void SetAppleManager(AppleManager* appleManager);     // can't be passed into ctor with other dependencies as both this and the apple manager are members of GameLayer and instantiated at same time so would lead to chicken and egg syndrom
 	void Kill(CharacterDeathReason deathReason);

@@ -208,11 +208,11 @@ void Character::Update(float deltaTime, GameInputState inputState)
 	Animator.Update(deltaTime / 1000.0f);
 }
 
-void Character::CatchBall()
+void Character::CatchBall(bool forceCatch)
 {
 	assert(CrystalBallState == CrystalBallState::NoBall);
 	assert(MyCrystalBall.IsReleased());
-	if (bCanCatchBall)
+	if (bCanCatchBall || forceCatch)
 	{
 		CrystalBallState = CrystalBallState::HasBall;
 		MyCrystalBall.OnCaught();
