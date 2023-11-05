@@ -164,6 +164,9 @@ void AppleManager::PopulateEnemyCollisionRelationships(Apple* apple)
 
 bool AppleManager::ResolveEnemyCollisions(Apple* apple)
 {
+	CachedEnemyManager->IterateActiveEnemies([this](Enemy& enemy) {
+		CachedEnemyManager->SetEnemyPushingState(&enemy, false);
+	});
 	bool pushed = false;
 	for (int i = 0; i < NumCollidingEnemies; i++)
 	{
@@ -183,9 +186,12 @@ bool AppleManager::ResolveEnemyCollisions(Apple* apple)
 		case CollidingCellRelationship::Above:
 			col.CollidedEnemy->Pos.y = apple->Position.y - CachedSpriteDims.y;
 			break;
-		case CollidingCellRelationship::Below:
-			//col.CollidedEnemy->Pos.y = apple->Position.y + CachedSpriteDims.y;
+		default:
 			break;
+		}
+		if (pushed)
+		{
+			CachedEnemyManager->SetEnemyPushingState(col.CollidedEnemy, true);
 		}
 	}
 	return pushed;
@@ -292,10 +298,15 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 				if (apple.DistanceFallen <= CachedBackgroundTileSize + CachedBackgroundTileSize * 0.5f)
 				{
 					vec2 appleCenter = apple.Position + vec2{ CachedSpriteDims.x / 2.0f, CachedSpriteDims.y / 2.0f };
-					uvec2 appleCoords = { appleCenter.x / CachedBackgroundTileSize, appleCenter.y / CachedBackgroundTileSize };
+					ivec2 appleCoords = { appleCenter.x / CachedBackgroundTileSize, appleCenter.y / CachedBackgroundTileSize };
 					apple.Position = { appleCoords.x * CachedBackgroundTileSize, appleCoords.y * CachedBackgroundTileSize };
 					apple.DistanceFallen = 0.0f;
 					apple.State = AppleState::Settled;
+					for (int i = 0; i < apple.EnemyBufferCurrentSize; i++)
+					{
+						CachedEnemyManager->KillEnemy(apple.EnemyBuffer[i]);
+					}
+
 				}
 				else
 				{
@@ -344,6 +355,22 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 	case AppleState::Sliding:
 		// possible transition: falling
 		{
+			CachedEnemyManager->IterateActiveEnemies([this, &apple](Enemy& enemy) {
+				if (enemy.bCrushed)
+				{
+					return;
+				}
+				float dims = CachedSpriteDims.x;
+				if (CollisionHelpers::AABBCollision(
+					enemy.Pos + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
+					apple.Position + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
+					{ dims - A_SMALL_NUMBER, dims - A_SMALL_NUMBER },
+					{ dims - A_SMALL_NUMBER, dims - A_SMALL_NUMBER }))
+				{
+					apple.EnemyBuffer[apple.EnemyBufferCurrentSize++] = &enemy;
+					CachedEnemyManager->CrushEnemy(&enemy);
+				}
+			});
 			float movmentdir = apple.SlideDestination - apple.Position.x > 0 ? 1.0f : -1.0f;
 			if (movmentdir > 0)
 			{
@@ -620,7 +647,7 @@ bool AppleManager::IsAppleBelow(Apple* apple) const
 vec2 AppleManager::GetCellBelowPos(Apple* apple) const
 {
 	vec2 appleCenter = apple->Position + vec2{ CachedSpriteDims.x / 2.0f, CachedSpriteDims.y / 2.0f };
-	uvec2 appleCoords = { appleCenter.x / CachedBackgroundTileSize, appleCenter.y / CachedBackgroundTileSize };
+	ivec2 appleCoords = { appleCenter.x / CachedBackgroundTileSize, appleCenter.y / CachedBackgroundTileSize };
 	vec2 rVal = { appleCoords.x * CachedBackgroundTileSize, (appleCoords.y + 1)* CachedBackgroundTileSize };
 	return rVal;
 }

@@ -49,7 +49,7 @@ void TiledWorld::LoadLevel(const LevelLoadData* level)
 	
 }
 
-uvec2 TiledWorld::GetRequiredBaseWindowSize() const
+ivec2 TiledWorld::GetRequiredBaseWindowSize() const
 {
 	assert(bLevelLoaded);
 	const BackgroundTileConfigData& backgroundConfig = Config->GetBackgroundConfigData();

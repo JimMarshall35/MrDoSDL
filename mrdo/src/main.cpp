@@ -39,7 +39,7 @@ int main(int argc, char* args[])
     else
     {
         // just hard code this for now - all levels are this size
-        uvec2 windowSize = { 12 * 16, 15 * 16 }; //level->GetRequiredBaseWindowSize();
+        ivec2 windowSize = { 12 * 16, 15 * 16 }; //level->GetRequiredBaseWindowSize();
         float scaleFactor = 3.0f;
         const int SCREEN_WIDTH = windowSize.x * scaleFactor;
         const int SCREEN_HEIGHT = windowSize.y * scaleFactor;

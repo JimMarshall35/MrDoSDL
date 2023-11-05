@@ -1,48 +1,1258 @@
 {
-	"HUDTileRowsTop" : 1,
-	"HUDTileRowsBottom" : 1,
-	"CharacterAnimatorFPS" : 12.0,
-	"CharacterDeathAnimatorFPS" : 2.0,
-	"CharacterSpeed" : 0.06,
-	"EnemySpeed" : 0.02,
-	"CrystalBallSpeed" : 0.25,
-	"UpKey" : 82,
-	"DownKey" : 81,
-	"LeftKey" : 80,
-	"RightKey" : 79,
-	"BackKey" : 41,
-	"CrystalBallKey" : 224,
-	"MapMakerChangeToolKey" : 226,
-	"CrystalBallRadiusPixels" : 3,
-	"NumCrystalBallUpdates" : 3,
-	"PostThrowTimerLimit" : 500.0,
-	"ApplePoolSize" : 20,
-	"MonsterSpawnerPoolSize" : 10,
-	"MonsterPoolSize" : 30,
-	"AppleSlideSpeed" : 0.06,
-	"AppleFallSpeed" : 0.06,
-	"AppleWobbleTime" : 500.0,
-	"AppleSplitTime" : 500.0,
-	"SpawnEnemyInterval" : 3000.0,
-	"SpawnEnemyFlashInterval" : 200.0,
-	"EnemyPathBufferSize" : 50,
-	"FlashesBeforeSpawn" : 5,
-	"PathFindingPriorityQueueSize" : 100,
-	"BlankLevel" : 
-	{ 
-		"Name" : "BlankLevelTemplate",
-		"PlayerSpawnLocation" : { "x" : 5, "y" : 5},
-		"PlayerSpawnFacing" : 1,
-		"BackgroundTileset" : 0,
-		"NumCols" : 12,
-		"NumRows" : 15,
-		"TileData" : [31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31],
-		"Apples" : [],
-		"MonsterSpawners" : []
-	},
-	"Levels" :
-	[
-		{
+    "Animations": {
+        "AnimationFrames": {
+            "Apple_Split_LeftHalf": [
+                {
+                    "x": 12,
+                    "y": 4
+                },
+                {
+                    "x": 14,
+                    "y": 4
+                },
+                {
+                    "x": 16,
+                    "y": 4
+                }
+            ],
+            "Apple_Split_RightHalf": [
+                {
+                    "x": 13,
+                    "y": 4
+                },
+                {
+                    "x": 15,
+                    "y": 4
+                },
+                {
+                    "x": 17,
+                    "y": 4
+                }
+            ],
+            "Apple_Wobble": [
+                {
+                    "x": 12,
+                    "y": 3
+                },
+                {
+                    "x": 13,
+                    "y": 3
+                },
+                {
+                    "x": 14,
+                    "y": 3
+                }
+            ],
+            "MrDo_Die": [
+                {
+                    "x": 1,
+                    "y": 7
+                },
+                {
+                    "x": 2,
+                    "y": 7
+                },
+                {
+                    "x": 3,
+                    "y": 7
+                },
+                {
+                    "x": 4,
+                    "y": 7
+                }
+            ],
+            "MrDo_RunDown_Ball": [
+                {
+                    "x": 3,
+                    "y": 1
+                },
+                {
+                    "x": 4,
+                    "y": 1
+                },
+                {
+                    "x": 5,
+                    "y": 1
+                }
+            ],
+            "MrDo_RunDown_Ball_Digging": [
+                {
+                    "x": 3,
+                    "y": 3
+                },
+                {
+                    "x": 4,
+                    "y": 3
+                },
+                {
+                    "x": 5,
+                    "y": 3
+                }
+            ],
+            "MrDo_RunDown_Ball_Pushing": [
+                {
+                    "x": 3,
+                    "y": 5
+                },
+                {
+                    "x": 4,
+                    "y": 5
+                },
+                {
+                    "x": 5,
+                    "y": 5
+                }
+            ],
+            "MrDo_RunDown_Ball_Throw": [
+                {
+                    "x": 3,
+                    "y": 6
+                },
+                {
+                    "x": 4,
+                    "y": 6
+                }
+            ],
+            "MrDo_RunDown_NoBall": [
+                {
+                    "x": 3,
+                    "y": 0
+                },
+                {
+                    "x": 4,
+                    "y": 0
+                },
+                {
+                    "x": 5,
+                    "y": 0
+                }
+            ],
+            "MrDo_RunDown_NoBall_Digging": [
+                {
+                    "x": 3,
+                    "y": 2
+                },
+                {
+                    "x": 4,
+                    "y": 2
+                },
+                {
+                    "x": 5,
+                    "y": 2
+                }
+            ],
+            "MrDo_RunDown_NoBall_Pushing": [
+                {
+                    "x": 3,
+                    "y": 4
+                },
+                {
+                    "x": 4,
+                    "y": 4
+                },
+                {
+                    "x": 5,
+                    "y": 4
+                }
+            ],
+            "MrDo_RunLeft_Ball": [
+                {
+                    "x": 6,
+                    "y": 1
+                },
+                {
+                    "x": 7,
+                    "y": 1
+                },
+                {
+                    "x": 8,
+                    "y": 1
+                }
+            ],
+            "MrDo_RunLeft_Ball_Digging": [
+                {
+                    "x": 6,
+                    "y": 3
+                },
+                {
+                    "x": 7,
+                    "y": 3
+                },
+                {
+                    "x": 8,
+                    "y": 3
+                }
+            ],
+            "MrDo_RunLeft_Ball_Pushing": [
+                {
+                    "x": 6,
+                    "y": 5
+                },
+                {
+                    "x": 7,
+                    "y": 5
+                },
+                {
+                    "x": 8,
+                    "y": 5
+                }
+            ],
+            "MrDo_RunLeft_Ball_Throw": [
+                {
+                    "x": 6,
+                    "y": 6
+                },
+                {
+                    "x": 7,
+                    "y": 6
+                }
+            ],
+            "MrDo_RunLeft_NoBall": [
+                {
+                    "x": 6,
+                    "y": 0
+                },
+                {
+                    "x": 7,
+                    "y": 0
+                },
+                {
+                    "x": 8,
+                    "y": 0
+                }
+            ],
+            "MrDo_RunLeft_NoBall_Digging": [
+                {
+                    "x": 6,
+                    "y": 2
+                },
+                {
+                    "x": 7,
+                    "y": 2
+                },
+                {
+                    "x": 8,
+                    "y": 2
+                }
+            ],
+            "MrDo_RunLeft_NoBall_Pushing": [
+                {
+                    "x": 6,
+                    "y": 4
+                },
+                {
+                    "x": 7,
+                    "y": 4
+                },
+                {
+                    "x": 8,
+                    "y": 4
+                }
+            ],
+            "MrDo_RunRight_Ball": [
+                {
+                    "x": 0,
+                    "y": 1
+                },
+                {
+                    "x": 1,
+                    "y": 1
+                },
+                {
+                    "x": 2,
+                    "y": 1
+                }
+            ],
+            "MrDo_RunRight_Ball_Digging": [
+                {
+                    "x": 0,
+                    "y": 3
+                },
+                {
+                    "x": 1,
+                    "y": 3
+                },
+                {
+                    "x": 2,
+                    "y": 3
+                }
+            ],
+            "MrDo_RunRight_Ball_Pushing": [
+                {
+                    "x": 0,
+                    "y": 5
+                },
+                {
+                    "x": 1,
+                    "y": 5
+                },
+                {
+                    "x": 2,
+                    "y": 5
+                }
+            ],
+            "MrDo_RunRight_Ball_Throw": [
+                {
+                    "x": 0,
+                    "y": 6
+                },
+                {
+                    "x": 1,
+                    "y": 6
+                }
+            ],
+            "MrDo_RunRight_NoBall": [
+                {
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "x": 1,
+                    "y": 0
+                },
+                {
+                    "x": 2,
+                    "y": 0
+                }
+            ],
+            "MrDo_RunRight_NoBall_Digging": [
+                {
+                    "x": 0,
+                    "y": 2
+                },
+                {
+                    "x": 1,
+                    "y": 2
+                },
+                {
+                    "x": 2,
+                    "y": 2
+                }
+            ],
+            "MrDo_RunRight_NoBall_Pushing": [
+                {
+                    "x": 0,
+                    "y": 4
+                },
+                {
+                    "x": 1,
+                    "y": 4
+                },
+                {
+                    "x": 2,
+                    "y": 4
+                }
+            ],
+            "MrDo_RunUp_Ball": [
+                {
+                    "x": 9,
+                    "y": 1
+                },
+                {
+                    "x": 10,
+                    "y": 1
+                },
+                {
+                    "x": 11,
+                    "y": 1
+                }
+            ],
+            "MrDo_RunUp_Ball_Digging": [
+                {
+                    "x": 9,
+                    "y": 3
+                },
+                {
+                    "x": 10,
+                    "y": 3
+                },
+                {
+                    "x": 11,
+                    "y": 3
+                }
+            ],
+            "MrDo_RunUp_Ball_Pushing": [
+                {
+                    "x": 9,
+                    "y": 5
+                },
+                {
+                    "x": 10,
+                    "y": 5
+                },
+                {
+                    "x": 11,
+                    "y": 5
+                }
+            ],
+            "MrDo_RunUp_Ball_Throw": [
+                {
+                    "x": 9,
+                    "y": 6
+                },
+                {
+                    "x": 10,
+                    "y": 6
+                }
+            ],
+            "MrDo_RunUp_NoBall": [
+                {
+                    "x": 9,
+                    "y": 0
+                },
+                {
+                    "x": 10,
+                    "y": 0
+                },
+                {
+                    "x": 11,
+                    "y": 0
+                }
+            ],
+            "MrDo_RunUp_NoBall_Digging": [
+                {
+                    "x": 9,
+                    "y": 2
+                },
+                {
+                    "x": 10,
+                    "y": 2
+                },
+                {
+                    "x": 11,
+                    "y": 2
+                }
+            ],
+            "MrDo_RunUp_NoBall_Pushing": [
+                {
+                    "x": 9,
+                    "y": 4
+                },
+                {
+                    "x": 10,
+                    "y": 4
+                },
+                {
+                    "x": 11,
+                    "y": 4
+                }
+            ],
+            "NormalEnemy_RunDown": [
+                {
+                    "x": 3,
+                    "y": 8
+                },
+                {
+                    "x": 4,
+                    "y": 8
+                },
+                {
+                    "x": 5,
+                    "y": 8
+                }
+            ],
+            "NormalEnemy_RunDown_Digging": [
+                {
+                    "x": 3,
+                    "y": 9
+                },
+                {
+                    "x": 4,
+                    "y": 9
+                },
+                {
+                    "x": 5,
+                    "y": 9
+                }
+            ],
+            "NormalEnemy_RunLeft": [
+                {
+                    "x": 6,
+                    "y": 8
+                },
+                {
+                    "x": 7,
+                    "y": 8
+                },
+                {
+                    "x": 8,
+                    "y": 8
+                }
+            ],
+            "NormalEnemy_RunLeft_Digging": [
+                {
+                    "x": 6,
+                    "y": 9
+                },
+                {
+                    "x": 7,
+                    "y": 9
+                },
+                {
+                    "x": 8,
+                    "y": 9
+                }
+            ],
+            "NormalEnemy_RunRight": [
+                {
+                    "x": 0,
+                    "y": 8
+                },
+                {
+                    "x": 1,
+                    "y": 8
+                },
+                {
+                    "x": 2,
+                    "y": 8
+                }
+            ],
+            "NormalEnemy_RunRight_Digging": [
+                {
+                    "x": 0,
+                    "y": 9
+                },
+                {
+                    "x": 1,
+                    "y": 9
+                },
+                {
+                    "x": 2,
+                    "y": 9
+                }
+            ],
+            "NormalEnemy_RunUp": [
+                {
+                    "x": 9,
+                    "y": 8
+                },
+                {
+                    "x": 10,
+                    "y": 8
+                },
+                {
+                    "x": 11,
+                    "y": 8
+                }
+            ],
+            "NormalEnemy_RunUp_Digging": [
+                {
+                    "x": 9,
+                    "y": 9
+                },
+                {
+                    "x": 10,
+                    "y": 9
+                },
+                {
+                    "x": 11,
+                    "y": 9
+                }
+            ],
+            "FlashingEnemy_Right": [
+            	{
+            		"x" : 0,
+            		"y" : 10
+            	},
+            	{
+            		"x" : 1,
+            		"y" : 10
+            	},
+            	{
+            		"x" : 2,
+            		"y" : 10
+            	}
+            ],
+            "FlashingEnemy_Down": [
+            	{
+            		"x" : 3,
+            		"y" : 10
+            	},	
+            	{
+            		"x" : 4,
+            		"y" : 10
+            	},
+            	{
+            		"x" : 5,
+            		"y" : 10
+            	}
+            ],
+            "FlashingEnemy_Left": [
+            	{
+            		"x" : 6,
+            		"y" : 10
+            	},	
+            	{
+            		"x" : 7,
+            		"y" : 10
+            	},
+            	{
+            		"x" : 8,
+            		"y" : 10
+            	}
+            ],
+            "FlashingEnemy_Up": [
+            	{
+            		"x" : 9,
+            		"y" : 10
+            	},	
+            	{
+            		"x" : 10,
+            		"y" : 10
+            	},
+            	{
+            		"x" : 11,
+            		"y" : 10
+            	}
+            ],
+            "RedDigger_Right" : [
+            	{
+            		"x" : 0,
+            		"y" : 11
+            	},
+            	{
+            		"x" : 1,
+            		"y" : 11
+            	},
+            	{
+            		"x" : 2,
+            		"y" : 11
+            	}
+
+            ],
+            "RedDigger_Down" : [
+            	{
+            		"x" : 3,
+            		"y" : 11
+            	},
+            	{
+            		"x" : 4,
+            		"y" : 11
+            	},
+            	{
+            		"x" : 5,
+            		"y" : 11
+            	}
+            ],
+            "RedDigger_Left" : [
+            	{
+            		"x" : 6,
+            		"y" : 11
+            	},
+            	{
+            		"x" : 7,
+            		"y" : 11
+            	},
+            	{
+            		"x" : 8,
+            		"y" : 11
+            	}
+            ],
+            "RedDigger_Up" : [
+            	{
+            		"x" : 9,
+            		"y" : 11
+            	},
+            	{
+            		"x" : 10,
+            		"y" : 11
+            	},
+            	{
+            		"x" : 11,
+            		"y" : 11
+            	}
+            ]
+        },
+        "AssetPath": "characters.bmp",
+        "ColourKey": {
+            "b": 0,
+            "g": 53,
+            "r": 5
+        },
+        "NumCols": 22,
+        "NumRows": 19,
+        "SingleSprites": {
+            "Apple": {
+                "x": 13,
+                "y": 3
+            },
+            "Cherry": {
+                "x": 12,
+                "y": 5
+            },
+            "CrushedMonster": {
+                "x": 12,
+                "y": 8
+            },
+            "CrystalBall_BounceDown": {
+                "x": 13,
+                "y": 0
+            },
+            "CrystalBall_BounceUp": {
+                "x": 12,
+                "y": 0
+            },
+            "MMPlayerStartIcon": {
+                "x": 0,
+                "y": 0
+            },
+            "MapMakerCursor": {
+                "x": 15,
+                "y": 0
+            },
+            "MonsterSpawner": {
+                "x": 13,
+                "y": 8
+            },
+            "MrDo_Crushed": {
+                "x": 0,
+                "y": 7
+            }
+        },
+        "TileSize": 16
+    },
+    "AppleFallSpeed": 0.06,
+    "ApplePoolSize": 20,
+    "AppleSlideSpeed": 0.06,
+    "AppleSplitTime": 500.0,
+    "AppleWobbleTime": 500.0,
+    "BackKey": 41,
+    "BackgroundTiles": {
+        "AssetPath": "Background.bmp",
+        "NumCols": 18,
+        "NumRows": 13,
+        "RowPattern": [
+            15,
+            11,
+            14,
+            13,
+            7,
+            10,
+            5,
+            9,
+            3,
+            6,
+            12,
+            1,
+            8,
+            4,
+            2,
+            31,
+            255,
+            0
+        ],
+        "TileSize": 16
+    },
+    "BlankLevel": {
+        "Apples": [],
+        "BackgroundTileset": 0,
+        "MonsterSpawners": [],
+        "Name": "BlankLevelTemplate",
+        "NumCols": 12,
+        "NumRows": 15,
+        "PlayerSpawnFacing": 1,
+        "PlayerSpawnLocation": {
+            "x": 5,
+            "y": 5
+        },
+        "TileData": [
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31,
+            31
+        ]
+    },
+    "CharacterAnimatorFPS": 12.0,
+    "CharacterDeathAnimatorFPS": 2.0,
+    "CharacterSpeed": 0.04,
+    "CrystalBallKey": 224,
+    "CrystalBallRadiusPixels": 3,
+    "CrystalBallSpeed": 0.2,
+    "DownKey": 81,
+    "EnemyPathBufferSize": 50,
+    "EnemySpeed": 0.04,
+    "CharacterDigSpeedMultiplier" : 0.7,
+    "CharacterPushSpeedMultiplier" : 0.5,
+    "EnemyDigSpeedMultiplier" : 0.7,
+    "EnemyPushSpeedMultiplier" : 0.5,
+    "EnemyWaitTimeBeforeBecomeDigger" : 2000.0,
+    "EnemyFlashAnimationFPS" : 10.0,
+    "EnemyFlashTime" : 1000.0,
+    "FlashesBeforeSpawn": 5,
+    "Font": {
+        "AllCaps": true,
+        "AllLowercase": false,
+        "AssetPath": "TextNewBackground.bmp",
+        "BlockDimensions": {
+            "x": 26,
+            "y": 3
+        },
+        "BlockMapping": [
+            [
+                0,
+                48
+            ],
+            [
+                1,
+                49
+            ],
+            [
+                2,
+                50
+            ],
+            [
+                3,
+                51
+            ],
+            [
+                4,
+                52
+            ],
+            [
+                5,
+                53
+            ],
+            [
+                6,
+                54
+            ],
+            [
+                7,
+                55
+            ],
+            [
+                8,
+                56
+            ],
+            [
+                9,
+                57
+            ],
+            [
+                26,
+                65
+            ],
+            [
+                27,
+                66
+            ],
+            [
+                28,
+                67
+            ],
+            [
+                29,
+                68
+            ],
+            [
+                30,
+                69
+            ],
+            [
+                31,
+                70
+            ],
+            [
+                32,
+                71
+            ],
+            [
+                33,
+                72
+            ],
+            [
+                34,
+                73
+            ],
+            [
+                35,
+                74
+            ],
+            [
+                36,
+                75
+            ],
+            [
+                37,
+                76
+            ],
+            [
+                38,
+                77
+            ],
+            [
+                39,
+                78
+            ],
+            [
+                40,
+                79
+            ],
+            [
+                41,
+                80
+            ],
+            [
+                42,
+                81
+            ],
+            [
+                43,
+                82
+            ],
+            [
+                44,
+                83
+            ],
+            [
+                45,
+                84
+            ],
+            [
+                46,
+                85
+            ],
+            [
+                47,
+                86
+            ],
+            [
+                48,
+                87
+            ],
+            [
+                49,
+                88
+            ],
+            [
+                50,
+                89
+            ],
+            [
+                51,
+                90
+            ],
+            [
+                52,
+                63
+            ],
+            [
+                53,
+                33
+            ],
+            [
+                54,
+                38
+            ],
+            [
+                55,
+                94
+            ],
+            [
+                56,
+                46
+            ],
+            [
+                57,
+                32
+            ],
+            [
+                58,
+                45
+            ],
+            [
+                60,
+                44
+            ],
+            [
+                61,
+                161
+            ],
+            [
+                62,
+                35
+            ],
+            [
+                63,
+                64
+            ],
+            [
+                64,
+                61
+            ],
+            [
+                65,
+                40
+            ],
+            [
+                66,
+                41
+            ]
+        ],
+        "Blocks": {
+            "Black_BlueBackground": {
+                "x": 0,
+                "y": 7
+            },
+            "Black_NoBackground": {
+                "x": 1,
+                "y": 7
+            },
+            "Blue_BlackBackground": {
+                "x": 0,
+                "y": 2
+            },
+            "Blue_NoBackground": {
+                "x": 1,
+                "y": 2
+            },
+            "Green_BlackBackground": {
+                "x": 0,
+                "y": 3
+            },
+            "Green_NoBackground": {
+                "x": 1,
+                "y": 3
+            },
+            "Grey_BlackBackground": {
+                "x": 0,
+                "y": 8
+            },
+            "Grey_NoBackground": {
+                "x": 1,
+                "y": 8
+            },
+            "Orange_BlackBackground": {
+                "x": 0,
+                "y": 6
+            },
+            "Orange_NoBackground": {
+                "x": 1,
+                "y": 6
+            },
+            "Red_BlackBackground": {
+                "x": 0,
+                "y": 1
+            },
+            "Red_NoBackground": {
+                "x": 1,
+                "y": 1
+            },
+            "White_BlackBackground": {
+                "x": 0,
+                "y": 0
+            },
+            "White_NoBackground": {
+                "x": 1,
+                "y": 0
+            },
+            "YellowGreen_BlackBackground": {
+                "x": 0,
+                "y": 4
+            },
+            "YellowGreen_NoBackground": {
+                "x": 1,
+                "y": 4
+            },
+            "Yellow_BlackBackground": {
+                "x": 0,
+                "y": 5
+            },
+            "Yellow_NoBackground": {
+                "x": 1,
+                "y": 5
+            }
+        },
+        "ColourKey": {
+            "b": 0,
+            "g": 53,
+            "r": 5
+        },
+        "NumCols": 52,
+        "NumRows": 27,
+        "TileSize": 8
+    },
+    "HUDTileRowsBottom": 1,
+    "HUDTileRowsTop": 1,
+    "LeftKey": 80,
+    "Levels": [
+        {
             "Apples": [
                 {
                     "x": 4,
@@ -268,325 +1478,479 @@
                 31
             ]
         }
-	],
-	"MapMakerLevels" :
-	[
-		
-	],
-	"BackgroundTiles" :
-	{
-		"TileSize" : 16,
-		"NumCols" : 18,
-		"NumRows" : 13,
-		"AssetPath" : "Background.bmp",
-		"RowPattern" : [15,11,14,13,7,10,5,9,3,6,12,1,8,4,2,31,255,0] 
-	},
-	"Animations" : 
-	{
-		"ColourKey" : {"r":5,"g":53,"b":0},
-		"TileSize" : 16,
-		"NumCols" : 22,
-		"NumRows" : 19,
-		"AssetPath" : "characters.bmp",
-		"AnimationFrames" : {
-			"MrDo_RunRight_NoBall" : [
-				{"x":0,"y":0},
-				{"x":1,"y":0},
-				{"x":2,"y":0}
-			],
-			"MrDo_RunRight_Ball" : [
-				{"x" : 0, "y" : 1},
-				{"x" : 1, "y" : 1},
-				{"x" : 2, "y" : 1}
-			],
-			"MrDo_RunRight_NoBall_Digging" : [
-				{"x" : 0, "y" : 2},
-				{"x" : 1, "y" : 2},
-				{"x" : 2, "y" : 2}
-			],
-			"MrDo_RunRight_Ball_Digging" : [
-				{"x" : 0, "y" : 3},
-				{"x" : 1, "y" : 3},
-				{"x" : 2, "y" : 3}
-			],
-			"MrDo_RunRight_NoBall_Pushing" : [
-				{"x" : 0, "y" : 4},
-				{"x" : 1, "y" : 4},
-				{"x" : 2, "y" : 4}
-			],
-			"MrDo_RunRight_Ball_Pushing" : [
-				{"x" : 0, "y" : 5},
-				{"x" : 1, "y" : 5},
-				{"x" : 2, "y" : 5}
-			],
-			"MrDo_RunRight_Ball_Throw" : [
-				{"x" : 0, "y" : 6},
-				{"x" : 1, "y" : 6}
-			],
-			"MrDo_RunDown_NoBall" : [
-				{"x" : 3, "y" : 0},
-				{"x" : 4, "y" : 0},
-				{"x" : 5, "y" : 0}
-			],
-			"MrDo_RunDown_Ball" : [
-				{"x" : 3, "y" : 1},
-				{"x" : 4, "y" : 1},
-				{"x" : 5, "y" : 1}
-			],
-			"MrDo_RunDown_NoBall_Digging" : [
-				{"x" : 3, "y" : 2},
-				{"x" : 4, "y" : 2},
-				{"x" : 5, "y" : 2}
-			],
-			"MrDo_RunDown_Ball_Digging" : [
-				{"x" : 3, "y" : 3},
-				{"x" : 4, "y" : 3},
-				{"x" : 5, "y" : 3}
-			],
-			"MrDo_RunDown_NoBall_Pushing" : [
-				{"x" : 3, "y" : 4},
-				{"x" : 4, "y" : 4},
-				{"x" : 5, "y" : 4}
-			],
-			"MrDo_RunDown_Ball_Pushing" : [
-				{"x" : 3, "y" : 5},
-				{"x" : 4, "y" : 5},
-				{"x" : 5, "y" : 5}
-			],
-			"MrDo_RunDown_Ball_Throw" : [
-				{"x" : 3, "y" : 6},
-				{"x" : 4, "y" : 6}
-			],
-			"MrDo_RunLeft_NoBall" : [
-				{"x" : 6, "y" : 0},
-				{"x" : 7, "y" : 0},
-				{"x" : 8, "y" : 0}
-			],
-			"MrDo_RunLeft_Ball" : [
-				{"x" : 6, "y" : 1},
-				{"x" : 7, "y" : 1},
-				{"x" : 8, "y" : 1}
-			],
-			"MrDo_RunLeft_NoBall_Digging" : [
-				{"x" : 6, "y" : 2},
-				{"x" : 7, "y" : 2},
-				{"x" : 8, "y" : 2}
-			],
-			"MrDo_RunLeft_Ball_Digging" : [
-				{"x" : 6, "y" : 3},
-				{"x" : 7, "y" : 3},
-				{"x" : 8, "y" : 3}
-			],
-			"MrDo_RunLeft_NoBall_Pushing" : [
-				{"x" : 6, "y" : 4},
-				{"x" : 7, "y" : 4},
-				{"x" : 8, "y" : 4}
-			],
-			"MrDo_RunLeft_Ball_Pushing" : [
-				{"x" : 6, "y" : 5},
-				{"x" : 7, "y" : 5},
-				{"x" : 8, "y" : 5}
-			],
-			"MrDo_RunLeft_Ball_Throw" : [
-				{"x" : 6, "y" : 6},
-				{"x" : 7, "y" : 6}
-			],
-			"MrDo_RunUp_NoBall" : [
-				{"x" : 9, "y" : 0},
-				{"x" : 10, "y" : 0},
-				{"x" : 11, "y" : 0}
-			],
-			"MrDo_RunUp_Ball" : [
-				{"x" : 9, "y" : 1},
-				{"x" : 10, "y" : 1},
-				{"x" : 11, "y" : 1}
-			],
-			"MrDo_RunUp_NoBall_Digging" : [
-				{"x" : 9, "y" : 2},
-				{"x" : 10, "y" : 2},
-				{"x" : 11, "y" : 2}
-			],
-			"MrDo_RunUp_Ball_Digging" : [
-				{"x" : 9, "y" : 3},
-				{"x" : 10, "y" : 3},
-				{"x" : 11, "y" : 3}
-			],
-			"MrDo_RunUp_NoBall_Pushing" : [
-				{"x" : 9, "y" : 4},
-				{"x" : 10, "y" : 4},
-				{"x" : 11, "y" : 4}
-			],
-			"MrDo_RunUp_Ball_Pushing" : [
-				{"x" : 9, "y" : 5},
-				{"x" : 10, "y" : 5},
-				{"x" : 11, "y" : 5}
-			],
-			"MrDo_RunUp_Ball_Throw" : [
-				{"x" : 9, "y" : 6},
-				{"x" : 10, "y" : 6}
-			],
-			"MrDo_Die" : [
-				{"x" : 1, "y" : 7},
-				{"x" : 2, "y" : 7},
-				{"x" : 3, "y" : 7},
-				{"x" : 4, "y" : 7}
-			],
-			"Apple_Wobble" : [
-				{"x" : 12, "y" : 3},
-				{"x" : 13, "y" : 3},
-				{"x" : 14, "y" : 3}
-			],
-			"Apple_Split_LeftHalf" : [
-				{"x" : 12, "y" : 4},
-				{"x" : 14, "y" : 4},
-				{"x" : 16, "y" : 4}
-			],
-			"Apple_Split_RightHalf" : [
-				{"x" : 13, "y" : 4},
-				{"x" : 15, "y" : 4},
-				{"x" : 17, "y" : 4}
-			],
-			"NormalEnemy_RunRight" : [
-				{"x" : 0, "y" : 8},
-				{"x" : 1, "y" : 8},
-				{"x" : 2, "y" : 8}
-			],
-			"NormalEnemy_RunDown" : [
-				{"x" : 3, "y" : 8},
-				{"x" : 4, "y" : 8},
-				{"x" : 5, "y" : 8}
-			],
-			"NormalEnemy_RunLeft" : [
-				{"x" : 6, "y" : 8},
-				{"x" : 7, "y" : 8},
-				{"x" : 8, "y" : 8}
-			],
-			"NormalEnemy_RunUp" : [
-				{"x" : 9, "y" : 8},
-				{"x" : 10, "y" : 8},
-				{"x" : 11, "y" : 8}
-			],
-			"NormalEnemy_RunRight_Digging" : [
-				{"x" : 0, "y" : 9},
-				{"x" : 1, "y" : 9},
-				{"x" : 2, "y" : 9}
-			],
-			"NormalEnemy_RunDown_Digging" : [
-				{"x" : 3, "y" : 9},
-				{"x" : 4, "y" : 9},
-				{"x" : 5, "y" : 9}
-			],
-			"NormalEnemy_RunLeft_Digging" : [
-				{"x" : 6, "y" : 9},
-				{"x" : 7, "y" : 9},
-				{"x" : 8, "y" : 9}
-			],
-			"NormalEnemy_RunUp_Digging" : [
-				{"x" : 9, "y" : 9},
-				{"x" : 10, "y" : 9},
-				{"x" : 11, "y" : 9}
-			]
-		},
-		"SingleSprites" :
-		{
-			"CrystalBall_BounceUp" : {"x" : 12, "y" : 0},
-			"CrystalBall_BounceDown" : {"x" : 13, "y" : 0},
-			"Cherry" : {"x" : 12, "y" : 5},
-			"MrDo_Crushed" : {"x" : 0, "y" : 7},
-			"MapMakerCursor" : {"x" : 15, "y" : 0},
-			"MonsterSpawner" : {"x" : 13, "y" : 8},
-			"CrushedMonster" : {"x" : 12, "y" : 8},
-			"Apple" : {"x" : 13, "y" : 3},
-			"MMPlayerStartIcon" : {"x":0,"y":0}
-		}
-	},
-	"Font" :
-	{
-		"ColourKey" : {"r":5,"g":53,"b":0},
-		"TileSize" : 8,
-		"NumCols" : 52,
-		"NumRows" : 27,
-		"AssetPath" : "TextNewBackground.bmp",
-		"BlockDimensions" : {"x" : 26, "y" : 3},
-		"AllCaps" : true,
-		"AllLowercase" : false,
-		"Blocks" : {
-			"White_BlackBackground" : {"x" : 0, "y" : 0},
-			"Red_BlackBackground" : {"x" : 0, "y" : 1},
-			"Blue_BlackBackground" : {"x" : 0, "y" : 2},
-			"Green_BlackBackground" : {"x" : 0, "y" : 3},
-			"YellowGreen_BlackBackground" : {"x" : 0, "y" : 4},
-			"Yellow_BlackBackground" : {"x" : 0, "y" : 5},
-			"Orange_BlackBackground" : {"x" : 0, "y" : 6},
-			"Black_BlueBackground" : {"x" : 0, "y" : 7},
-			"Grey_BlackBackground" : {"x" : 0, "y" : 8},
-
-			"White_NoBackground" : {"x" : 1, "y" : 0},
-			"Red_NoBackground" : {"x" : 1, "y" : 1},
-			"Blue_NoBackground" : {"x" : 1, "y" : 2},
-			"Green_NoBackground" : {"x" : 1, "y" : 3},
-			"YellowGreen_NoBackground" : {"x" : 1, "y" : 4},
-			"Yellow_NoBackground" : {"x" : 1, "y" : 5},
-			"Orange_NoBackground" : {"x" : 1, "y" : 6},
-			"Black_NoBackground" : {"x" : 1, "y" : 7},
-			"Grey_NoBackground" : {"x" : 1, "y" : 8}
-		},
-		"BlockMapping" :
-		[
-			[0, 48],
-			[1, 49],
-			[2, 50],
-			[3, 51],
-			[4, 52],
-			[5, 53],
-			[6, 54],
-			[7, 55],
-			[8, 56],
-			[9, 57],
-			
-
-			[26, 65],
-			[27, 66],
-			[28, 67],
-			[29, 68],
-			[30, 69],
-			[31, 70],
-			[32, 71],
-			[33, 72],
-
-			[34, 73],
-			[35, 74],
-			[36, 75],
-			[37, 76],
-			[38, 77],
-			[39, 78],
-			[40, 79],
-			[41, 80],
-			[42, 81],
-			[43, 82],
-			[44, 83],
-			[45, 84],
-			[46, 85],
-			[47, 86],
-			[48, 87],
-			[49, 88],
-			[50, 89],
-			[51, 90],
-
-			[52, 63],
-			[53, 33],
-			[54, 38],
-			[55, 94],
-			[56, 46],
-			[57, 32],
-			[58, 45],
-			[60, 44],
-			[61, 161],
-			[62, 35],
-			[63, 64],
-			[64, 61],
-			[65, 40],
-			[66, 41]
-		]
-	}
+    ],
+    "MapMakerChangeToolKey": 226,
+    "MapMakerLevels": [
+        {
+            "Apples": [
+                {
+                    "x": 4,
+                    "y": 4
+                },
+                {
+                    "x": 3,
+                    "y": 3
+                },
+                {
+                    "x": 2,
+                    "y": 3
+                },
+                {
+                    "x": 2,
+                    "y": 2
+                },
+                {
+                    "x": 3,
+                    "y": 2
+                },
+                {
+                    "x": 4,
+                    "y": 3
+                },
+                {
+                    "x": 4,
+                    "y": 2
+                },
+                {
+                    "x": 7,
+                    "y": 3
+                },
+                {
+                    "x": 10,
+                    "y": 1
+                },
+                {
+                    "x": 8,
+                    "y": 6
+                },
+                {
+                    "x": 3,
+                    "y": 6
+                },
+                {
+                    "x": 5,
+                    "y": 9
+                },
+                {
+                    "x": 6,
+                    "y": 7
+                },
+                {
+                    "x": 5,
+                    "y": 8
+                },
+                {
+                    "x": 6,
+                    "y": 8
+                }
+            ],
+            "BackgroundTileset": 0,
+            "MonsterSpawners": [
+                {
+                    "NumMonsters": 5,
+                    "x": 4,
+                    "y": 8
+                },
+                {
+                    "NumMonsters": 5,
+                    "x": 7,
+                    "y": 8
+                }
+            ],
+            "Name": "AAAAAAA",
+            "NumCols": 12,
+            "NumRows": 15,
+            "PlayerSpawnFacing": 1,
+            "PlayerSpawnLocation": {
+                "x": 1,
+                "y": 12
+            },
+            "TileData": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                63,
+                63,
+                63,
+                63,
+                63,
+                31,
+                31,
+                31,
+                31,
+                31,
+                11,
+                31,
+                31,
+                31,
+                63,
+                63,
+                63,
+                31,
+                31,
+                31,
+                31,
+                31,
+                10,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                9,
+                5,
+                7,
+                31,
+                10,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                10,
+                31,
+                31,
+                31,
+                12,
+                5,
+                5,
+                3,
+                31,
+                31,
+                9,
+                5,
+                6,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                10,
+                31,
+                31,
+                10,
+                31,
+                31,
+                31,
+                31,
+                31,
+                63,
+                63,
+                31,
+                10,
+                31,
+                31,
+                10,
+                31,
+                31,
+                63,
+                63,
+                31,
+                63,
+                63,
+                31,
+                8,
+                5,
+                5,
+                2,
+                31,
+                31,
+                63,
+                63,
+                31,
+                63,
+                63,
+                31,
+                10,
+                31,
+                31,
+                10,
+                31,
+                31,
+                63,
+                63,
+                31,
+                63,
+                63,
+                31,
+                10,
+                31,
+                31,
+                10,
+                31,
+                31,
+                63,
+                63,
+                31,
+                31,
+                9,
+                5,
+                6,
+                31,
+                31,
+                12,
+                5,
+                5,
+                3,
+                31,
+                31,
+                13,
+                6,
+                31,
+                63,
+                63,
+                63,
+                63,
+                31,
+                31,
+                14,
+                31,
+                31,
+                31,
+                31,
+                31,
+                63,
+                63,
+                63,
+                63,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+            ]
+        },
+        {
+            "Apples": [],
+            "BackgroundTileset": 0,
+            "MonsterSpawners": [],
+            "Name": "DCDAAAA",
+            "NumCols": 12,
+            "NumRows": 15,
+            "PlayerSpawnFacing": 1,
+            "PlayerSpawnLocation": {
+                "x": 5,
+                "y": 5
+            },
+            "TileData": [
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31,
+                31
+            ]
+        }
+    ],
+    "MonsterPoolSize": 30,
+    "MonsterSpawnerPoolSize": 10,
+    "NumCrystalBallUpdates": 3,
+    "PathFindingPriorityQueueSize": 100,
+    "PostThrowTimerLimit": 500.0,
+    "RightKey": 79,
+    "SpawnEnemyFlashInterval": 200.0,
+    "SpawnEnemyInterval": 3000.0,
+    "UpKey": 82
 }

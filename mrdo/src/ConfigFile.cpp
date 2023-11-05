@@ -53,7 +53,7 @@ void ConfigFile::PopulateAnimationsConfigDataStruct()
 		assert(val.is_array());
 		for (int i = 0; i < val.size(); i++)
 		{
-			AnimationConfigData.Animations[key].push_back({ val[i]["x"], val[i]["y"]});
+			AnimationConfigData.Animations[key].push_back({ (i32)val[i]["x"], (i32)val[i]["y"]});
 		}
 	}
 	for (auto& item : ConfigFileJSON["Animations"]["SingleSprites"].items())
@@ -61,7 +61,7 @@ void ConfigFile::PopulateAnimationsConfigDataStruct()
 		std::string key = item.key();
 		json val = item.value();
 		assert(val.is_object());
-		AnimationConfigData.SingleSprites[key] = { val["x"], val["y"] };
+		AnimationConfigData.SingleSprites[key] = { (i32)val["x"], (i32)val["y"] };
 	}
 }
 
@@ -92,7 +92,7 @@ void ConfigFile::PopulateFontConfigDataStruct()
 	PopulateSpriteSheetBase(FontConfigData, "Font");
 	json font = ConfigFileJSON["Font"];
 	json blockDims = font["BlockDimensions"];
-	FontConfigData.BlockDims = uvec2{ blockDims["x"], blockDims["y"] };
+	FontConfigData.BlockDims = ivec2{ (i32)blockDims["x"], (i32)blockDims["y"] };
 	json colourKey = font["ColourKey"];
 	FontConfigData.ColourKeyR = colourKey["r"];
 	FontConfigData.ColourKeyG = colourKey["g"];
@@ -115,7 +115,7 @@ void ConfigFile::PopulateFontConfigDataStruct()
 	{
 		json value = item.value();
 		assert(value.is_object());
-		FontConfigData.Blocks[item.key()] = uvec2{ value["x"], value["y"] };
+		FontConfigData.Blocks[item.key()] = ivec2{ (i32)value["x"], (i32)value["y"] };
 	}
 
 	assert(font["BlockMapping"].is_array());
@@ -139,7 +139,7 @@ LevelConfigData ConfigFile::ParseLevelConfigData(const json& levelJson)
 	assert(levelJson["Name"].is_string());
 
 	LevelConfigData data;
-	data.PlayerSpawnLocation = uvec2{ levelJson["PlayerSpawnLocation"]["x"], levelJson["PlayerSpawnLocation"]["y"] };
+	data.PlayerSpawnLocation = ivec2{ (i32)levelJson["PlayerSpawnLocation"]["x"], (i32)levelJson["PlayerSpawnLocation"]["y"] };
 	data.PlayerSpawnFacing = levelJson["PlayerSpawnFacing"];
 	data.NumCols = levelJson["NumCols"];
 	data.NumRows = levelJson["NumRows"];
@@ -156,7 +156,7 @@ LevelConfigData ConfigFile::ParseLevelConfigData(const json& levelJson)
 		assert(monsterSpawner["x"].is_number_unsigned());
 		assert(monsterSpawner["y"].is_number_unsigned());
 		monsterSpawnerData.NumMonsters = monsterSpawner["NumMonsters"];
-		monsterSpawnerData.TilePosition = { monsterSpawner["x"], monsterSpawner["y"] };
+		monsterSpawnerData.TilePosition = { (i32)monsterSpawner["x"],(i32)monsterSpawner["y"] };
 		data.MonsterSpawners.push_back(monsterSpawnerData);
 	}
 
@@ -170,7 +170,7 @@ LevelConfigData ConfigFile::ParseLevelConfigData(const json& levelJson)
 	json apples = levelJson["Apples"];
 	for (const json& apple : apples)
 	{
-		data.Apples.push_back(uvec2{ apple["x"], apple["y"] });
+		data.Apples.push_back(ivec2{ (i32)apple["x"], (i32)apple["y"] });
 	}
 	return data;
 }
@@ -214,7 +214,7 @@ void ConfigFile::RecreateMapMakerLevelsJSON()
 
 		// Apples
 		json applesJSON = json::array();
-		for (const uvec2& apple : lvl.Apples)
+		for (const ivec2& apple : lvl.Apples)
 		{
 			json appleObj = json::object();
 			appleObj["x"] = apple.x;

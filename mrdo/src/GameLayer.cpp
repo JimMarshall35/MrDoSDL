@@ -27,8 +27,8 @@ void Game::Update(float deltaT)
 	{
 	case GamePhase::Playing:
 		MyCharacter.Update(deltaT, InputState);
-		MyAppleManager.Update(deltaT);
 		MyEnemyManager.Update(deltaT);
+		MyAppleManager.Update(deltaT);
 		break;
 	case GamePhase::DieAnimationPlaying:
 		MyCharacter.UpdatePlayingDeathAnimation(deltaT);

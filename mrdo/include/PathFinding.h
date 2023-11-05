@@ -5,19 +5,27 @@
 #include <cassert>
 #include <iostream>
 
-struct uvec2;
+struct ivec2;
 class TiledWorld;
 class IConfigFile;
 
 namespace PathFinding
 {
+	struct AStarNode;
+	typedef std::function<void(AStarNode*)> NodeNeighbourIterator;
+	typedef std::function<void(AStarNode*, const TiledWorld*, NodeNeighbourIterator)> NodeNeighboutIteratorApplier;
+
 	void ResizeNodeMap(u32 newWidth, u32 newHeight);
 
 	void Initialise(int configFile);
 
 	void DeInit();
 
-	void DoAstar(const uvec2& start, const uvec2& finish, uvec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld);
+	void DoAStar(const ivec2& start, const ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld, const NodeNeighboutIteratorApplier& iterApplier);
+
+	void DoAStarNormalEnemy(const ivec2& start, const ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld);
+
+	void DoDiggingEnemyAStar(const ivec2& start, ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld, const ivec2& obstruction);
 
 	template<typename T, typename TKey>
 	class PtrMinHeap

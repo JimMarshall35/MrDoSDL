@@ -86,7 +86,7 @@ void MapMakerLayer::Draw(SDL_Surface* windowSurface, float scale) const
 	dst.y = EditedLevel->PlayerSpawnLocation.y * BackgroundTileSize * scale;
 	SDL_BlitSurfaceScaled(srcSurface, &PlayerStartSprite, windowSurface, &dst);
 
-	for (const uvec2& apple : EditedLevel->Apples)
+	for (const ivec2& apple : EditedLevel->Apples)
 	{
 		dst.x = apple.x * BackgroundTileSize * scale;
 		dst.y = apple.y * BackgroundTileSize * scale;
@@ -277,7 +277,7 @@ void MapMakerLayer::AddApple(const ivec2& coords)
 {
 	assert(coords.x >= 0);
 	assert(coords.y >= 0);
-	uvec2 asUvec = uvec2{ (u32)coords.x, (u32)coords.y };
+	ivec2 asUvec = ivec2{ (u32)coords.x, (u32)coords.y };
 	auto itr = std::find(EditedLevel->Apples.begin(), EditedLevel->Apples.end(), asUvec);
 	if (itr == EditedLevel->Apples.end())
 	{
@@ -289,7 +289,7 @@ void MapMakerLayer::RemoveApple(const ivec2& coords)
 {
 	assert(coords.x >= 0);
 	assert(coords.y >= 0);
-	uvec2 asUvec = uvec2{ (u32)coords.x, (u32)coords.y };
+	ivec2 asUvec = ivec2{ (u32)coords.x, (u32)coords.y };
 	auto itr = std::find(EditedLevel->Apples.begin(), EditedLevel->Apples.end(), asUvec);
 	if (itr != EditedLevel->Apples.end())
 	{
@@ -301,7 +301,7 @@ bool MapMakerLayer::AppleAtCoords(const ivec2& coords)
 {
 	assert(coords.x >= 0);
 	assert(coords.y >= 0);
-	uvec2 asUvec = uvec2{ (u32)coords.x, (u32)coords.y };
+	ivec2 asUvec = ivec2{ (u32)coords.x, (u32)coords.y };
 	auto itr = std::find(EditedLevel->Apples.begin(), EditedLevel->Apples.end(), asUvec);
 	return itr != EditedLevel->Apples.end();
 }
@@ -310,7 +310,7 @@ void MapMakerLayer::AddMonsterSpawner(const ivec2& coords)
 {
 	assert(coords.x >= 0);
 	assert(coords.y >= 0);
-	uvec2 asUvec = uvec2{ (u32)coords.x, (u32)coords.y };
+	ivec2 asUvec = ivec2{ (u32)coords.x, (u32)coords.y };
 	MonsterSpawnerData msData;
 	msData.TilePosition = asUvec;
 	msData.NumMonsters = 5;
@@ -325,7 +325,7 @@ void MapMakerLayer::RemoveMonsterSpawner(const ivec2& coords)
 {
 	assert(coords.x >= 0);
 	assert(coords.y >= 0);
-	uvec2 asUvec = uvec2{ (u32)coords.x, (u32)coords.y };
+	ivec2 asUvec = ivec2{ (u32)coords.x, (u32)coords.y };
 	MonsterSpawnerData msData;
 	msData.TilePosition = asUvec;
 	auto itr = std::find(EditedLevel->MonsterSpawners.begin(), EditedLevel->MonsterSpawners.end(), msData);
@@ -339,7 +339,7 @@ MonsterSpawnerData* MapMakerLayer::MonsterSpawnerAtCoords(const ivec2& coords)
 {
 	assert(coords.x >= 0);
 	assert(coords.y >= 0);
-	uvec2 asUvec = uvec2{ (u32)coords.x, (u32)coords.y };
+	ivec2 asUvec = ivec2{ (u32)coords.x, (u32)coords.y };
 	MonsterSpawnerData msData;
 	msData.TilePosition = asUvec;
 	auto itr = std::find(EditedLevel->MonsterSpawners.begin(), EditedLevel->MonsterSpawners.end(), msData);

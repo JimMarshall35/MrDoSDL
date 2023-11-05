@@ -17,7 +17,7 @@ namespace PathFinding
 		float LocalScore = std::numeric_limits<float>::infinity();
 		bool bVisited = false;
 		AStarNode* Parent = nullptr;
-		uvec2 GridCoords;
+		ivec2 GridCoords;
 	};
 	static std::vector<AStarNode> NodesMap;
 
@@ -44,7 +44,7 @@ namespace PathFinding
 		}
 	}
 
-	AStarNode* FindNode(const uvec2& nodeCoords)
+	AStarNode* FindNode(const ivec2& nodeCoords)
 	{
 		assert(NodesMapWidth * nodeCoords.y + nodeCoords.x < NodesMap.size());
 		return &NodesMap[nodeCoords.y * NodesMapWidth + nodeCoords.x];
@@ -73,6 +73,7 @@ namespace PathFinding
 	}
 
 	typedef std::function<void(AStarNode*)> NodeNeighbourIterator;
+	typedef std::function<void(AStarNode*, const TiledWorld*, NodeNeighbourIterator)> NodeNeighboutIteratorApplier;
 
 	void IterateNodeNeighbours(AStarNode* node, const TiledWorld* tiledWorld, NodeNeighbourIterator iterator)
 	{
@@ -81,7 +82,7 @@ namespace PathFinding
 		{
 			if (!tiledWorld->IsBarrierBetween(signedGridCoords, signedGridCoords + ivec2{0, -1}))
 			{
-				AStarNode* neighbour = FindNode(uvec2{ node->GridCoords.x, node->GridCoords.y - 1 });
+				AStarNode* neighbour = FindNode(ivec2{ node->GridCoords.x, node->GridCoords.y - 1 });
 				iterator(neighbour);
 			}
 		}
@@ -89,7 +90,7 @@ namespace PathFinding
 		{
 			if (!tiledWorld->IsBarrierBetween(signedGridCoords, signedGridCoords + ivec2{ 1, 0 }))
 			{
-				AStarNode* neighbour = FindNode(node->GridCoords + uvec2{ 1, 0 });
+				AStarNode* neighbour = FindNode(node->GridCoords + ivec2{ 1, 0 });
 				iterator(neighbour);
 			}
 		}
@@ -97,7 +98,7 @@ namespace PathFinding
 		{
 			if (!tiledWorld->IsBarrierBetween(signedGridCoords, signedGridCoords + ivec2{ 0, 1 }))
 			{
-				AStarNode* neighbour = FindNode(uvec2{node->GridCoords.x, node->GridCoords.y + 1});
+				AStarNode* neighbour = FindNode(ivec2{node->GridCoords.x, node->GridCoords.y + 1});
 				iterator(neighbour);
 			}
 		}
@@ -105,17 +106,54 @@ namespace PathFinding
 		{
 			if (!tiledWorld->IsBarrierBetween(signedGridCoords, signedGridCoords + ivec2{ -1, 0 }))
 			{
-				AStarNode* neighbour = FindNode(uvec2{ node->GridCoords.x - 1, node->GridCoords.y });
+				AStarNode* neighbour = FindNode(ivec2{ node->GridCoords.x - 1, node->GridCoords.y });
 				iterator(neighbour);
 			}
 		}
 	}
 
-	void DoAstar(const uvec2& start, const uvec2& finish, uvec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld)
+	void DiggingEnemyIterateNeighbours(AStarNode* node, const TiledWorld* tiledWorld, NodeNeighbourIterator iterator, const ivec2& obstruction)
+	{
+		ivec2 signedGridCoords = ivec2{ (i32)node->GridCoords.x, (i32)node->GridCoords.y };
+		if (node->GridCoords.y >= 2) // todo: fix game so that tiledWorld is only the game tiles and not the hud at top and bottom hence why some of these are randomly 2 and not 1
+		{
+			if (node->GridCoords + ivec2{ 0, -1 } != obstruction)
+			{
+				AStarNode* neighbour = FindNode(ivec2{ node->GridCoords.x, node->GridCoords.y - 1 });
+				iterator(neighbour);
+			}
+		}
+		if (node->GridCoords.x < tiledWorld->GetActiveLevelWidth() - 1)
+		{
+			if (node->GridCoords + ivec2{ 1, 0 } != obstruction)
+			{
+				AStarNode* neighbour = FindNode(node->GridCoords + ivec2{ 1, 0 });
+				iterator(neighbour);
+			}
+		}
+		if (node->GridCoords.y < tiledWorld->GetActiveLevelHeight() - 2)
+		{
+			if (node->GridCoords + ivec2{ 0, 1 } != obstruction)
+			{
+				AStarNode* neighbour = FindNode(ivec2{ node->GridCoords.x, node->GridCoords.y + 1 });
+				iterator(neighbour);
+			}
+		}
+		if (node->GridCoords.x >= 1)
+		{
+			if (node->GridCoords + ivec2{ -1, 0 } != obstruction)
+			{
+				AStarNode* neighbour = FindNode(ivec2{ node->GridCoords.x - 1, node->GridCoords.y });
+				iterator(neighbour);
+			}
+		}
+	}
+
+	void DoAStar(const ivec2& start, const ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld , const NodeNeighboutIteratorApplier& iterApplier)
 	{
 		// based on https://github.com/OneLoneCoder/Javidx9/blob/master/ConsoleGameEngine/SmallerProjects/OneLoneCoder_PathFinding_AStar.cpp
 		// changed data structure used from list to min heap
-		auto distance = [](const uvec2& a, const uvec2& b) // For convenience
+		auto distance = [](const ivec2& a, const ivec2& b) // For convenience
 		{
 			return sqrtf((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 		};
@@ -184,7 +222,7 @@ namespace PathFinding
 				}
 			};
 
-			IterateNodeNeighbours(currentNode, tiledWorld, iterator);
+			iterApplier(currentNode, tiledWorld, iterator);
 		}
 		PriorityQueue->Clear();
 		// write path to output buffer, by following the chain of parent pointers
@@ -195,5 +233,16 @@ namespace PathFinding
 			outPath[outPathBufferSize++] = currentNode->GridCoords;
 			currentNode = currentNode->Parent;
 		}
+	}
+	void DoAStarNormalEnemy(const ivec2& start, const ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld)
+	{
+		DoAStar(start, finish, outPath, outPathBufferSize, pathBufferMaxSize, tiledWorld, NodeNeighboutIteratorApplier(&IterateNodeNeighbours));
+	}
+	void DoDiggingEnemyAStar(const ivec2& start, ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld, const ivec2& obstruction)
+	{
+		DoAStar(start, finish, outPath, outPathBufferSize, pathBufferMaxSize, tiledWorld,
+			[&obstruction](AStarNode* node, const TiledWorld* tiledWorld, NodeNeighbourIterator iterator) {
+			DiggingEnemyIterateNeighbours(node, tiledWorld, iterator, obstruction);
+		});
 	}
 }

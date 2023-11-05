@@ -107,13 +107,13 @@ void CrystalBall::UpdateInternal(float deltaT)
 
 	vec2 oldballCenter = Position + vec2{ CachedTileSize / 2.0f, CachedTileSize / 2.0f };
 	vec2 oldBallCenter1By1TileIndex = vec2{ oldballCenter.x / CachedTileSize, oldballCenter.y / CachedTileSize };
-	uvec2 oldBallCenterTileCoords = uvec2{ (u32)oldBallCenter1By1TileIndex.x, (u32)oldBallCenter1By1TileIndex.y };
+	ivec2 oldBallCenterTileCoords = ivec2{ (u32)oldBallCenter1By1TileIndex.x, (u32)oldBallCenter1By1TileIndex.y };
 	vec2 oldPos = Position;
 	Position += (DirectionVector * CrystalBallSpeed * deltaT);
 
 	vec2 ballCenter = Position + vec2{ CachedTileSize / 2.0f, CachedTileSize / 2.0f };
 	vec2 ballCenter1By1TileIndex = vec2{ ballCenter.x / CachedTileSize, ballCenter.y / CachedTileSize };
-	uvec2 ballCenterTileCoords = uvec2{ (u32)ballCenter1By1TileIndex.x, (u32)ballCenter1By1TileIndex.y };
+	ivec2 ballCenterTileCoords = ivec2{ (u32)ballCenter1By1TileIndex.x, (u32)ballCenter1By1TileIndex.y };
 
 	if (ballCenterTileCoords != oldBallCenterTileCoords)
 	{

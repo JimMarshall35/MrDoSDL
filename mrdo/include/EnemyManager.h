@@ -19,6 +19,7 @@ class TiledWorld;
 enum class EnemyType
 {
 	Normal,
+	TurningIntoDigger,
 	Digger,
 	ExtraMan,
 	Ghost
@@ -31,7 +32,7 @@ enum class EnemySpawnerState
 struct EnemySpawner
 {
 	u32 NumberOfEnemiesLeftToSpawn;
-	uvec2 TileCoords;
+	ivec2 TileCoords;
 	EnemySpawnerState State;
 	float Timer;
 	u32 FlashCounter;
@@ -44,11 +45,12 @@ struct Enemy
 	vec2 Pos;
 	vec2 Destination;
 	MovementDirection CurrentDirection;
-	std::unique_ptr<uvec2[]> PathBuffer;
+	std::unique_ptr<ivec2[]> PathBuffer;
 	u32 PathBufferCurrentSize;
 	i32 PathBufferDestinationIndex;
-	uvec2 CurrentCell;
+	ivec2 CurrentCell;
 	Animator EnemyAnimator;
+	float Timer;
 	u8 bPushing : 1;
 	u8 bActive : 1;
 	u8 bCrushed : 1;
@@ -73,6 +75,9 @@ public:
 	int GetActiveLevelMaxEnemies() const;
 	void CrushEnemy(Enemy* enemy);
 	void KillEnemy(Enemy* enemy);
+	void SetEnemyPushingState(Enemy* enemy, bool newState);
+private:
+	typedef std::function<void(Enemy&)> PathFinishedCallback;
 
 private:
 	void OnLevelBegun(LevelLoadData level);
@@ -81,10 +86,17 @@ private:
 	void UpdateSingleSpawner(float deltaTime, EnemySpawner& spawner);
 	void SpawnEnemy(EnemySpawner& spawner);
 	void UpdateSingleEnemy(float deltaTime, Enemy& enemy);
+	void UpdateSingleNormalEnemy(float deltaTime, Enemy& enemy);
+	void UpdateSingleFlashingEnemy(float deltaTime, Enemy& enemy);
+	void UpdateSingleDiggerEnemy(float deltaTime, Enemy& enemy);
 	void InitialiseEnemyPool();
 	void SetNewPath(Enemy& enemy, const ivec2& newDestinationCell);
+	void SetNewPathForDigger(Enemy& enemy, const ivec2& newDestinationCell);
 	void SetEnemyDirection(Enemy& enemy);
 	void SetEnemyDestinationWorldSpace(Enemy& enemy);
+
+	// true == passed into new cell
+	bool FollowPathBase(Enemy& enemy, float deltaT, const PathFinishedCallback& onPathFinished, float speedMultiplier=1.0f);
 
 private:
 	LISTENER(EnemyManager, OnLevelBegun, LevelLoadData);
@@ -107,10 +119,18 @@ private:
 	u32 MaxEnemiesThisLevel = 0;
 	u32 NumEnemiesSpawned = 0;
 	static std::vector<SDL_Rect> NormalEnemyAnimationTable[2][4];
+	static std::vector<SDL_Rect> DiggerAnimationTable[4];
+	static std::vector<SDL_Rect> TransformingToDiggerAnimationTable[4];
 	static SDL_Rect SpawnerTileSprite;
 	static SDL_Rect CrushedMonsterSprite;
 	Character* CachedCharacter;
 	u32 PathBufferSize;
 	float EnemySpeed;
 	float CachedTileSize;
+
+	float DigSpeedMultiplier;
+	float PushSpeedMultiplier;
+	float EnemyWaitTimeBeforeBecomeDigger;
+	float MorphingEnemyFlashAnimationFPS;
+	float MorphingEnemyFlashTime;
 };

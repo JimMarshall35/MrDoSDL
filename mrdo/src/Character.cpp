@@ -24,13 +24,16 @@ Character::Character(
 	CachedTiledWorld(tiledWorld),
 	LOnNewLevelStarted(this),
 	CachedSpriteDims(vec2{ (float)configFile->GetAnimationsConfigData().TileSize, (float)configFile->GetAnimationsConfigData().TileSize }),
-	LOnResetAfterDeath(this)
+	LOnResetAfterDeath(this),
+	DigSpeedMultiplier(configFile->GetFloatValue("CharacterDigSpeedMultiplier")),
+	PushSpeedMultiplier(configFile->GetFloatValue("CharacterPushSpeedMultiplier"))
 {
 	onLevelLoaded += &LOnNewLevelStarted;
 	onResetAfterDeath += &LOnResetAfterDeath;
 	bIsMoving = false;
 	bHasMoved = false;
 	bBeingCrushed = false;
+	bPreviousBarrierBetween = false;
 
 	CharacterSpeed = ConfigFile->GetFloatValue("CharacterSpeed");
 	PostThrowTimerLimit = ConfigFile->GetFloatValue("PostThrowTimerLimit");
@@ -71,7 +74,31 @@ void Character::Update(float deltaTime, GameInputState inputState)
 		bIsMoving = true;
 		if (bHasMoved)
 		{
-			PushingState = CachedTiledWorld->IsBarrierBetween(CurrentTile, DestinationTile) ? PushingState::Digging : PushingState::NotPushing;
+			static ivec2 cellWhenDiggingStarted = { -1,-1 };
+			if (CachedTiledWorld->IsBarrierBetween(CurrentTile, DestinationTile))
+			{
+				PushingState = PushingState::Digging;
+				cellWhenDiggingStarted = CurrentTile;
+				bPreviousBarrierBetween = true;
+			}
+			else if(PushingState == PushingState::Digging)
+			{
+				bPreviousBarrierBetween = false;
+				if (CurrentMovementDirection == PreviousDirection && CurrentTile == cellWhenDiggingStarted)
+				{
+					PushingState = PushingState::Digging;
+				}
+				else
+				{
+					PushingState = PushingState::NotPushing;
+				}
+			}
+			else
+			{
+				PushingState = PushingState::NotPushing;
+				bPreviousBarrierBetween = false;
+			}
+			
 			MovementDirection newDir = GetMovementDirection(inputState);
 			switch (CurrentMovementDirection)
 			{
@@ -202,7 +229,7 @@ void Character::Update(float deltaTime, GameInputState inputState)
 		}
 		PushingState = PushingState::Pushing;
 	}
-
+	PreviousDirection = CurrentMovementDirection;
 	Animator.CurrentAnimation = &RunningAnimFrames[(u32)CrystalBallState][(u32)PushingState][(u32)CurrentMovementDirection];
 	Animator.bIsAnimating = bIsMoving;
 	Animator.Update(deltaTime / 1000.0f);
@@ -349,7 +376,17 @@ void Character::MoveTowardsDestination(float deltaTime)
 	vec2 dVec = MovementHelpers::GetDirectionVector(CurrentMovementDirection);
 	if (DestinationTile != CurrentTile)
 	{
-		CurrentLocation += (dVec * CharacterSpeed * deltaTime);
+		float speedMultiplier = 1.0;
+		switch (PushingState)
+		{
+		case PushingState::Pushing:
+			speedMultiplier = PushSpeedMultiplier;
+			break;
+		case PushingState::Digging:
+			speedMultiplier = DigSpeedMultiplier;
+			break;
+		}
+		CurrentLocation += (dVec * CharacterSpeed * deltaTime * speedMultiplier);
 	}
 	switch (CurrentMovementDirection)
 	{
@@ -369,6 +406,7 @@ void Character::MoveTowardsDestination(float deltaTime)
 			// all the way - set next tile dest
 			CurrentLocation.y = CurrentTile.y * tileSize - tileSize;
 			CurrentMovementDirection = NextMovementDirection;
+			PreviousTile = CurrentTile;
 			CurrentTile = DestinationTile;
 			SetNewDestinationCell(CurrentMovementDirection);
 		}
@@ -389,6 +427,7 @@ void Character::MoveTowardsDestination(float deltaTime)
 			// all the way - set next tile dest
 			CurrentLocation.y = CurrentTile.y * tileSize + tileSize;
 			CurrentMovementDirection = NextMovementDirection;
+			PreviousTile = CurrentTile;
 			CurrentTile = DestinationTile;
 			SetNewDestinationCell(CurrentMovementDirection);
 		}
@@ -409,6 +448,7 @@ void Character::MoveTowardsDestination(float deltaTime)
 			// all the way - set next tile dest
 			CurrentLocation.x = CurrentTile.x * tileSize - tileSize;
 			CurrentMovementDirection = NextMovementDirection;
+			PreviousTile = CurrentTile;
 			CurrentTile = DestinationTile;
 			SetNewDestinationCell(CurrentMovementDirection);
 		}
@@ -429,6 +469,7 @@ void Character::MoveTowardsDestination(float deltaTime)
 			// all the way - set next tile dest
 			CurrentLocation.x = CurrentTile.x * tileSize + tileSize;
 			CurrentMovementDirection = NextMovementDirection;
+			PreviousTile = CurrentTile;
 			CurrentTile = DestinationTile;
 			SetNewDestinationCell(CurrentMovementDirection);
 		}

@@ -30,7 +30,7 @@ public:
 		const std::shared_ptr<IBackgroundTileAssetManager>& bgtam,
 		const std::shared_ptr<IAnimationAssetManager>& aam);
 	void LoadLevel(const LevelLoadData* level);
-	uvec2 GetRequiredBaseWindowSize() const;
+	ivec2 GetRequiredBaseWindowSize() const;
 	void DrawActiveLevel(SDL_Surface* window, float scale) const;
 	void ConnectAdjacentCells(const ivec2& cell1, const ivec2& cell2);
 	u8& GetCellAtIndex(const ivec2& coords);	

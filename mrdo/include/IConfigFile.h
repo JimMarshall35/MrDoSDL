@@ -17,9 +17,9 @@ struct BackgroundTileConfigData : public SpriteSheetConfigData
 	std::vector<unsigned char> RowPattern;
 };
 
-typedef std::map<std::string, std::vector<uvec2>> AnimationMap;
-typedef std::map<std::string, uvec2> SingleSpriteMap;
-typedef std::map<std::string, uvec2> FontBlocks;
+typedef std::map<std::string, std::vector<ivec2>> AnimationMap;
+typedef std::map<std::string, ivec2> SingleSpriteMap;
+typedef std::map<std::string, ivec2> FontBlocks;
 typedef std::vector<std::pair<u8, u8>> FontBlockMapping;
 
 struct AnimationsConfigData : public SpriteSheetConfigData
@@ -43,7 +43,7 @@ struct FontConfigData : public SpriteSheetConfigData
 	u8 ColourKeyR;
 	u8 ColourKeyG;
 	u8 ColourKeyB;
-	uvec2 BlockDims; // a "block" contains the whole alphabet's worth of characters
+	ivec2 BlockDims; // a "block" contains the whole alphabet's worth of characters
 	FontBlocks Blocks;
 	FontBlockMapping BlockMapping; // maps number of letter in block to which ascii code it is - first in pair is the number in the block, second the ascii code
 	FontLetterAvailability LetterAvailability = FontLetterAvailability::AllAvailable;
@@ -51,7 +51,7 @@ struct FontConfigData : public SpriteSheetConfigData
 
 struct MonsterSpawnerData
 {
-	uvec2 TilePosition;
+	ivec2 TilePosition;
 	u32 NumMonsters;
 	bool operator==(const MonsterSpawnerData& other) const
 	{
@@ -62,13 +62,13 @@ struct MonsterSpawnerData
 struct LevelConfigData
 {
 	std::string Name;
-	std::vector<uvec2> Apples;
+	std::vector<ivec2> Apples;
 	std::vector<u8> TileData;
 	std::vector<MonsterSpawnerData> MonsterSpawners;
 	int NumRows;
 	int NumCols;
 	int BackgroundTileset;
-	uvec2 PlayerSpawnLocation;
+	ivec2 PlayerSpawnLocation;
 	u32 PlayerSpawnFacing;
 };
 

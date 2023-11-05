@@ -94,7 +94,7 @@ private:
 	LISTENER(AppleManager, OnNewLevelStarted, LevelLoadData);
 private:
 	vec2 CachedSpriteDims;
-	uvec2 CachedLevelSize = { 0,0 };
+	ivec2 CachedLevelSize = { 0,0 };
 	std::unique_ptr<Apple*[]> PushedAppleStack;
 	int PushedAppleStackSize = 0;
 	const std::shared_ptr<TiledWorld> CachedTiledWorld;

@@ -42,15 +42,15 @@ int FontAssetManager::GetTextTileSize() const
 
 void FontAssetManager::PopulateFontRectMap(const FontConfigData& config)
 {
-	uvec2 blockDims = config.BlockDims;
+	ivec2 blockDims = config.BlockDims;
 	int tileSize = config.TileSize;
 	for (const auto& pair : config.Blocks)
 	{
 		// block coords IN BLOCKS
-		uvec2 blockCoords = pair.second;
+		ivec2 blockCoords = pair.second;
 
 		// top left corner of the block in pixels
-		uvec2 blockStartingPointPixels = {
+		ivec2 blockStartingPointPixels = {
 			blockCoords.x * blockDims.x * tileSize,
 			blockCoords.y * blockDims.y * tileSize
 		};
@@ -72,7 +72,7 @@ void FontAssetManager::PopulateFontRectMap(const FontConfigData& config)
 			u32 letterY = letterIndex / blockDims.x;
 
 			// cordinate of letter tile top left in pixels
-			uvec2 letterRectTL = blockStartingPointPixels + uvec2{ letterX * config.TileSize, letterY * config.TileSize };
+			ivec2 letterRectTL = blockStartingPointPixels + ivec2{ letterX * config.TileSize, letterY * config.TileSize };
 			
 			// make rect and save to array
 			SDL_Rect r;

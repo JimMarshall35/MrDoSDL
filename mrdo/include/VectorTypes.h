@@ -54,6 +54,22 @@ struct ivec2
 {
 	i32 x;
 	i32 y;
+	ivec2()
+		:x(0),y(0)
+	{}
+
+	ivec2(i32 x, i32 y)
+		:x(x), y(y)
+	{}
+
+	ivec2(u32 x, u32 y)
+		:x((i32)x), y((i32)y)
+	{}
+
+	ivec2(float x, float y)
+		:x((i32)x), y((i32)y)
+	{}
+
 	ivec2 operator+(const ivec2& other) const
 	{
 		return { x + other.x, y + other.y };
@@ -63,25 +79,6 @@ struct ivec2
 		return (x == other.x) && (y == other.y);
 	}
 	bool operator!=(const ivec2& other) const
-	{
-		return !((x == other.x) && (y == other.y));
-	}
-};
-
-struct uvec2
-{
-	u32 x;
-	u32 y;
-	uvec2 operator+(const uvec2& other) const
-	{
-		return { x + other.x, y + other.y };
-	}
-	bool operator==(const uvec2& other) const
-	{
-		return (x == other.x) && (y == other.y);
-	}
-
-	bool operator!=(const uvec2& other) const
 	{
 		return !((x == other.x) && (y == other.y));
 	}

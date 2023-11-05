@@ -21,9 +21,9 @@ void AnimationAssetManager::MakeAnimationRectFramesFromName(const std::string& a
 {
 	const AnimationsConfigData& animData = Config->GetAnimationsConfigData();
 	assert(animData.Animations.find(animationName) != animData.Animations.end());
-	const std::vector<uvec2>& frames = animData.Animations.at(animationName);
+	const std::vector<ivec2>& frames = animData.Animations.at(animationName);
 	outRectFrames.clear();
-	for (const uvec2& frame : frames)
+	for (const ivec2& frame : frames)
 	{
 		SDL_Rect rect;
 		rect.x = frame.x * animData.TileSize;
@@ -38,7 +38,7 @@ void AnimationAssetManager::MakeSingleSpriteRectFrame(const std::string& singleS
 {
 	const AnimationsConfigData& animData = Config->GetAnimationsConfigData();
 	assert(animData.SingleSprites.find(singleSpriteName) != animData.SingleSprites.end());
-	uvec2 spriteSheetCoords = animData.SingleSprites.at(singleSpriteName);
+	ivec2 spriteSheetCoords = animData.SingleSprites.at(singleSpriteName);
 	outRect.x = spriteSheetCoords.x * animData.TileSize;
 	outRect.y = spriteSheetCoords.y * animData.TileSize;
 	outRect.w = animData.TileSize;

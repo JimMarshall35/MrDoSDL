@@ -37,7 +37,7 @@ enum class PushingState
 
 struct CharacterInitOptions
 {
-	uvec2 SpawnLocation;
+	ivec2 SpawnLocation;
 	MovementDirection SpawnFacing;
 };
 
@@ -81,10 +81,12 @@ private:
 	std::shared_ptr<IAnimationAssetManager> AnimationAssetManager;
 	std::shared_ptr<IConfigFile> ConfigFile;
 	std::shared_ptr<TiledWorld> CachedTiledWorld;
-	uvec2 CachedLevelDims;
+	ivec2 CachedLevelDims;
 	vec2 CurrentLocation;
+	ivec2 PreviousTile = { -1,-1 };
 	ivec2 CurrentTile;
 	ivec2 DestinationTile;
+	MovementDirection PreviousDirection;
 	MovementDirection CurrentMovementDirection;
 	MovementDirection NextMovementDirection;
 	float CharacterSpeed;
@@ -97,6 +99,7 @@ private:
 	u8 bHasMoved : 1;
 	u8 bCanCatchBall : 1;
 	u8 bBeingCrushed : 1;
+	u8 bPreviousBarrierBetween : 1;
 
 	LISTENER(Character, OnNewLevelStarted, LevelLoadData);
 	LISTENER(Character, OnResetAfterDeath, LevelLoadData);
@@ -106,4 +109,7 @@ private:
 
 	float DeathAnimationFPS;
 	float AliveAnimationsFPS;
+
+	float DigSpeedMultiplier;
+	float PushSpeedMultiplier;
 };

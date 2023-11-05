@@ -9,6 +9,8 @@
 #include <cassert>
 
 std::vector<SDL_Rect> EnemyManager::NormalEnemyAnimationTable[2][4];
+std::vector<SDL_Rect> EnemyManager::DiggerAnimationTable[4];
+std::vector<SDL_Rect> EnemyManager::TransformingToDiggerAnimationTable[4];
 SDL_Rect EnemyManager::SpawnerTileSprite;
 SDL_Rect EnemyManager::CrushedMonsterSprite;
 
@@ -35,7 +37,12 @@ EnemyManager::EnemyManager(
 	FlashesBeforeSpawn(configFile->GetUIntValue("FlashesBeforeSpawn")),
 	CachedCharacter(character),
 	PathBufferSize(configFile->GetUIntValue("EnemyPathBufferSize")),
-	EnemySpeed(configFile->GetFloatValue("EnemySpeed"))
+	EnemySpeed(configFile->GetFloatValue("EnemySpeed")),
+	DigSpeedMultiplier(configFile->GetFloatValue("EnemyDigSpeedMultiplier")),
+	PushSpeedMultiplier(configFile->GetFloatValue("EnemyPushSpeedMultiplier")),
+	EnemyWaitTimeBeforeBecomeDigger(configFile->GetFloatValue("EnemyWaitTimeBeforeBecomeDigger")),
+	MorphingEnemyFlashAnimationFPS(configFile->GetFloatValue("EnemyFlashAnimationFPS")),
+	MorphingEnemyFlashTime(configFile->GetFloatValue("EnemyFlashTime"))
 {
 	CachedTileSize = ConfigFile->GetAnimationsConfigData().TileSize;
 	onLevelLoaded += &LOnLevelBegun;
@@ -149,8 +156,12 @@ void EnemyManager::CrushEnemy(Enemy* enemy)
 
 void EnemyManager::KillEnemy(Enemy* enemy)
 {
-	assert(enemy->bActive);
-	enemy->bActive = false;
+	//assert(enemy->bActive);
+	if (enemy->bActive)
+	{
+		enemy->bActive = false;
+	}
+	
 	assert(enemy->OriginSpawner);
 	//enemy->OriginSpawner->NumberOfEnemiesLeftToSpawn--;
 }
@@ -209,6 +220,17 @@ void EnemyManager::PopulateAnimationTables()
 	AnimationAssetManager->MakeAnimationRectFramesFromName("NormalEnemy_RunDown_Digging",  NormalEnemyAnimationTable[1][(i32)MovementDirection::Down]);
 	AnimationAssetManager->MakeAnimationRectFramesFromName("NormalEnemy_RunLeft_Digging",  NormalEnemyAnimationTable[1][(i32)MovementDirection::Left]);
 	AnimationAssetManager->MakeAnimationRectFramesFromName("NormalEnemy_RunUp_Digging",    NormalEnemyAnimationTable[1][(i32)MovementDirection::Up]);
+
+	AnimationAssetManager->MakeAnimationRectFramesFromName("FlashingEnemy_Right", TransformingToDiggerAnimationTable[(i32)MovementDirection::Right]);
+	AnimationAssetManager->MakeAnimationRectFramesFromName("FlashingEnemy_Down", TransformingToDiggerAnimationTable[(i32)MovementDirection::Down]);
+	AnimationAssetManager->MakeAnimationRectFramesFromName("FlashingEnemy_Left", TransformingToDiggerAnimationTable[(i32)MovementDirection::Left]);
+	AnimationAssetManager->MakeAnimationRectFramesFromName("FlashingEnemy_Up", TransformingToDiggerAnimationTable[(i32)MovementDirection::Up]);
+
+	AnimationAssetManager->MakeAnimationRectFramesFromName("RedDigger_Right", DiggerAnimationTable[(i32)MovementDirection::Right]);
+	AnimationAssetManager->MakeAnimationRectFramesFromName("RedDigger_Down", DiggerAnimationTable[(i32)MovementDirection::Down]);
+	AnimationAssetManager->MakeAnimationRectFramesFromName("RedDigger_Left", DiggerAnimationTable[(i32)MovementDirection::Left]);
+	AnimationAssetManager->MakeAnimationRectFramesFromName("RedDigger_Up", DiggerAnimationTable[(i32)MovementDirection::Up]);
+
 }
 
 void EnemyManager::UpdateSingleSpawner(float deltaTime, EnemySpawner& spawner)
@@ -255,13 +277,100 @@ void EnemyManager::SpawnEnemy(EnemySpawner& spawner)
 	spawned.EnemyAnimator.bIsAnimating = true;
 	spawned.EnemyAnimator.FPS = 4;
 	spawned.bCrushed = false;
-
+	spawned.Timer = 0.0f;
 	SetNewPath(spawned, characterTile);
 	SetEnemyDestinationWorldSpace(spawned);
 	SetEnemyDirection(spawned);
 }
 
 void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
+{
+	switch (enemy.Type)
+	{
+	case EnemyType::Normal:
+		UpdateSingleNormalEnemy(deltaTime, enemy);
+		break;
+	case EnemyType::TurningIntoDigger:
+		UpdateSingleFlashingEnemy(deltaTime, enemy);
+		break;
+	case EnemyType::Digger:
+		UpdateSingleDiggerEnemy(deltaTime, enemy);
+		break;
+	}
+
+}
+
+void EnemyManager::UpdateSingleNormalEnemy(float deltaTime, Enemy& enemy)
+{
+	enemy.Timer += deltaTime;
+	
+	bool newCell = FollowPathBase(enemy, deltaTime, [this](Enemy& enemy) {
+		const ivec2& characterTile = CachedCharacter->GetTile();
+		SetNewPath(enemy, characterTile);
+	});
+	if (newCell)
+	{
+		enemy.Timer = 0.0f;
+	}
+
+	enemy.EnemyAnimator.CurrentAnimation = &NormalEnemyAnimationTable[enemy.bPushing][(u32)enemy.CurrentDirection];
+	enemy.EnemyAnimator.Update(deltaTime / 1000.f);
+	// does enemy turn into digger
+	if (enemy.Timer >= EnemyWaitTimeBeforeBecomeDigger)
+	{
+		enemy.Type = EnemyType::TurningIntoDigger;
+		enemy.Timer = 0.0f;
+		enemy.EnemyAnimator.CurrentAnimation = &TransformingToDiggerAnimationTable[(u32)enemy.CurrentDirection];
+		enemy.EnemyAnimator.OnAnimFrame = 0;
+		
+	}
+}
+
+void EnemyManager::UpdateSingleFlashingEnemy(float deltaTime, Enemy& enemy)
+{
+	enemy.Timer += deltaTime;
+	if (enemy.Timer >= MorphingEnemyFlashTime)
+	{
+		enemy.Timer = 0.0f;
+		enemy.Type = EnemyType::Digger;
+		SetNewPathForDigger(enemy, CachedCharacter->GetTile());
+		SetEnemyDestinationWorldSpace(enemy);
+	}
+	enemy.EnemyAnimator.CurrentAnimation = &TransformingToDiggerAnimationTable[(u32)enemy.CurrentDirection];
+	enemy.EnemyAnimator.Update(deltaTime / 1000.0f);
+}
+
+void EnemyManager::UpdateSingleDiggerEnemy(float deltaTime, Enemy& enemy)
+{
+	ivec2 preMove = enemy.CurrentCell;
+	bool newCell = FollowPathBase(enemy, deltaTime, [this](Enemy& enemy) {
+		enemy.Type = EnemyType::Normal;
+		const ivec2& characterTile = CachedCharacter->GetTile();
+		SetNewPath(enemy, characterTile);
+	}, DigSpeedMultiplier);
+	ivec2 postMove = enemy.CurrentCell;
+	if (newCell)
+	{
+		CachedTiledWorld->ConnectAdjacentCells(preMove, postMove);
+	}
+	enemy.EnemyAnimator.CurrentAnimation = &DiggerAnimationTable[(u32)enemy.CurrentDirection];
+	enemy.EnemyAnimator.Update(deltaTime / 1000.0f);
+}
+
+void EnemyManager::SetEnemyPushingState(Enemy* enemy, bool newState)
+{
+	enemy->bPushing = newState;
+	enemy->EnemyAnimator.CurrentAnimation = &NormalEnemyAnimationTable[enemy->bPushing][(u32)enemy->CurrentDirection];
+}
+
+
+void EnemyManager::SetEnemyDestinationWorldSpace(Enemy& enemy)
+{
+	const ivec2& dest = enemy.PathBuffer[enemy.PathBufferDestinationIndex];
+	enemy.Destination = { dest.x * (float)BackgroundTileSize, dest.y * (float)BackgroundTileSize };
+}
+
+bool EnemyManager::FollowPathBase(Enemy& enemy, float deltaTime, const PathFinishedCallback& onPathFinished, float speedMultiplier)
 {
 	//move towards next path node
 	vec2 moveDirection = (enemy.Destination - enemy.Pos).Normalized();
@@ -285,7 +394,8 @@ void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
 		break;
 	}
 
-	(*coordinateToChangePtr) += deltaTime * EnemySpeed * changeDirection;
+	(*coordinateToChangePtr) += deltaTime * EnemySpeed * changeDirection * speedMultiplier;
+
 	bool passedIntoNextCell = false;
 	float overshootAmount = 0.0f;
 	switch (enemy.CurrentDirection)
@@ -313,11 +423,11 @@ void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
 	{
 		enemy.Pos = enemy.Destination;
 		enemy.CurrentCell = enemy.PathBuffer[enemy.PathBufferDestinationIndex];
+		//enemy.Timer = 0.0f;
 
 		if (--enemy.PathBufferDestinationIndex < 0)
 		{
-			const ivec2& characterTile = CachedCharacter->GetTile();
-			SetNewPath(enemy, characterTile);
+			onPathFinished(enemy);
 		}
 
 		SetEnemyDestinationWorldSpace(enemy);
@@ -327,36 +437,30 @@ void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
 		vec2 newMovementVector = MovementHelpers::GetDirectionVector(enemy.CurrentDirection);
 		enemy.Pos += newMovementVector * overshootAmount;
 	}
-	enemy.EnemyAnimator.CurrentAnimation = &NormalEnemyAnimationTable[enemy.bPushing][(u32)enemy.CurrentDirection];
-	enemy.EnemyAnimator.Update(deltaTime / 1000.f);
-	if (CollisionHelpers::AABBCollision(enemy.Pos + vec2{A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f},
-		CachedCharacter->GetPosition() + vec2{A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER/2.0f},
+	
+	if (CollisionHelpers::AABBCollision(enemy.Pos + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
+		CachedCharacter->GetPosition() + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
 		{ CachedTileSize - A_SMALL_NUMBER ,CachedTileSize - A_SMALL_NUMBER },
 		{ CachedTileSize - A_SMALL_NUMBER, CachedTileSize - A_SMALL_NUMBER }))
 	{
 		CachedCharacter->Kill(CharacterDeathReason::KilledByMonster);
 	}
-
-}
-void EnemyManager::SetEnemyDestinationWorldSpace(Enemy& enemy)
-{
-	const uvec2& dest = enemy.PathBuffer[enemy.PathBufferDestinationIndex];
-	enemy.Destination = { dest.x * (float)BackgroundTileSize, dest.y * (float)BackgroundTileSize };
+	return passedIntoNextCell;
 }
 
 void EnemyManager::InitialiseEnemyPool()
 {
 	for (int i = 0; i < EnemyPoolSize; i++)
 	{
-		EnemyPool[i].PathBuffer = std::make_unique<uvec2[]>(PathBufferSize);
+		EnemyPool[i].PathBuffer = std::make_unique<ivec2[]>(PathBufferSize);
 	}
 }
 
 void EnemyManager::SetNewPath(Enemy& enemy, const ivec2& newDestinationCell)
 {
-	PathFinding::DoAstar(
+	PathFinding::DoAStarNormalEnemy(
 		enemy.CurrentCell,
-		uvec2{ (u32)newDestinationCell.x, (u32)newDestinationCell.y },
+		ivec2{ (u32)newDestinationCell.x, (u32)newDestinationCell.y },
 		enemy.PathBuffer.get(),
 		enemy.PathBufferCurrentSize,
 		PathBufferSize,
@@ -365,10 +469,25 @@ void EnemyManager::SetNewPath(Enemy& enemy, const ivec2& newDestinationCell)
 	enemy.PathBufferDestinationIndex = enemy.PathBufferCurrentSize - 1;
 }
 
+void EnemyManager::SetNewPathForDigger(Enemy& enemy, const ivec2& newDestinationCell)
+{
+	PathFinding::DoDiggingEnemyAStar(
+		enemy.CurrentCell,
+		ivec2{ (u32)newDestinationCell.x, (u32)newDestinationCell.y },
+		enemy.PathBuffer.get(),
+		enemy.PathBufferCurrentSize,
+		PathBufferSize,
+		CachedTiledWorld,
+		enemy.PathBuffer[enemy.PathBufferDestinationIndex]
+	);
+	enemy.PathBufferDestinationIndex = enemy.PathBufferCurrentSize - 1;
+
+}
+
 void EnemyManager::SetEnemyDirection(Enemy& enemy)
 {
-	const uvec2& current = enemy.CurrentCell;
-	const uvec2& destination = enemy.PathBuffer[enemy.PathBufferDestinationIndex];
+	const ivec2& current = enemy.CurrentCell;
+	const ivec2& destination = enemy.PathBuffer[enemy.PathBufferDestinationIndex];
 
 	int dx = current.x - destination.x;
 	int dy = current.y - destination.y;
