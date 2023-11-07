@@ -41,6 +41,8 @@ void CrystalBall::Draw(SDL_Surface* windowSurface, float scale) const
 	SDL_Rect dst;
 	float tileSize = ConfigFile->GetBackgroundConfigData().TileSize;
 	const SDL_Rect* rectToDraw = nullptr;
+	vec2 character = Owner->GetPosition();
+
 	switch(State)
 	{
 	case CrystalBallState::Released:
@@ -76,7 +78,6 @@ void CrystalBall::Draw(SDL_Surface* windowSurface, float scale) const
 		}
 		break;
 	case CrystalBallState::ParticleEffectOnHitEnemy:
-	case CrystalBallState::ParticleEffectOnRegenerate:
 		for (int i = 0; i < NUM_PARTICLES; i++)
 		{
 			rectToDraw = &BallParticleSprite;
@@ -85,6 +86,17 @@ void CrystalBall::Draw(SDL_Surface* windowSurface, float scale) const
 			dst.h = tileSize * scale;
 			dst.x = particle.x * scale;
 			dst.y = particle.y * scale;
+			SDL_BlitSurfaceScaled(surface, rectToDraw, windowSurface, &dst);
+		}
+	case CrystalBallState::ParticleEffectOnRegenerate:
+		for (int i = 0; i < NUM_PARTICLES; i++)
+		{
+			rectToDraw = &BallParticleSprite;
+			const vec2& particle = Particles[i];
+			dst.w = tileSize * scale;
+			dst.h = tileSize * scale;
+			dst.x = (character.x + particle.x) * scale;
+			dst.y = (character.y + particle.y) * scale;
 			SDL_BlitSurfaceScaled(surface, rectToDraw, windowSurface, &dst);
 		}
 		break;
@@ -666,10 +678,9 @@ void CrystalBall::TriggerOnHitEnemyParticleEffect(const Enemy& enemy)
 
 void CrystalBall::TriggerOnRegenerateParticleEffect()
 {
-	vec2 character = Owner->GetPosition();
 	for (int i = 0; i < NUM_PARTICLES; i++)
 	{
-		Particles[i] = character + ParticleDirections[i] * (ParticleSpeeds[i] * OnRegenerateParticleEffectDuration);
+		Particles[i] = ParticleDirections[i] * (ParticleSpeeds[i] * OnRegenerateParticleEffectDuration);
 	}
 	State = CrystalBallState::ParticleEffectOnRegenerate;
 	Timer = 0.0f;

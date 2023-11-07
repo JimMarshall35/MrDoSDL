@@ -322,7 +322,6 @@ void EnemyManager::UpdateSingleNormalEnemy(float deltaTime, Enemy& enemy)
 		enemy.Timer = 0.0f;
 		enemy.EnemyAnimator.CurrentAnimation = &TransformingToDiggerAnimationTable[(u32)enemy.CurrentDirection];
 		enemy.EnemyAnimator.OnAnimFrame = 0;
-		
 	}
 }
 
