@@ -360,7 +360,6 @@ void EnemyManager::UpdateSingleDiggerEnemy(float deltaTime, Enemy& enemy)
 void EnemyManager::SetEnemyPushingState(Enemy* enemy, bool newState)
 {
 	enemy->bPushing = newState;
-	enemy->EnemyAnimator.CurrentAnimation = &NormalEnemyAnimationTable[enemy->bPushing][(u32)enemy->CurrentDirection];
 }
 
 

@@ -544,6 +544,7 @@ void Character::OnResetAfterDeath(LevelLoadData levelLoadData)
 	{
 		CatchBall();
 	}
+	MyCrystalBall.ResetStateOnDeath();
 }
 
 void Character::Draw(SDL_Surface* windowSurface, float scale) const

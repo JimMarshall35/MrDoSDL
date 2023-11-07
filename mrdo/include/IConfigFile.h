@@ -87,5 +87,8 @@ public:
 	virtual const std::string& GetStringValue(const std::string& key) const = 0;
 	virtual bool GetBoolValue(const std::string& key) const = 0;
 	virtual void SaveAfterMapMakerLevelsChange() = 0;
+	virtual int GetArraySize(const std::string& key) const = 0;
+	virtual int GetIntArrayValue(const std::string& key, size_t index) const = 0;
+	virtual float GetFloatArrayValue(const std::string& key, size_t index) const = 0;
 
 };

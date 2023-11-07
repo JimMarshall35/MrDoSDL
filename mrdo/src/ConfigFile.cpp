@@ -295,3 +295,27 @@ const FontConfigData& ConfigFile::GetFontConfigData() const
 {
 	return FontConfigData;
 }
+
+int ConfigFile::GetArraySize(const std::string& key) const
+{
+	assert(ConfigFileJSON[key].is_array());
+	return ConfigFileJSON[key].size();
+}
+
+int ConfigFile::GetIntArrayValue(const std::string& key, size_t index) const
+{
+	assert(ConfigFileJSON[key].is_array());
+	size_t size = ConfigFileJSON[key].size();
+	assert(index < size);
+	assert(ConfigFileJSON[key][index].is_number_integer());
+	return ConfigFileJSON[key][index];
+}
+
+float ConfigFile::GetFloatArrayValue(const std::string& key, size_t index) const
+{
+	assert(ConfigFileJSON[key].is_array());
+	size_t size = ConfigFileJSON[key].size();
+	assert(index < size);
+	assert(ConfigFileJSON[key][index].is_number_float());
+	return ConfigFileJSON[key][index];
+}

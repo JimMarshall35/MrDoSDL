@@ -1,6 +1,7 @@
 #pragma once
 #include "CommonTypedefs.h"
 #include <math.h>       /* sqrt */
+# define M_PI           3.14159265358979323846  /* pi */
 
 struct vec2
 {
@@ -47,6 +48,22 @@ struct vec2
 	{
 		float mag = Magnitude();
 		return { x / mag, y / mag };
+	}
+
+	vec2 Rotated(float degrees) const
+	{
+		vec2 normalised = Normalized();
+		float x = normalised.x;
+		float y = normalised.y;
+		const float degreesToRadians = M_PI / 180.0;
+		float angle = degrees * degreesToRadians;
+		float _cos = cos(angle);
+		float _sin = sin(angle);
+		return
+		{
+			x*_cos-y*_sin,
+			x*_sin+y*_cos
+		};
 	}
 };
 

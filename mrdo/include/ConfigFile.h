@@ -23,6 +23,10 @@ public:
 	virtual bool GetBoolValue(const std::string& key) const override;
 	virtual const LevelConfigData& GetBlankLevelTemplate() const override;
 	virtual void SaveAfterMapMakerLevelsChange() override;
+	virtual int GetArraySize(const std::string& key) const;
+	virtual int GetIntArrayValue(const std::string& key, size_t index) const;
+	virtual float GetFloatArrayValue(const std::string& key, size_t index) const;
+
 private:
 	void PopulateBackgroundConfigDataStruct();
 	void PopulateAnimationsConfigDataStruct();
