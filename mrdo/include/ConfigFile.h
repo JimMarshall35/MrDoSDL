@@ -5,7 +5,7 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-class IFileSystem;
+
 class ConfigFile : public IConfigFile
 {
 public:
@@ -26,6 +26,7 @@ public:
 	virtual int GetArraySize(const std::string& key) const;
 	virtual int GetIntArrayValue(const std::string& key, size_t index) const;
 	virtual float GetFloatArrayValue(const std::string& key, size_t index) const;
+	virtual const IFileSystem* GetFileSystem() const override { return Filesystem.get(); }
 
 private:
 	void PopulateBackgroundConfigDataStruct();

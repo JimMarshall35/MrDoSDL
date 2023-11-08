@@ -19,7 +19,7 @@
 #include "MapMakerLevelSelectedDialogue.h"
 #include "MapMakerLayer.h"
 #include "PathFinding.h"
-
+#include "EnemyScripting.h"
 
 int main(int argc, char* args[])
 {
@@ -69,6 +69,22 @@ int main(int argc, char* args[])
 
             std::shared_ptr<IAnimationAssetManager> animationAssetManager = std::make_shared<AnimationAssetManager>(configFile, screenSurface);
             
+            
+
+
+
+            PathFinding::Initialise(configFile->GetUIntValue("PathFindingPriorityQueueSize"));
+            EnemyScripting::InitScripting(
+                configFile->GetUIntValue("EnemyScriptingVMDictionarySizeCells"),
+                configFile->GetUIntValue("EnemyScriptingVMIntStackSizeCells"),
+                configFile->GetUIntValue("EnemyScriptingVMReturnStackSizeCells"));
+            EnemyScripting::EnemyManager_ForthExposedMethodImplementations::RegisterForthFunctions();
+            EnemyScripting::ForthDoString("showWords");
+            EnemyScripting::DoFile(fileSystem->GetEnemyAIFilePath());
+
+            //EnemyScripting::ForthDoString("drop");
+
+
             // game framework layers
             Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, textRenderer);
             FrontEndLayer frontend(textRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -77,9 +93,10 @@ int main(int argc, char* args[])
             MapMakerLevelSelectedDialogue mapMakerLevelSelectedDialogue(configFile, textRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
             MapMakerLayer MapMakerLayer(configFile, backgroundTileAssetManager, animationAssetManager, textRenderer);
 
-            GameFramework::PushLayers("FrontEnd", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0);
+          
+            //EnemyScripting::ForthDoString("showWords");
 
-            PathFinding::Initialise(configFile->GetUIntValue("PathFindingPriorityQueueSize"));
+            GameFramework::PushLayers("FrontEnd", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0);
 
             bool quit = false; 
             u32 simulationTime = 0;
@@ -100,7 +117,7 @@ int main(int argc, char* args[])
                 GameFramework::EndFrame();
                 SDL_UpdateWindowSurface(window);
             }
-
+            EnemyScripting::DeInitScripting();
             PathFinding::DeInit();
         }
     }

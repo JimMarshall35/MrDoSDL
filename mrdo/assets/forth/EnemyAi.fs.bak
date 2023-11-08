@@ -1,0 +1,94 @@
+2000 const EnemyWaitTimeBeforeBecomeDigger
+
+0 const EnemyTypeDigger
+
+1 const EnemyTypeTurningIntoDigger
+
+2 const EnemyTypeDigger
+
+3 const EnemyTypeExtraMan
+
+4 const EnemyTypeGhost
+
+: OnReachedPathEnd ( enemy )
+	GetCharacterTile SetPathTo
+;
+
+: IncrementDeltaTime ( enemyPtr -- enemyPtr )
+	dup
+	GetTimerPtr @ GetDeltaT +
+	( enemyPtr timerValue+deltaT )
+	swap dup
+	( timerValue+deltaT enemyPtr enemyPtr )
+	GetTimerPtr 
+	( timerValue+deltaT enemyPtr timerPtr )
+	rot 
+	( enemyPtr timerPtr timerValue+deltaT )
+	swap
+	!
+;
+
+: TransformToDigger ( enemyPtr -- )
+	dup show GetEnemyTypePtr
+	( enemy enemyTypePtr )
+	EnemyTypeTurningIntoDigger swap !
+	( enemy )
+	dup GetTimerPtr 0 swap !
+	( enemy )
+	dup 0 swap SetAnimationFrame
+	( enemy )
+	dup 
+	GetCurrentDirection
+	SetMorphingAnimation
+	show
+;
+
+: EnemyUpdate ( enemyptr -- )
+	IncrementDeltaTime
+	dup 
+	( enemy enemy )
+	' OnReachedPathEnd FollowPath
+	( enemy hasReachedNewCell )
+	-1 = if
+		dup GetTimerPtr 
+		( enemy timerPtr )
+		0 swap 
+		!
+	then
+	dup GetPushing
+	( enemy isPushing )
+	swap
+	dup
+	( isPushing enemy enemy ) 
+	dup
+	( isPushing enemy enemy enemy )
+	GetCurrentDirection 
+	( isPushing enemy enemy currentDirection )
+	2swap
+	( enemy currentDirection isPushing enemy )
+	rot
+	( enemy isPushing enemy currentDirection )
+	rot
+	( enemy enemy currentDirection isPushing )
+	swap
+	( enemy enemy isPushing currentDirection )
+	SetNormalAnimation
+	( enemy )
+	dup 
+	( enemy enemy )
+	GetDeltaT
+	( enemy enemy deltaT )
+	swap
+	UpdateAnimator
+	( enemy )
+	dup
+	GetTimerPtr @
+	( enemy currentTimer )
+	EnemyWaitTimeBeforeBecomeDigger > if
+		show
+		TransformToDigger
+	else
+		drop
+	then
+	
+;

@@ -4,7 +4,8 @@ FileSystem::FileSystem(const std::string& exePath)
 	:ExePath(GetFolderOfFile(exePath)),
 	AssetFolderPath(ExePath + "assets"),
 	SpriteFolderPath(ExePath + "assets\\sprites"),
-	ConfigFilePath(ExePath + "assets\\json\\config.json")
+	ConfigFilePath(ExePath + "assets\\json\\config.json"),
+	EnemyAIFilePath(ExePath + "assets\\forth\\EnemyAi.fs")
 {
 
 }
@@ -22,6 +23,11 @@ const std::string& FileSystem::GetSpritesFolderPath() const
 const std::string& FileSystem::GetConfigFilePath() const
 {
 	return ConfigFilePath;
+}
+
+const std::string& FileSystem::GetEnemyAIFilePath() const
+{
+	return EnemyAIFilePath;
 }
 
 std::string FileSystem::GetFolderOfFile(const std::string& filePath)

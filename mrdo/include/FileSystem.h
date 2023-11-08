@@ -11,6 +11,7 @@ public:
 	virtual const std::string& GetAssetFolderPath() const override;
 	virtual const std::string& GetSpritesFolderPath() const override;
 	virtual const std::string& GetConfigFilePath() const override;
+	virtual const std::string& GetEnemyAIFilePath() const override;
 private:
 	static std::string GetFolderOfFile(const std::string& filePath);
 private:
@@ -18,5 +19,6 @@ private:
 	std::string AssetFolderPath;
 	std::string SpriteFolderPath;
 	std::string ConfigFilePath;
+	std::string EnemyAIFilePath;
 	
 };
