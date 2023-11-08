@@ -52,7 +52,7 @@ struct Enemy
 	i32 PathBufferDestinationIndex;
 	ivec2 CurrentCell;
 	Animator EnemyAnimator;
-	float Timer;
+	Cell Timer;
 	u8 bPushing : 1;
 	u8 bActive : 1;
 	u8 bCrushed : 1;

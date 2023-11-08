@@ -5,6 +5,9 @@
 #include <fstream>
 #include "ForthStringHelpers.h"
 #include "EnemyManager.h"
+#include <cassert>
+#include "TiledWorld.h"
+#include "Character.h"
 
 namespace EnemyScripting
 {
@@ -92,6 +95,7 @@ namespace EnemyScripting
 		{
 			std::cout << "[FORTH] Int stack empty!\n";
 		}
+		return 0;
 	}
 
 	void Push(Cell cell)
@@ -106,30 +110,144 @@ namespace EnemyScripting
 		}
 	}
 
-	template<typename T>
-	T Pop()
-	{
-		return static_cast<T>(Pop());
-	}
-
-	template<typename T>
-	void Push(T t)
-	{
-		Push(static_assert<Cell>(t));
-	}
-
 	
 	Bool EnemyManager_ForthExposedMethodImplementations::FollowPath(ForthVm* vm)
 	{
-		Enemy* enemy = Pop<Enemy*>();
-		ExecutionToken onPathFinished = Pop<ExecutionToken>();
-		Instance->FollowPathBase(*enemy, Instance->DeltaTime, [onPathFinished](Enemy& enemy) {
-			Push<Enemy*>(&enemy);
+		// ( enemy pathFinishedCallback -- bHasReachedNewCell )
+		ExecutionToken onPathFinished = (ExecutionToken)Pop();
+		Enemy* enemy = (Enemy*)Pop();
+
+		Cell* instructionPtrCached = vm->instructionPointer;
+		bool enteredNewCell = Instance->FollowPathBase(*enemy, Instance->DeltaTime, [onPathFinished](Enemy& enemy) {
+			Push((Cell)&enemy);
 			DoExecutionToken(onPathFinished);
 		});
+		vm->instructionPointer = instructionPtrCached;
+
+		Push(enteredNewCell ? -1 : 0);
 		return Bool();
 	}
 
+	Bool EnemyManager_ForthExposedMethodImplementations::GetEnemyTimerPtr(ForthVm* vm)
+	{
+		//( enemy -- &enemy->Timer )
+		Enemy* enemy = (Enemy*)Pop();
+		Push((Cell)&enemy->Timer);
+		return Bool();
+	}
+
+	Bool EnemyManager_ForthExposedMethodImplementations::GetDeltaT(ForthVm* vm)
+	{
+		// ( -- deltaT )
+		Push((Cell)Instance->DeltaTime);
+		return Bool();
+	}
+
+	Bool EnemyManager_ForthExposedMethodImplementations::GetPushing(ForthVm* vm)
+	{
+		// ( enemy -- enemy->bIsPushing )
+		Enemy* enemy = (Enemy*)Pop();
+		Push(enemy->bPushing ? 1 : 0);
+		return Bool();
+	}
+
+	Bool EnemyManager_ForthExposedMethodImplementations::GetCurrentDirection(ForthVm* vm)
+	{
+		// ( enemy -- enemy->CurrentDirection )
+		Enemy* enemy = (Enemy*)Pop();
+		Push((Cell)enemy->CurrentDirection);
+		return Bool();
+	}
+
+	Bool EnemyManager_ForthExposedMethodImplementations::SetNormalAnimation(ForthVm* vm)
+	{
+		// ( enemy isPushing movementDirection -- )
+		MovementDirection md = (MovementDirection)Pop();
+		Cell isPushing = Pop();
+		Enemy* enemy = (Enemy*)Pop();
+		enemy->EnemyAnimator.CurrentAnimation = &EnemyManager::NormalEnemyAnimationTable[isPushing][(u32)md];
+		return Bool();
+	}
+
+	Bool EnemyManager_ForthExposedMethodImplementations::UpdateAnimator(ForthVm* vm)
+	{
+		// ( deltaT enemy -- )
+		Enemy* enemy = (Enemy*)Pop();
+		Cell deltaT = (Cell)Pop();
+		enemy->EnemyAnimator.Update((float)deltaT / 1000.f);
+		return Bool();
+	}
+
+	Bool EnemyManager_ForthExposedMethodImplementations::GetEnemyTypePtr(ForthVm* vm)
+	{
+		// ( enemy -- )
+		Enemy* enemy = (Enemy*)Pop();
+		Push((Cell)&enemy->Type);
+		return Bool();
+	}
+
+	Bool EnemyManager_ForthExposedMethodImplementations::SetAnimationFrame(ForthVm* vm)
+	{
+		// ( enemy frame -- )
+		Enemy* enemy = (Enemy*)Pop();
+		Cell frame = (Cell)Pop();
+		enemy->EnemyAnimator.OnAnimFrame = frame;
+		return Bool();
+	}
+
+	Bool EnemyManager_ForthExposedMethodImplementations::SetMorphingAnimation(ForthVm* vm)
+	{
+		// ( enemy movementDirection -- )
+		MovementDirection md = (MovementDirection)Pop();
+		Enemy* enemy = (Enemy*)Pop();
+		enemy->EnemyAnimator.CurrentAnimation = &EnemyManager::TransformingToDiggerAnimationTable[(u32)md];
+		return Bool();
+	}
+
+	Bool EnemyManager_ForthExposedMethodImplementations::SetNewEnemyPathTo(ForthVm* vm)
+	{
+		// ( enemy destY destX -- )
+		Cell destX = (Cell)Pop();
+		Cell destY = (Cell)Pop();
+
+		Enemy* enemy = (Enemy*)Pop();
+
+		assert(destX >= 0);
+		assert(destX < Instance->CachedTiledWorld->GetActiveLevelWidth());
+		assert(destY >= 0);
+		assert(destY < Instance->CachedTiledWorld->GetActiveLevelHeight());
+
+		Instance->SetNewPath(*enemy, {destX,destY});
+		return Bool();
+	}
+
+	Bool EnemyManager_ForthExposedMethodImplementations::GetCharacterTile(ForthVm* vm)
+	{
+		// ( -- characterY characterX )
+		Character* character = Instance->CachedCharacter;
+		const ivec2& characterTile = character->GetTile();
+		Push((Cell)characterTile.y);
+		Push((Cell)characterTile.x);
+		return Bool();
+	}
+
+	void EnemyManager_ForthExposedMethodImplementations::RegisterForthFunctions()
+	{
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::FollowPath, "FollowPath");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::GetEnemyTimerPtr, "GetTimerPtr");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::GetDeltaT, "GetDeltaT");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::GetPushing, "GetPushing");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::GetCurrentDirection, "GetCurrentDirection");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::SetNormalAnimation, "SetNormalAnimation");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::UpdateAnimator, "UpdateAnimator");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::GetEnemyTypePtr, "GetEnemyTypePtr");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::SetAnimationFrame, "SetAnimationFrame");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::SetMorphingAnimation, "SetMorphingAnimation");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::SetNewEnemyPathTo, "SetPathTo");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::GetCharacterTile, "GetCharacterTile");
+	}
+
+	
 }
 
 

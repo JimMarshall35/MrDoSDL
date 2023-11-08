@@ -2,6 +2,8 @@
 #include "CommonTypedefs.h"
 #include <math.h>       /* sqrt */
 # define M_PI           3.14159265358979323846  /* pi */
+#include <stdint.h>
+
 
 struct vec2
 {
@@ -85,6 +87,10 @@ struct ivec2
 
 	ivec2(float x, float y)
 		:x((i32)x), y((i32)y)
+	{}
+
+	ivec2(i64 x, i64 y)
+		:x((i32)x), y((i64)y)
 	{}
 
 	ivec2 operator+(const ivec2& other) const

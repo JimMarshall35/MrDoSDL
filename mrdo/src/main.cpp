@@ -78,8 +78,12 @@ int main(int argc, char* args[])
                 configFile->GetUIntValue("EnemyScriptingVMDictionarySizeCells"),
                 configFile->GetUIntValue("EnemyScriptingVMIntStackSizeCells"),
                 configFile->GetUIntValue("EnemyScriptingVMReturnStackSizeCells"));
-
+            EnemyScripting::EnemyManager_ForthExposedMethodImplementations::RegisterForthFunctions();
+            EnemyScripting::ForthDoString("showWords");
             EnemyScripting::DoFile(fileSystem->GetEnemyAIFilePath());
+
+            //EnemyScripting::ForthDoString("drop");
+
 
             // game framework layers
             Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, textRenderer);
@@ -88,6 +92,9 @@ int main(int argc, char* args[])
             MapMakerCreateNewLevelDialogue mapMakerCreateNewLevelDialogue(textRenderer, configFile, SCREEN_WIDTH, SCREEN_HEIGHT);
             MapMakerLevelSelectedDialogue mapMakerLevelSelectedDialogue(configFile, textRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
             MapMakerLayer MapMakerLayer(configFile, backgroundTileAssetManager, animationAssetManager, textRenderer);
+
+          
+            //EnemyScripting::ForthDoString("showWords");
 
             GameFramework::PushLayers("FrontEnd", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0);
 

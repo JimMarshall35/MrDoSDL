@@ -1,6 +1,5 @@
 set(SDL_INCLUDES "../vendor/sdl/include")
 set(SDL_BINARY ../vendor/sdl/sdl3.lib)
-
 file(GLOB_RECURSE SOURCES *.cpp *.c)
 file(GLOB_RECURSE INCS ../include/*.h)
 add_executable( MrDoGame ${SOURCES} ${INCS})

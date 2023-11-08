@@ -53,6 +53,7 @@ EnemyManager::EnemyManager(
 	InitialiseEnemyPool();
 	UpdateNormalEnemyScriptFunction = EnemyScripting::FindExecutionToken("EnemyUpdate");
 	EnemyScripting::EnemyManager_ForthExposedMethodImplementations::Instance = this;
+
 }
 
 void EnemyManager::Update(float deltaTime)
@@ -286,10 +287,13 @@ void EnemyManager::SpawnEnemy(EnemySpawner& spawner)
 
 void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
 {
+	EnemyType oldType = enemy.Type;
+	Enemy* enemyPtr = &enemy;
 	switch (enemy.Type)
 	{
 	case EnemyType::Normal:
-		UpdateSingleNormalEnemy(deltaTime, enemy);
+		EnemyScripting::Push((Cell)enemyPtr);
+		EnemyScripting::DoExecutionToken(UpdateNormalEnemyScriptFunction);
 		break;
 	case EnemyType::TurningIntoDigger:
 		UpdateSingleFlashingEnemy(deltaTime, enemy);
@@ -298,7 +302,7 @@ void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
 		UpdateSingleDiggerEnemy(deltaTime, enemy);
 		break;
 	}
-
+	EnemyType newType = enemy.Type;
 }
 
 void EnemyManager::UpdateSingleNormalEnemy(float deltaTime, Enemy& enemy)

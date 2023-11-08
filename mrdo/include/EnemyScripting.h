@@ -12,11 +12,26 @@ namespace EnemyScripting
 	void RegisterCFunction(ForthCFunc func, const char* name);
 	ExecutionToken FindExecutionToken(const char* name);
 	void DoExecutionToken(ExecutionToken token);
+	Cell Pop();
+	void Push(Cell cell);
+
 	class EnemyManager_ForthExposedMethodImplementations
 	{
 	public:
 		static EnemyManager* Instance;
 		static Bool FollowPath(ForthVm* vm);
+		static Bool GetEnemyTimerPtr(ForthVm* vm);
+		static Bool GetDeltaT(ForthVm* vm);
+		static Bool GetPushing(ForthVm* vm);
+		static Bool GetCurrentDirection(ForthVm* vm);
+		static Bool SetNormalAnimation(ForthVm* vm);
+		static Bool UpdateAnimator(ForthVm* vm);
+		static Bool GetEnemyTypePtr(ForthVm* vm);
+		static Bool SetAnimationFrame(ForthVm* vm);
+		static Bool SetMorphingAnimation(ForthVm* vm);
+		static Bool SetNewEnemyPathTo(ForthVm* vm);
+		static Bool GetCharacterTile(ForthVm* vm);
 
+		static void RegisterForthFunctions();
 	};
 }

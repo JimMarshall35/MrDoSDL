@@ -62,6 +62,10 @@ typedef enum {
 	SwitchToInterpret,
 	Does,
 	Nop,
+	// Mr Do Additions start
+	Fetch32,
+	Store32,
+	// Mr Do Additions end
 	NumPrimitives // LEAVE AT END
 }PrimitiveWordTokenValues;
 
@@ -523,7 +527,6 @@ static Bool InnerInterpreter(ForthVm* vm){
 			vm->currentMode |= Forth_CompileBit;
 		BCase SwitchToInterpret:
 			vm->currentMode &= ~Forth_CompileBit;
-		BCase Nop: // todo: move below Does when a new token is added to keep in order - can't leave blank if at end of switch
 
 		BCase Does:
 			// re-write the return token of the last created word 
@@ -559,6 +562,16 @@ static Bool InnerInterpreter(ForthVm* vm){
 			// we want to link subsequent defined words to it by replacing their return (the whole point of this section of code). 
 			// And so we just return now.
 			vm->instructionPointer = PopReturnStack(vm);
+		BCase Nop:
+		// Mr Do Additions start
+		BCase Fetch32:
+			cell1 = PopIntStack(vm);
+			PushIntStack(vm, *((int32_t*)cell1));
+		BCase Store32:
+			cell1 = PopIntStack(vm);
+			cell2 = PopIntStack(vm);
+			*((int32_t*)cell1) = (int32_t)cell2;
+		// MrDo Additions end
 		}
 	} while (vm->returnStackTop != initialReturnStack);
 	return False;
@@ -897,6 +910,10 @@ ForthVm Forth_Initialise(
 	AddPrimitiveToDict(&vm, SwitchToInterpret,                         "[",         True);
 	AddPrimitiveToDict(&vm, Does,                                      "does>",     False);
 	AddPrimitiveToDict(&vm, Nop,                                       "nop",       False);
+	// Mr Do Additions start
+	AddPrimitiveToDict(&vm, Fetch32,                                   "@32",       False);
+	AddPrimitiveToDict(&vm, Store32,                                   "!32",       False);
+	// Mr Do Additions end
 
 	// load core vocabulary of words that are not primitive, ie are defined in forth
 	OuterInterpreter(&vm, coreWords);
