@@ -72,6 +72,8 @@ struct LevelConfigData
 	u32 PlayerSpawnFacing;
 };
 
+class IFileSystem;
+
 class IConfigFile
 {
 public:
@@ -90,5 +92,5 @@ public:
 	virtual int GetArraySize(const std::string& key) const = 0;
 	virtual int GetIntArrayValue(const std::string& key, size_t index) const = 0;
 	virtual float GetFloatArrayValue(const std::string& key, size_t index) const = 0;
-
+	virtual const IFileSystem* GetFileSystem() const = 0;
 };

@@ -13,7 +13,7 @@ std::vector<SDL_Rect> EnemyManager::DiggerAnimationTable[4];
 std::vector<SDL_Rect> EnemyManager::TransformingToDiggerAnimationTable[4];
 SDL_Rect EnemyManager::SpawnerTileSprite;
 SDL_Rect EnemyManager::CrushedMonsterSprite;
-
+float EnemyManager::DeltaTime = 0.0f;
 
 EnemyManager::EnemyManager(
 	const std::shared_ptr<IConfigFile>& configFile,
@@ -51,10 +51,13 @@ EnemyManager::EnemyManager(
 	AnimationAssetManager->MakeSingleSpriteRectFrame("CrushedMonster", CrushedMonsterSprite),
 	PopulateAnimationTables();
 	InitialiseEnemyPool();
+	UpdateNormalEnemyScriptFunction = EnemyScripting::FindExecutionToken("EnemyUpdate");
+	EnemyScripting::EnemyManager_ForthExposedMethodImplementations::Instance = this;
 }
 
 void EnemyManager::Update(float deltaTime)
 {
+	DeltaTime = deltaTime;
 	for (int i = 0; i < NumEnemySpawnersThisLevel; i++)
 	{
 		EnemySpawner& spawner = EnemySpawnerPool[i];
@@ -156,14 +159,12 @@ void EnemyManager::CrushEnemy(Enemy* enemy)
 
 void EnemyManager::KillEnemy(Enemy* enemy)
 {
-	//assert(enemy->bActive);
 	if (enemy->bActive)
 	{
 		enemy->bActive = false;
 	}
 	
 	assert(enemy->OriginSpawner);
-	//enemy->OriginSpawner->NumberOfEnemiesLeftToSpawn--;
 }
 
 void EnemyManager::OnLevelBegun(LevelLoadData level)
@@ -444,6 +445,13 @@ bool EnemyManager::FollowPathBase(Enemy& enemy, float deltaTime, const PathFinis
 		CachedCharacter->Kill(CharacterDeathReason::KilledByMonster);
 	}
 	return passedIntoNextCell;
+}
+
+Bool EnemyManager::Forth_FollowPathBase(ForthVm* vm)
+{
+	
+
+	return True;
 }
 
 void EnemyManager::InitialiseEnemyPool()

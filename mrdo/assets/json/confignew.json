@@ -3804,7 +3804,8 @@
   "SpawnEnemyFlashInterval": 200.0,
   "SpawnEnemyInterval": 3000.0,
   "UpKey": 82,
-  "EnemyScriptingVMIntStackSizeCells" : 20,
+
   "EnemyScriptingVMDictionarySizeCells" : 100000,
+  "EnemyScriptingVMIntStackSizeCells" : 20,
   "EnemyScriptingVMReturnStackSizeCells" : 20
 }

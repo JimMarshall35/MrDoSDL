@@ -8,8 +8,10 @@
 #include "MovementTypes.h"
 #include "SDL.h"
 #include "Animator.h"
+#include "ForthCommonTypedefs.h"
 #include <vector>
 #include <functional>
+#include "EnemyScripting.h"
 
 class IConfigFile;
 class IAnimationAssetManager;
@@ -60,7 +62,7 @@ typedef std::function<void(Enemy&)> EnemyIterator;
 class EnemyManager
 {
 public:
-	
+	friend class EnemyScripting::EnemyManager_ForthExposedMethodImplementations;
 public:
 	EnemyManager(
 		const std::shared_ptr<IConfigFile>& configFile,
@@ -99,6 +101,10 @@ private:
 	bool FollowPathBase(Enemy& enemy, float deltaT, const PathFinishedCallback& onPathFinished, float speedMultiplier=1.0f);
 
 private:
+	static Bool Forth_FollowPathBase(ForthVm* vm);
+	
+
+private:
 	LISTENER(EnemyManager, OnLevelBegun, LevelLoadData);
 	LISTENER(EnemyManager, OnResetAfterDeath, LevelLoadData);
 
@@ -133,4 +139,6 @@ private:
 	float EnemyWaitTimeBeforeBecomeDigger;
 	float MorphingEnemyFlashAnimationFPS;
 	float MorphingEnemyFlashTime;
+	static float DeltaTime;
+	ExecutionToken UpdateNormalEnemyScriptFunction;
 };
