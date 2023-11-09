@@ -451,13 +451,6 @@ bool EnemyManager::FollowPathBase(Enemy& enemy, float deltaTime, const PathFinis
 	return passedIntoNextCell;
 }
 
-Bool EnemyManager::Forth_FollowPathBase(ForthVm* vm)
-{
-	
-
-	return True;
-}
-
 void EnemyManager::InitialiseEnemyPool()
 {
 	for (int i = 0; i < EnemyPoolSize; i++)

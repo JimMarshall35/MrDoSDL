@@ -12,20 +12,13 @@
 #include <vector>
 #include <functional>
 #include "EnemyScripting.h"
+#include "EnemyType.h"
 
 class IConfigFile;
 class IAnimationAssetManager;
 class Character;
 class TiledWorld;
 
-enum class EnemyType
-{
-	Normal,
-	TurningIntoDigger,
-	Digger,
-	ExtraMan,
-	Ghost
-};
 enum class EnemySpawnerState
 {
 	Idle,
@@ -98,11 +91,7 @@ private:
 	void SetEnemyDestinationWorldSpace(Enemy& enemy);
 
 	// true == passed into new cell
-	bool FollowPathBase(Enemy& enemy, float deltaT, const PathFinishedCallback& onPathFinished, float speedMultiplier=1.0f);
-
-private:
-	static Bool Forth_FollowPathBase(ForthVm* vm);
-	
+	bool FollowPathBase(Enemy& enemy, float deltaT, const PathFinishedCallback& onPathFinished, float speedMultiplier=1.0f);	
 
 private:
 	LISTENER(EnemyManager, OnLevelBegun, LevelLoadData);

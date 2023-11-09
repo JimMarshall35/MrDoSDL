@@ -462,6 +462,7 @@ void Character::MoveTowardsDestination(float deltaTime)
 			{
 				CachedTiledWorld->RemoveCherryAtTile(DestinationTile);
 				// send cherry collected message here
+				GameFramework::SendFrameworkMessage<CherryEaten>({ DestinationTile });
 			}
 		}
 		if (CurrentLocation.x > CurrentTile.x * tileSize + tileSize)

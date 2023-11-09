@@ -68,10 +68,6 @@ int main(int argc, char* args[])
             InputManager inputManager(configFile);
 
             std::shared_ptr<IAnimationAssetManager> animationAssetManager = std::make_shared<AnimationAssetManager>(configFile, screenSurface);
-            
-            
-
-
 
             PathFinding::Initialise(configFile->GetUIntValue("PathFindingPriorityQueueSize"));
             EnemyScripting::InitScripting(
@@ -79,11 +75,8 @@ int main(int argc, char* args[])
                 configFile->GetUIntValue("EnemyScriptingVMIntStackSizeCells"),
                 configFile->GetUIntValue("EnemyScriptingVMReturnStackSizeCells"));
             EnemyScripting::EnemyManager_ForthExposedMethodImplementations::RegisterForthFunctions();
-            EnemyScripting::ForthDoString("showWords");
             EnemyScripting::DoFile(fileSystem->GetEnemyAIFilePath());
-
-            //EnemyScripting::ForthDoString("drop");
-
+            EnemyScripting::ForthDoString("showWords");
 
             // game framework layers
             Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, textRenderer);
@@ -92,9 +85,6 @@ int main(int argc, char* args[])
             MapMakerCreateNewLevelDialogue mapMakerCreateNewLevelDialogue(textRenderer, configFile, SCREEN_WIDTH, SCREEN_HEIGHT);
             MapMakerLevelSelectedDialogue mapMakerLevelSelectedDialogue(configFile, textRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
             MapMakerLayer MapMakerLayer(configFile, backgroundTileAssetManager, animationAssetManager, textRenderer);
-
-          
-            //EnemyScripting::ForthDoString("showWords");
 
             GameFramework::PushLayers("FrontEnd", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0);
 

@@ -10,6 +10,7 @@
 #include "GameFrameworkMessages.h"
 #include "LevelLoadData.h"
 #include "EnemyManager.h"
+#include "GameState.h"
 
 class IFileSystem;
 class IBackgroundTileAssetManager;
@@ -22,7 +23,10 @@ class Game :
 	public UpdateableLayerBase, 
 	public DrawableLayerBase, 
 	public RecieveInputLayerBase,
-	public GameFrameworkMessageRecipientBase<CharacterDied>
+	public GameFrameworkMessageRecipientBase<CharacterDied>,
+	public GameFrameworkMessageRecipientBase<Victory>,
+	public GameFrameworkMessageRecipientBase<GameOver>
+
 {
 private:
 	enum class GamePhase
@@ -61,6 +65,8 @@ public:
 
 	// Inherited via GameFrameworkMessageRecipientBase
 	virtual void RecieveMessage(const CharacterDied& message) override;
+	virtual void RecieveMessage(const Victory& message) override;
+	virtual void RecieveMessage(const GameOver& message) override;
 
 private:
 	Event<LevelLoadData> NewLevelBegun;
@@ -74,4 +80,7 @@ private:
 	GamePhase Phase;
 	LevelLoadData CurrentLevel = { LevelSource::Undefined, -1};
 	const std::shared_ptr<TextRenderer> CachedTextRenderer;
+	GameState MyGameState;
+	const std::shared_ptr<IConfigFile> Config;
+
 };

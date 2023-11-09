@@ -10,6 +10,7 @@
 #include <math.h>
 #include <algorithm>
 #include "EnemyManager.h"
+#include "GameFramework.h"
 
 CrystalBall::CrystalBall(Character* owner, IAnimationAssetManager* anim, IConfigFile* configFile, TiledWorld* tiledWorld, EnemyManager* enemyManager)
 	:Owner(owner),
@@ -619,8 +620,15 @@ void CrystalBall::UpdateActiveBallInternal(float deltaT)
 			{
 				CachedEnemyManager->KillEnemy(&enemy);
 				// should go into cooldown here 
-				//Owner->CatchBall(true);
 				TriggerOnHitEnemyParticleEffect(enemy);
+				EnemyDeath d;
+				d.Reason = EnemyDeathReason::CrystalBall;
+				d.NumberKilledTotal = 1;
+				if(IsSignificantEnemyType(enemy.Type))
+				{
+					d.NumberSignificantKilled = 1;
+				}
+				GameFramework::SendFrameworkMessage<EnemyDeath>(d);
 			}
 
 		});

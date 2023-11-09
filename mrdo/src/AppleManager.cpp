@@ -8,6 +8,8 @@
 #include "CollisionHelpers.h"
 #include "TiledWorld.h"
 #include "EnemyManager.h"
+#include "GameFramework.h"
+#include "GameFrameworkMessages.h"
 
 AppleManager::AppleManager(
 	const std::shared_ptr<IAnimationAssetManager>& assetManager,
@@ -330,10 +332,20 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 					apple.CrushedCharacter->Kill(CharacterDeathReason::CrushedByApple);
 					apple.CrushedCharacter = nullptr;
 				}
+				EnemyDeath d;
+				d.NumberKilledTotal = 0;
+				d.NumberSignificantKilled = 0;
+				d.Reason = EnemyDeathReason::Apple;
 				for (int i = 0; i < apple.EnemyBufferCurrentSize; i++)
 				{
+					if (IsSignificantEnemyType(apple.EnemyBuffer[i]->Type))
+					{
+						d.NumberSignificantKilled++;
+					}
+					d.NumberKilledTotal++;
 					CachedEnemyManager->KillEnemy(apple.EnemyBuffer[i]);
 				}
+				GameFramework::SendFrameworkMessage<EnemyDeath>(d);
 			}
 		}
 		break;

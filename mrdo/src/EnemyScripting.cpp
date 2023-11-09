@@ -49,7 +49,6 @@ namespace EnemyScripting
 			scriptVmReturnStackSize,
 			&PutChar,
 			&GetChar);
-
 	}
 
 	void DoFile(const std::string& filePath)
@@ -82,9 +81,6 @@ namespace EnemyScripting
 		delete[] VMMemory;
 	}
 
-	
-	
-
 	Cell Pop()
 	{
 		if (VM.intStackTop - 1 >= VM.intStack)
@@ -110,7 +106,6 @@ namespace EnemyScripting
 		}
 	}
 
-	
 	Bool EnemyManager_ForthExposedMethodImplementations::FollowPath(ForthVm* vm)
 	{
 		// ( enemy pathFinishedCallback -- bHasReachedNewCell )

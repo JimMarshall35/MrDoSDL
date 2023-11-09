@@ -2,6 +2,7 @@
 #include "TiledWorld.h"
 #include "TextRenderer.h"
 #include <cassert>
+#include <IConfigFile.h>
 
 std::string Game::LayerName = "Game";
 
@@ -15,7 +16,9 @@ Game::Game(const std::shared_ptr<IFileSystem>& fileSystem,
 	MyAppleManager(animationManager, config, MyTiledWorld, NewLevelBegun, &MyEnemyManager),
 	MyEnemyManager(config, animationManager, MyTiledWorld.get(), NewLevelBegun, ResetAfterDeath, &MyCharacter),
 	Phase(GamePhase::Playing),
-	CachedTextRenderer(textRenderer)
+	CachedTextRenderer(textRenderer),
+	MyGameState(config,textRenderer, NewLevelBegun, ResetAfterDeath),
+	Config(config)
 {
 	MyCharacter.SetAppleManager(&MyAppleManager);
 	MyAppleManager.SetCharacter(&MyCharacter);
@@ -70,7 +73,8 @@ void Game::Draw(SDL_Surface* windowSurface, float scale) const
 	MyCharacter.Draw(windowSurface, scale);
 	MyAppleManager.Draw(windowSurface, scale);
 	MyEnemyManager.Draw(windowSurface, scale);
-	CachedTextRenderer->RenderText({ 0,0 }, "HeLlO WoRlD ^", windowSurface, scale);
+	MyGameState.Draw(windowSurface, scale);
+	//CachedTextRenderer->RenderText({ 0,0 }, "HeLlO WoRlD ^", windowSurface, scale);
 }
 
 bool Game::MasksPreviousDrawableLayer() const
@@ -124,4 +128,34 @@ void Game::RecieveMessage(const CharacterDied& message)
 {
 	assert(Phase == GamePhase::Playing);
 	Phase = GamePhase::DieAnimationPlaying;
+}
+
+void Game::RecieveMessage(const Victory& message)
+{
+	switch (CurrentLevel.Source)
+	{
+	case LevelSource::ArcadeLevels:
+		{
+			int numLevels = Config->GetLevelsConfigData().size();
+			CurrentLevel.LevelIndex++;
+			if (CurrentLevel.LevelIndex >= numLevels)
+			{
+				CurrentLevel.LevelIndex = 0;
+			}
+			MyTiledWorld->LoadLevel(&CurrentLevel);
+			NewLevelBegun(CurrentLevel);
+		}
+		break;
+	case LevelSource::MapMaker:
+		{
+
+		}
+		break;
+	}
+	
+}
+
+void Game::RecieveMessage(const GameOver& message)
+{
+	GameFramework::QueuePopLayersAtFrameEnd(GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update);
 }
