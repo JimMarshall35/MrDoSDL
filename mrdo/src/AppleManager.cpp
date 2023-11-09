@@ -304,10 +304,7 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 					apple.Position = { appleCoords.x * CachedBackgroundTileSize, appleCoords.y * CachedBackgroundTileSize };
 					apple.DistanceFallen = 0.0f;
 					apple.State = AppleState::Settled;
-					for (int i = 0; i < apple.EnemyBufferCurrentSize; i++)
-					{
-						CachedEnemyManager->KillEnemy(apple.EnemyBuffer[i]);
-					}
+					KillAppleCrushedEnemies(apple);
 
 				}
 				else
@@ -332,20 +329,7 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 					apple.CrushedCharacter->Kill(CharacterDeathReason::CrushedByApple);
 					apple.CrushedCharacter = nullptr;
 				}
-				EnemyDeath d;
-				d.NumberKilledTotal = 0;
-				d.NumberSignificantKilled = 0;
-				d.Reason = EnemyDeathReason::Apple;
-				for (int i = 0; i < apple.EnemyBufferCurrentSize; i++)
-				{
-					if (IsSignificantEnemyType(apple.EnemyBuffer[i]->Type))
-					{
-						d.NumberSignificantKilled++;
-					}
-					d.NumberKilledTotal++;
-					CachedEnemyManager->KillEnemy(apple.EnemyBuffer[i]);
-				}
-				GameFramework::SendFrameworkMessage<EnemyDeath>(d);
+				KillAppleCrushedEnemies(apple);
 			}
 		}
 		break;
@@ -405,6 +389,24 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 		}
 		break;
 	}
+}
+
+void AppleManager::KillAppleCrushedEnemies(Apple& apple)
+{
+	EnemyDeath d;
+	d.NumberKilledTotal = 0;
+	d.NumberSignificantKilled = 0;
+	d.Reason = EnemyDeathReason::Apple;
+	for (int i = 0; i < apple.EnemyBufferCurrentSize; i++)
+	{
+		if (IsSignificantEnemyType(apple.EnemyBuffer[i]->Type))
+		{
+			d.NumberSignificantKilled++;
+		}
+		d.NumberKilledTotal++;
+		CachedEnemyManager->KillEnemy(apple.EnemyBuffer[i]);
+	}
+	GameFramework::SendFrameworkMessage<EnemyDeath>(d);
 }
 
 void AppleManager::RecursivelyPushApples(Apple& apple)

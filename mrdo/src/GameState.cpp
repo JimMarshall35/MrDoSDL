@@ -46,10 +46,14 @@ void GameState::RecieveMessage(const CherryEaten& message)
 
 void GameState::RecieveMessage(const EnemyDeath& message)
 {
+	if (message.NumberKilledTotal == 0)
+	{
+		return;
+	}
 	u32 scoreAddtion;
 	if (message.NumberKilledTotal < AppleKillPointsTable.size())
 	{
-		scoreAddtion = AppleKillPointsTable[message.NumberKilledTotal];
+		scoreAddtion = AppleKillPointsTable[message.NumberKilledTotal - 1];
 	}
 	else
 	{
@@ -84,7 +88,7 @@ void GameState::OnLevelLoad(LevelLoadData level)
 	const LevelConfigData& lvl = levels[level.LevelIndex];
 	RemainingCherries = GetNumCherries(lvl);
 	RemainingEnemies = GetNumEnemies(lvl);
-	LivesPositionToRender.y = lvl.NumRows * Config->GetBackgroundConfigData().TileSize - 1;
+	LivesPositionToRender.y = lvl.NumRows * (Config->GetBackgroundConfigData().TileSize - 1);
 	LivesPositionToRender.x = 0;
 }
 

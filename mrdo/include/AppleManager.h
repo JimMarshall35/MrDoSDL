@@ -90,6 +90,8 @@ private:
 	CollidingCellRelationship GetCollisionRelationshipWithMrDo(Apple* apple) const;
 	void PopulateEnemyCollisionRelationships(Apple* apple);
 	bool ResolveEnemyCollisions(Apple* apple);
+	void KillAppleCrushedEnemies(Apple& apple);
+
 private:
 	LISTENER(AppleManager, OnNewLevelStarted, LevelLoadData);
 private:

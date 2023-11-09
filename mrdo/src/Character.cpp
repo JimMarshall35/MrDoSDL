@@ -237,8 +237,6 @@ void Character::Update(float deltaTime, GameInputState inputState)
 
 void Character::CatchBall(bool forceCatch)
 {
-	assert(CrystalBallState == CrystalBallState::NoBall);
-	assert(MyCrystalBall.IsReleased());
 	if (bCanCatchBall || forceCatch)
 	{
 		CrystalBallState = CrystalBallState::HasBall;
@@ -399,6 +397,7 @@ void Character::MoveTowardsDestination(float deltaTime)
 			{
 				CachedTiledWorld->RemoveCherryAtTile(DestinationTile);
 				// send cherry collected message here
+				GameFramework::SendFrameworkMessage<CherryEaten>({ DestinationTile });
 			}
 		}
 		if (CurrentLocation.y < CurrentTile.y * tileSize - tileSize)
@@ -420,6 +419,7 @@ void Character::MoveTowardsDestination(float deltaTime)
 			{
 				CachedTiledWorld->RemoveCherryAtTile(DestinationTile);
 				// send cherry collected message here
+				GameFramework::SendFrameworkMessage<CherryEaten>({ DestinationTile });
 			}
 		}
 		if (CurrentLocation.y > CurrentTile.y * tileSize + tileSize)
@@ -441,6 +441,7 @@ void Character::MoveTowardsDestination(float deltaTime)
 			{
 				CachedTiledWorld->RemoveCherryAtTile(DestinationTile);
 				// send cherry collected message here
+				GameFramework::SendFrameworkMessage<CherryEaten>({ DestinationTile });
 			}
 		}
 		if (CurrentLocation.x < CurrentTile.x * tileSize - tileSize)
@@ -541,10 +542,7 @@ void Character::OnResetAfterDeath(LevelLoadData levelLoadData)
 	Animator.bFinished = false;
 
 	// make sure ball is caught
-	if (MyCrystalBall.IsReleased())
-	{
-		CatchBall();
-	}
+	CatchBall(true);
 	MyCrystalBall.ResetStateOnDeath();
 }
 
