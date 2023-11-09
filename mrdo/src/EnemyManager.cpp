@@ -53,6 +53,7 @@ EnemyManager::EnemyManager(
 	InitialiseEnemyPool();
 	UpdateNormalEnemyScriptFunction = EnemyScripting::FindExecutionToken("EnemyUpdate");
 	FlashingEnemyScriptFunction = EnemyScripting::FindExecutionToken("FlashingEnemyUpdate");
+	DiggerEnemyScriptFunction = EnemyScripting::FindExecutionToken("DiggerEnemyUpdate");
 	EnemyScripting::EnemyManager_ForthExposedMethodImplementations::Instance = this;
 
 }
@@ -301,65 +302,11 @@ void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
 		EnemyScripting::DoExecutionToken(FlashingEnemyScriptFunction);
 		break;
 	case EnemyType::Digger:
-		UpdateSingleDiggerEnemy(deltaTime, enemy);
+		EnemyScripting::Push((Cell)enemyPtr);
+		EnemyScripting::DoExecutionToken(DiggerEnemyScriptFunction);
 		break;
 	}
 	EnemyType newType = enemy.Type;
-}
-
-void EnemyManager::UpdateSingleNormalEnemy(float deltaTime, Enemy& enemy)
-{
-	//enemy.Timer += deltaTime;
-	//
-	//bool newCell = FollowPathBase(enemy, deltaTime, [this](Enemy& enemy) {
-	//	const ivec2& characterTile = CachedCharacter->GetTile();
-	//	SetNewPath(enemy, characterTile);
-	//});
-	//if (newCell)
-	//{
-	//	enemy.Timer = 0.0f;
-	//}
-
-	//enemy.EnemyAnimator.CurrentAnimation = &NormalEnemyAnimationTable[enemy.bPushing][(u32)enemy.CurrentDirection];
-	//enemy.EnemyAnimator.Update(deltaTime / 1000.f);
-	//// does enemy turn into digger
-	//if (enemy.Timer >= EnemyWaitTimeBeforeBecomeDigger)
-	//{
-	//	enemy.Type = EnemyType::TurningIntoDigger;
-	//	enemy.Timer = 0.0f;
-	//	enemy.EnemyAnimator.CurrentAnimation = &TransformingToDiggerAnimationTable[(u32)enemy.CurrentDirection];
-	//	enemy.EnemyAnimator.OnAnimFrame = 0;
-	//}
-}
-
-void EnemyManager::UpdateSingleFlashingEnemy(float deltaTime, Enemy& enemy)
-{
-	/*enemy.Timer += deltaTime;
-	if (enemy.Timer >= MorphingEnemyFlashTime)
-	{
-		enemy.Timer = 0.0f;
-		enemy.Type = EnemyType::Digger;
-		SetNewPathForDigger(enemy, CachedCharacter->GetTile(), enemy.PathBuffer[enemy.PathBufferDestinationIndex]);
-	}
-	enemy.EnemyAnimator.CurrentAnimation = &TransformingToDiggerAnimationTable[(u32)enemy.CurrentDirection];
-	enemy.EnemyAnimator.Update(deltaTime / 1000.0f);*/
-}
-
-void EnemyManager::UpdateSingleDiggerEnemy(float deltaTime, Enemy& enemy)
-{
-	ivec2 preMove = enemy.CurrentCell;
-	bool newCell = FollowPathBase(enemy, deltaTime, [this](Enemy& enemy) {
-		enemy.Type = EnemyType::Normal;
-		const ivec2& characterTile = CachedCharacter->GetTile();
-		SetNewPath(enemy, characterTile);
-	}, DigSpeedMultiplier);
-	ivec2 postMove = enemy.CurrentCell;
-	if (newCell)
-	{
-		CachedTiledWorld->ConnectAdjacentCells(preMove, postMove);
-	}
-	enemy.EnemyAnimator.CurrentAnimation = &DiggerAnimationTable[(u32)enemy.CurrentDirection];
-	enemy.EnemyAnimator.Update(deltaTime / 1000.0f);
 }
 
 void EnemyManager::SetEnemyPushingState(Enemy* enemy, bool newState)

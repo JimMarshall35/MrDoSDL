@@ -81,9 +81,6 @@ private:
 	void UpdateSingleSpawner(float deltaTime, EnemySpawner& spawner);
 	void SpawnEnemy(EnemySpawner& spawner);
 	void UpdateSingleEnemy(float deltaTime, Enemy& enemy);
-	void UpdateSingleNormalEnemy(float deltaTime, Enemy& enemy);
-	void UpdateSingleFlashingEnemy(float deltaTime, Enemy& enemy);
-	void UpdateSingleDiggerEnemy(float deltaTime, Enemy& enemy);
 	void InitialiseEnemyPool();
 	void SetNewPath(Enemy& enemy, const ivec2& newDestinationCell);
 	void SetNewPathForDigger(Enemy& enemy, const ivec2& newDestinationCell, const ivec2& obstruction);
@@ -131,4 +128,5 @@ private:
 	static float DeltaTime;
 	ExecutionToken UpdateNormalEnemyScriptFunction;
 	ExecutionToken FlashingEnemyScriptFunction;
+	ExecutionToken DiggerEnemyScriptFunction;
 };

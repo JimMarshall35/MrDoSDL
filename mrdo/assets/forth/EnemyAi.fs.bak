@@ -102,9 +102,7 @@
 ;
 
 : OnDiggerReachedEndOfPath ( enemy -- )
-	dup GetEnemyTypePtr EnemyTypeNormal swap !32 ( enemy )
-	GetCharacterTile                             ( enemy charY charX )
-	SetPathTo
+
 ;
 
 : DiggerEnemyUpdate ( enemy -- )

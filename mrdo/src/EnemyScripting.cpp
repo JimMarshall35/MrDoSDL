@@ -229,7 +229,6 @@ namespace EnemyScripting
 	Bool EnemyManager_ForthExposedMethodImplementations::SetNewDiggerPathTo(ForthVm* vm)
 	{
 		// ( enemy destinationY destinationX obstructionY obstructionX -- )
-		
 		Cell obsX = Pop();
 		Cell obsY = Pop();
 		Cell destX = Pop();
@@ -249,6 +248,35 @@ namespace EnemyScripting
 		return Bool();
 	}
 
+	Bool EnemyManager_ForthExposedMethodImplementations::SetDiggerAnimation(ForthVm* vm)
+	{
+		// ( enemy movementDirection -- )
+		MovementDirection md = (MovementDirection)Pop();
+		Enemy* enemy = (Enemy*)Pop();
+		enemy->EnemyAnimator.CurrentAnimation = &EnemyManager::DiggerAnimationTable[(u32)md];
+		return Bool();
+	}
+
+	Bool EnemyManager_ForthExposedMethodImplementations::ConnectAdjacentCells(ForthVm* vm)
+	{
+		// ( y1 x1 y2 x2 -- )
+		Cell x2 = Pop();
+		Cell y2 = Pop();
+		Cell x1 = Pop();
+		Cell y1 = Pop();
+		Instance->CachedTiledWorld->ConnectAdjacentCells({x1,y1}, {x2, y2});
+		return Bool();
+	}
+
+	Bool EnemyManager_ForthExposedMethodImplementations::GetCurrentCell(ForthVm* vm)
+	{
+		// ( -- y x )
+		Enemy* enemy = (Enemy*)Pop();
+		Push((Cell)enemy->CurrentCell.y);
+		Push((Cell)enemy->CurrentCell.x);
+		return Bool();
+	}
+
 	void EnemyManager_ForthExposedMethodImplementations::RegisterForthFunctions()
 	{
 		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::FollowPath, "FollowPath");
@@ -265,9 +293,10 @@ namespace EnemyScripting
 		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::GetCharacterTile, "GetCharacterTile");
 		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::SetNewDiggerPathTo, "SetNewDiggerPath");
 		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::GetCurrentDestination, "GetCurrentDestination");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::SetDiggerAnimation, "SetDiggerAnimation");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::ConnectAdjacentCells, "ConnectAdjacentCells");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::GetCurrentCell, "GetCurrentCell");
 	}
-
-	
 }
 
 
