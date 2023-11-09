@@ -1,6 +1,8 @@
 2000 const EnemyWaitTimeBeforeBecomeDigger
 
-0 const EnemyTypeDigger
+1000 const EnemyFlashTime
+
+0 const EnemyTypeNormal
 
 1 const EnemyTypeTurningIntoDigger
 
@@ -30,6 +32,17 @@
 	dup 0 swap SetAnimationFrame        ( enemy )
 	dup 
 	GetCurrentDirection SetMorphingAnimation
+;
+
+: FinishTransformingToDigger ( enemyPtr -- )
+	dup GetTimerPtr 0 swap !
+	( set new enemy type )
+	dup GetEnemyTypePtr EnemyTypeDigger swap !32
+	dup                                                     ( enemy enemy )
+	GetCharacterTile                                        ( enemy enemy charY charX )
+	rot                                                     ( enemy charY charX enemy )
+	GetCurrentDestination                                   ( enemy charY charX destY destX )
+	SetNewDiggerPath
 ;
 
 : EnemyUpdate ( enemyptr -- )
@@ -67,5 +80,19 @@
 	else
 		drop
 	then
-	
+;
+
+: FlashingEnemyUpdate ( enemyPtr -- )
+	IncrementDeltaTime
+	dup GetTimerPtr @                      ( enemy currentTimer )
+	EnemyFlashTime > if
+		dup 
+		FinishTransformingToDigger
+	then
+	dup                                   ( enemy enemy )
+	dup                                   ( enemy enemy enemy )
+	GetCurrentDirection                   ( enemy enemy enemy->CurrentDirection )
+	SetMorphingAnimation                  ( enemy )
+	GetDeltaT                             ( enemy deltaT )
+	swap UpdateAnimator
 ;

@@ -86,7 +86,7 @@ private:
 	void UpdateSingleDiggerEnemy(float deltaTime, Enemy& enemy);
 	void InitialiseEnemyPool();
 	void SetNewPath(Enemy& enemy, const ivec2& newDestinationCell);
-	void SetNewPathForDigger(Enemy& enemy, const ivec2& newDestinationCell);
+	void SetNewPathForDigger(Enemy& enemy, const ivec2& newDestinationCell, const ivec2& obstruction);
 	void SetEnemyDirection(Enemy& enemy);
 	void SetEnemyDestinationWorldSpace(Enemy& enemy);
 
@@ -130,4 +130,5 @@ private:
 	float MorphingEnemyFlashTime;
 	static float DeltaTime;
 	ExecutionToken UpdateNormalEnemyScriptFunction;
+	ExecutionToken FlashingEnemyScriptFunction;
 };

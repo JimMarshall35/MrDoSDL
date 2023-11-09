@@ -172,7 +172,6 @@ void CrystalBall::UpdateCooldownState(float deltaT)
 
 void CrystalBall::OnCaught()
 {
-	//assert(State != CrystalBallState::CharacterCarrying);
 	State = CrystalBallState::CharacterCarrying;
 }
 

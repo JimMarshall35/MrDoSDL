@@ -52,6 +52,7 @@ EnemyManager::EnemyManager(
 	PopulateAnimationTables();
 	InitialiseEnemyPool();
 	UpdateNormalEnemyScriptFunction = EnemyScripting::FindExecutionToken("EnemyUpdate");
+	FlashingEnemyScriptFunction = EnemyScripting::FindExecutionToken("FlashingEnemyUpdate");
 	EnemyScripting::EnemyManager_ForthExposedMethodImplementations::Instance = this;
 
 }
@@ -296,7 +297,8 @@ void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
 		EnemyScripting::DoExecutionToken(UpdateNormalEnemyScriptFunction);
 		break;
 	case EnemyType::TurningIntoDigger:
-		UpdateSingleFlashingEnemy(deltaTime, enemy);
+		EnemyScripting::Push((Cell)enemyPtr);
+		EnemyScripting::DoExecutionToken(FlashingEnemyScriptFunction);
 		break;
 	case EnemyType::Digger:
 		UpdateSingleDiggerEnemy(deltaTime, enemy);
@@ -307,41 +309,40 @@ void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
 
 void EnemyManager::UpdateSingleNormalEnemy(float deltaTime, Enemy& enemy)
 {
-	enemy.Timer += deltaTime;
-	
-	bool newCell = FollowPathBase(enemy, deltaTime, [this](Enemy& enemy) {
-		const ivec2& characterTile = CachedCharacter->GetTile();
-		SetNewPath(enemy, characterTile);
-	});
-	if (newCell)
-	{
-		enemy.Timer = 0.0f;
-	}
+	//enemy.Timer += deltaTime;
+	//
+	//bool newCell = FollowPathBase(enemy, deltaTime, [this](Enemy& enemy) {
+	//	const ivec2& characterTile = CachedCharacter->GetTile();
+	//	SetNewPath(enemy, characterTile);
+	//});
+	//if (newCell)
+	//{
+	//	enemy.Timer = 0.0f;
+	//}
 
-	enemy.EnemyAnimator.CurrentAnimation = &NormalEnemyAnimationTable[enemy.bPushing][(u32)enemy.CurrentDirection];
-	enemy.EnemyAnimator.Update(deltaTime / 1000.f);
-	// does enemy turn into digger
-	if (enemy.Timer >= EnemyWaitTimeBeforeBecomeDigger)
-	{
-		enemy.Type = EnemyType::TurningIntoDigger;
-		enemy.Timer = 0.0f;
-		enemy.EnemyAnimator.CurrentAnimation = &TransformingToDiggerAnimationTable[(u32)enemy.CurrentDirection];
-		enemy.EnemyAnimator.OnAnimFrame = 0;
-	}
+	//enemy.EnemyAnimator.CurrentAnimation = &NormalEnemyAnimationTable[enemy.bPushing][(u32)enemy.CurrentDirection];
+	//enemy.EnemyAnimator.Update(deltaTime / 1000.f);
+	//// does enemy turn into digger
+	//if (enemy.Timer >= EnemyWaitTimeBeforeBecomeDigger)
+	//{
+	//	enemy.Type = EnemyType::TurningIntoDigger;
+	//	enemy.Timer = 0.0f;
+	//	enemy.EnemyAnimator.CurrentAnimation = &TransformingToDiggerAnimationTable[(u32)enemy.CurrentDirection];
+	//	enemy.EnemyAnimator.OnAnimFrame = 0;
+	//}
 }
 
 void EnemyManager::UpdateSingleFlashingEnemy(float deltaTime, Enemy& enemy)
 {
-	enemy.Timer += deltaTime;
+	/*enemy.Timer += deltaTime;
 	if (enemy.Timer >= MorphingEnemyFlashTime)
 	{
 		enemy.Timer = 0.0f;
 		enemy.Type = EnemyType::Digger;
-		SetNewPathForDigger(enemy, CachedCharacter->GetTile());
-		SetEnemyDestinationWorldSpace(enemy);
+		SetNewPathForDigger(enemy, CachedCharacter->GetTile(), enemy.PathBuffer[enemy.PathBufferDestinationIndex]);
 	}
 	enemy.EnemyAnimator.CurrentAnimation = &TransformingToDiggerAnimationTable[(u32)enemy.CurrentDirection];
-	enemy.EnemyAnimator.Update(deltaTime / 1000.0f);
+	enemy.EnemyAnimator.Update(deltaTime / 1000.0f);*/
 }
 
 void EnemyManager::UpdateSingleDiggerEnemy(float deltaTime, Enemy& enemy)
@@ -472,7 +473,7 @@ void EnemyManager::SetNewPath(Enemy& enemy, const ivec2& newDestinationCell)
 	enemy.PathBufferDestinationIndex = enemy.PathBufferCurrentSize - 1;
 }
 
-void EnemyManager::SetNewPathForDigger(Enemy& enemy, const ivec2& newDestinationCell)
+void EnemyManager::SetNewPathForDigger(Enemy& enemy, const ivec2& newDestinationCell, const ivec2& obstruction)
 {
 	PathFinding::DoDiggingEnemyAStar(
 		enemy.CurrentCell,
@@ -481,10 +482,10 @@ void EnemyManager::SetNewPathForDigger(Enemy& enemy, const ivec2& newDestination
 		enemy.PathBufferCurrentSize,
 		PathBufferSize,
 		CachedTiledWorld,
-		enemy.PathBuffer[enemy.PathBufferDestinationIndex]
+		obstruction//enemy.PathBuffer[enemy.PathBufferDestinationIndex]
 	);
 	enemy.PathBufferDestinationIndex = enemy.PathBufferCurrentSize - 1;
-
+	SetEnemyDestinationWorldSpace(enemy);
 }
 
 void EnemyManager::SetEnemyDirection(Enemy& enemy)

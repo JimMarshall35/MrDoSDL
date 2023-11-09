@@ -31,6 +31,8 @@ namespace EnemyScripting
 		static Bool SetMorphingAnimation(ForthVm* vm);
 		static Bool SetNewEnemyPathTo(ForthVm* vm);
 		static Bool GetCharacterTile(ForthVm* vm);
+		static Bool SetNewDiggerPathTo(ForthVm* vm);
+		static Bool GetCurrentDestination(ForthVm* vm);
 
 		static void RegisterForthFunctions();
 	};

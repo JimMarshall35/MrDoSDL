@@ -226,6 +226,29 @@ namespace EnemyScripting
 		return Bool();
 	}
 
+	Bool EnemyManager_ForthExposedMethodImplementations::SetNewDiggerPathTo(ForthVm* vm)
+	{
+		// ( enemy destinationY destinationX obstructionY obstructionX -- )
+		
+		Cell obsX = Pop();
+		Cell obsY = Pop();
+		Cell destX = Pop();
+		Cell destY = Pop();
+		Enemy* enemy = (Enemy*)Pop();
+		Instance->SetNewPathForDigger(*enemy, {destX, destY}, {obsX, obsY});
+		return Bool();
+	}
+
+	Bool EnemyManager_ForthExposedMethodImplementations::GetCurrentDestination(ForthVm* vm)
+	{
+		// ( enemy -- destinationY destinationX )
+		Enemy* enemy = (Enemy*)Pop();
+		const ivec2& dest = enemy->PathBuffer[enemy->PathBufferDestinationIndex];
+		Push((Cell)dest.y);
+		Push((Cell)dest.x);
+		return Bool();
+	}
+
 	void EnemyManager_ForthExposedMethodImplementations::RegisterForthFunctions()
 	{
 		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::FollowPath, "FollowPath");
@@ -240,6 +263,8 @@ namespace EnemyScripting
 		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::SetMorphingAnimation, "SetMorphingAnimation");
 		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::SetNewEnemyPathTo, "SetPathTo");
 		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::GetCharacterTile, "GetCharacterTile");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::SetNewDiggerPathTo, "SetNewDiggerPath");
+		RegisterCFunction(&EnemyManager_ForthExposedMethodImplementations::GetCurrentDestination, "GetCurrentDestination");
 	}
 
 	
