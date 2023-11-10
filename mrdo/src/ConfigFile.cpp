@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <cassert>
+#include "BackendClient.h"
 
 ConfigFile::ConfigFile(const std::shared_ptr<IFileSystem>& fileSystem)
 	:Filesystem(fileSystem)
@@ -239,7 +240,7 @@ void ConfigFile::RecreateMapMakerLevelsJSON()
 	}
 }
 
-const std::string& ConfigFile::GetStringValue(const std::string& key) const
+std::string ConfigFile::GetStringValue(const std::string& key) const
 {
 	assert(ConfigFileJSON[key].is_string());
 	return ConfigFileJSON[key];
@@ -318,4 +319,21 @@ float ConfigFile::GetFloatArrayValue(const std::string& key, size_t index) const
 	assert(index < size);
 	assert(ConfigFileJSON[key][index].is_number_float());
 	return ConfigFileJSON[key][index];
+}
+
+void ConfigFile::PopulateHighScoreTableWithOfflineScores(HighScore* tableToWrite, size_t& outNumWritten) const
+{
+	outNumWritten = 0;
+	json offlineTableJSON = ConfigFileJSON["OfflineHighScoreTable"];
+	assert(offlineTableJSON.is_array());
+	assert(offlineTableJSON.size() <= ConfigFileJSON["ClientHighScoreTableSize"]);
+	for (const json& hsJson : offlineTableJSON)
+	{
+		HighScore highScore;
+		assert(hsJson["name"].is_string());
+		assert(hsJson["highscore"].is_number_unsigned());
+		highScore.Name = hsJson["name"];
+		highScore.Score = hsJson["highscore"];
+		tableToWrite[outNumWritten++] = highScore;
+	}
 }

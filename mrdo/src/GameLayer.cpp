@@ -3,6 +3,7 @@
 #include "TextRenderer.h"
 #include <cassert>
 #include <IConfigFile.h>
+#include "BackendClient.h"
 
 std::string Game::LayerName = "Game";
 
@@ -10,7 +11,8 @@ Game::Game(const std::shared_ptr<IFileSystem>& fileSystem,
 	const std::shared_ptr<IConfigFile>& config,
 	const std::shared_ptr<IBackgroundTileAssetManager>& backgroundAssetManager,
 	const std::shared_ptr<IAnimationAssetManager>& animationManager,
-	const std::shared_ptr<TextRenderer>& textRenderer)
+	const std::shared_ptr<TextRenderer>& textRenderer,
+	const std::shared_ptr<IBackendClient>& backendClient)
 	:MyTiledWorld(std::make_shared<TiledWorld>(config, backgroundAssetManager, animationManager)),
 	MyCharacter(animationManager, config, MyTiledWorld, NewLevelBegun, ResetAfterDeath, &MyEnemyManager),
 	MyAppleManager(animationManager, config, MyTiledWorld, NewLevelBegun, &MyEnemyManager),
@@ -18,7 +20,8 @@ Game::Game(const std::shared_ptr<IFileSystem>& fileSystem,
 	Phase(GamePhase::Playing),
 	CachedTextRenderer(textRenderer),
 	MyGameState(config,textRenderer, NewLevelBegun, ResetAfterDeath),
-	Config(config)
+	Config(config),
+	BackendClient(backendClient)
 {
 	MyCharacter.SetAppleManager(&MyAppleManager);
 	MyAppleManager.SetCharacter(&MyCharacter);
@@ -157,5 +160,6 @@ void Game::RecieveMessage(const Victory& message)
 
 void Game::RecieveMessage(const GameOver& message)
 {
+	BackendClient->SubmitPossibleHighScore(message.Score);
 	GameFramework::QueuePopLayersAtFrameEnd(GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update);
 }

@@ -6,7 +6,7 @@ add_executable( MrDoGame ${SOURCES} ${INCS})
 source_group(headers FILES ${INCS}) 
 
 #find_package(nlohmann_json 3.11.2 REQUIRED)
-
+#find_package(CURL REQUIRED) 
 
 set_target_properties( MrDoGame PROPERTIES RUNTIME_OUTPUT_DIRECTORY 
    ${MrDo_BINARY_DIR}/build_results/bin )
@@ -15,6 +15,7 @@ include_directories(${MrDo_SOURCE_DIR}/mrdo/include)
 target_include_directories( MrDoGame SYSTEM PRIVATE ${SDL_INCLUDES})
 target_link_libraries(MrDoGame PRIVATE SDL3::SDL3)
 target_link_libraries(MrDoGame PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(MrDoGame PRIVATE CURL::libcurl)
  if (WIN32)
     add_custom_command(
         TARGET MrDoGame POST_BUILD

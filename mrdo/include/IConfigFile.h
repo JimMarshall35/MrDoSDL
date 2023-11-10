@@ -4,6 +4,8 @@
 #include <map>
 #include "VectorTypes.h"
 
+struct HighScore;
+
 struct SpriteSheetConfigData
 {
 	std::string SpriteSheetAssetPath;
@@ -86,11 +88,12 @@ public:
 	virtual const u32 GetUIntValue(const std::string& key) const = 0;
 	virtual const i32 GetIntValue(const std::string& key) const = 0;
 	virtual const float GetFloatValue(const std::string& key) const = 0;
-	virtual const std::string& GetStringValue(const std::string& key) const = 0;
+	virtual std::string GetStringValue(const std::string& key) const = 0;
 	virtual bool GetBoolValue(const std::string& key) const = 0;
 	virtual void SaveAfterMapMakerLevelsChange() = 0;
 	virtual int GetArraySize(const std::string& key) const = 0;
 	virtual int GetIntArrayValue(const std::string& key, size_t index) const = 0;
 	virtual float GetFloatArrayValue(const std::string& key, size_t index) const = 0;
 	virtual const IFileSystem* GetFileSystem() const = 0;
+	virtual void PopulateHighScoreTableWithOfflineScores(HighScore* tableToWrite, size_t& outNumWritten) const = 0;
 };

@@ -98,7 +98,7 @@ void GameState::OnResetAfterDeath(LevelLoadData levelLoadData)
 	RefreshLivesBuffer();
 	if (Lives < 0)
 	{
-		GameFramework::SendFrameworkMessage<GameOver>({});
+		GameFramework::SendFrameworkMessage<GameOver>({ Score });
 	}
 }
 

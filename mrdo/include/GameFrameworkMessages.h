@@ -42,4 +42,7 @@ struct Victory
 	VictoryReason Reason;
 };
 
-struct GameOver{};
+struct GameOver
+{
+	u32 Score;
+};

@@ -19,7 +19,7 @@ public:
 	virtual const u32 GetUIntValue(const std::string& key) const override;
 	virtual const i32 GetIntValue(const std::string& key) const override;
 	virtual const float GetFloatValue(const std::string& key) const override;
-	virtual const std::string& GetStringValue(const std::string& key) const override;
+	virtual std::string GetStringValue(const std::string& key) const override;
 	virtual bool GetBoolValue(const std::string& key) const override;
 	virtual const LevelConfigData& GetBlankLevelTemplate() const override;
 	virtual void SaveAfterMapMakerLevelsChange() override;
@@ -27,6 +27,7 @@ public:
 	virtual int GetIntArrayValue(const std::string& key, size_t index) const;
 	virtual float GetFloatArrayValue(const std::string& key, size_t index) const;
 	virtual const IFileSystem* GetFileSystem() const override { return Filesystem.get(); }
+	virtual void PopulateHighScoreTableWithOfflineScores(HighScore* tableToWrite, size_t& outNumWritten) const override;
 
 private:
 	void PopulateBackgroundConfigDataStruct();
