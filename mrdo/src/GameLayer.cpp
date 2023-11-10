@@ -4,6 +4,7 @@
 #include <cassert>
 #include <IConfigFile.h>
 #include "BackendClient.h"
+#include "InputManager.h"
 
 std::string Game::LayerName = "Game";
 
@@ -12,7 +13,8 @@ Game::Game(const std::shared_ptr<IFileSystem>& fileSystem,
 	const std::shared_ptr<IBackgroundTileAssetManager>& backgroundAssetManager,
 	const std::shared_ptr<IAnimationAssetManager>& animationManager,
 	const std::shared_ptr<TextRenderer>& textRenderer,
-	const std::shared_ptr<IBackendClient>& backendClient)
+	const std::shared_ptr<IBackendClient>& backendClient,
+	InputManager* inputManager)
 	:MyTiledWorld(std::make_shared<TiledWorld>(config, backgroundAssetManager, animationManager)),
 	MyCharacter(animationManager, config, MyTiledWorld, NewLevelBegun, ResetAfterDeath, &MyEnemyManager),
 	MyAppleManager(animationManager, config, MyTiledWorld, NewLevelBegun, &MyEnemyManager),
@@ -21,7 +23,8 @@ Game::Game(const std::shared_ptr<IFileSystem>& fileSystem,
 	CachedTextRenderer(textRenderer),
 	MyGameState(config,textRenderer, NewLevelBegun, ResetAfterDeath),
 	Config(config),
-	BackendClient(backendClient)
+	BackendClient(backendClient),
+	MyInputManager(inputManager)
 {
 	MyCharacter.SetAppleManager(&MyAppleManager);
 	MyAppleManager.SetCharacter(&MyCharacter);
@@ -64,6 +67,7 @@ void Game::OnUpdatePush(void* data)
 	NewLevelBegun(*level);
 	CurrentLevel = *level;
 	InputState = { false, false, false, false, true, false };
+	
 }
 
 void Game::OnUpdatePop()
@@ -120,11 +124,19 @@ const std::string& Game::GetInputLayerName() const
 
 void Game::OnInputPush(void* data)
 {
-	
+	const LevelLoadData* level = (const LevelLoadData*)data;
+	if (level->Source == LevelSource::ArcadeLevels && level->LevelIndex == 0)
+	{
+		MyInputManager->SetRecordingState(InputRecordingState::PlayingBack);
+	}
 }
 
 void Game::OnInputPop()
 {
+	if (CurrentLevel.Source == LevelSource::ArcadeLevels)
+	{
+		MyInputManager->SetRecordingState(InputRecordingState::NotRecording);
+	}
 }
 
 void Game::RecieveMessage(const CharacterDied& message)
@@ -161,5 +173,7 @@ void Game::RecieveMessage(const Victory& message)
 void Game::RecieveMessage(const GameOver& message)
 {
 	BackendClient->SubmitPossibleHighScore(message.Score);
+	MyInputManager->SaveRecordingFile();
+	MyInputManager->SetRecordingState(InputRecordingState::NotRecording);
 	GameFramework::QueuePopLayersAtFrameEnd(GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update);
 }

@@ -5,7 +5,8 @@ FileSystem::FileSystem(const std::string& exePath)
 	AssetFolderPath(ExePath + "assets"),
 	SpriteFolderPath(ExePath + "assets\\sprites"),
 	ConfigFilePath(ExePath + "assets\\json\\config.json"),
-	EnemyAIFilePath(ExePath + "assets\\forth\\EnemyAi.fs")
+	EnemyAIFilePath(ExePath + "assets\\forth\\EnemyAi.fs"),
+	ReplaysFolderPath(AssetFolderPath + "\\replays\\")
 {
 
 }
@@ -28,6 +29,11 @@ const std::string& FileSystem::GetConfigFilePath() const
 const std::string& FileSystem::GetEnemyAIFilePath() const
 {
 	return EnemyAIFilePath;
+}
+
+const std::string& FileSystem::GetReplaysFolderPath() const
+{
+	return ReplaysFolderPath;
 }
 
 std::string FileSystem::GetFolderOfFile(const std::string& filePath)

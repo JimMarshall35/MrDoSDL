@@ -46,16 +46,6 @@ WHERE
   {HighScoreColumnName} = (SELECT MIN({HighScoreColumnName}) FROM {HighScoreTableName} LIMIT 1);
 """
 
-
-
-@app.route(GetHighScoresRoute, methods = ['GET'])
-def get_high_scores():
-	global GetHighScoresQuery
-	con = sqlite3.connect("Backend.db")
-	cur = con.cursor()
-	highScores = [{NameColumnName : row[0], HighScoreColumnName : row[1]} for row in cur.execute(GetHighScoresForClientQuery)]
-	return json.dumps(highScores)
-		
 def add_high_score(submittedScore, cur, highScores):
 	if len(highScores) + 1 > ServerMaxHighScores:
 		print(f"max high scores stored on server ({ServerMaxHighScores}) exceeded, deleting lowest")
@@ -64,6 +54,14 @@ def add_high_score(submittedScore, cur, highScores):
 		INSERT INTO HighScores VALUES
 		("{submittedScore[NameColumnName]}", {submittedScore[HighScoreColumnName]})
 		""")
+
+@app.route(GetHighScoresRoute, methods = ['GET'])
+def get_high_scores():
+	global GetHighScoresQuery
+	con = sqlite3.connect("Backend.db")
+	cur = con.cursor()
+	highScores = [{NameColumnName : row[0], HighScoreColumnName : row[1]} for row in cur.execute(GetHighScoresForClientQuery)]
+	return json.dumps(highScores)
 
 @app.route(f"{SubmitHighScoreRoute}", methods = ['POST'])
 def post_high_score():

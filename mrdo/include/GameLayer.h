@@ -19,6 +19,7 @@ class TiledWorld;
 class TextRenderer;
 class IConfigFile;
 class IBackendClient;
+class InputManager;
 
 class Game : 
 	public UpdateableLayerBase, 
@@ -42,7 +43,8 @@ public:
 		const std::shared_ptr<IBackgroundTileAssetManager>& backgroundAssetManager,
 		const std::shared_ptr<IAnimationAssetManager>& animationManager,
 		const std::shared_ptr<TextRenderer>& textRenderer,
-		const std::shared_ptr<IBackendClient>& backendClient);
+		const std::shared_ptr<IBackendClient>& backendClient,
+		InputManager* inputManager);
 
 	// Inherited via UpdateableLayerBase
 	virtual void Update(float deltaT) override;
@@ -85,5 +87,5 @@ private:
 	GameState MyGameState;
 	const std::shared_ptr<IConfigFile> Config;
 	const std::shared_ptr<IBackendClient> BackendClient;
-
+	InputManager* MyInputManager;
 };

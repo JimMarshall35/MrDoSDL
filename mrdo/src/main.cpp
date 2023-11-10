@@ -25,27 +25,6 @@
 
 int main(int argc, char* args[])
 {
-    //CURL* curl;
-    //CURLcode res;
-
-    //curl = curl_easy_init();
-    //if (curl) {
-    //    curl_easy_setopt(curl, CURLOPT_URL, "http://127.0.0.1:5000/HighScores");
-
-    //    /* Use HTTP/3 but fallback to earlier HTTP if necessary */
-    //    curl_easy_setopt(curl, CURLOPT_HTTP_VERSION,
-    //        (long)CURL_HTTP_VERSION_3);
-
-    //    /* Perform the request, res will get the return code */
-    //    res = curl_easy_perform(curl);
-    //    /* Check for errors */
-    //    if (res != CURLE_OK)
-    //        fprintf(stderr, "curl_easy_perform() failed: %s\n",
-    //            curl_easy_strerror(res));
-
-    //    /* always cleanup */
-    //    curl_easy_cleanup(curl);
-    //}
 
     char* exePath = args[0];
     //The window we'll be rendering to
@@ -91,7 +70,8 @@ int main(int argc, char* args[])
             std::shared_ptr<BackgroundTileAssetManager> backgroundTileAssetManager = std::make_shared<BackgroundTileAssetManager>(configFile);
             std::shared_ptr<IBackendClient> backendClient = std::make_shared<BackendClient>(configFile);
             backendClient->PopulateHighScores();
-            InputManager inputManager(configFile);
+            InputManager inputManager(configFile, fileSystem);
+            inputManager.LoadRecordingFile();
 
             std::shared_ptr<IAnimationAssetManager> animationAssetManager = std::make_shared<AnimationAssetManager>(configFile, screenSurface);
 
@@ -105,7 +85,7 @@ int main(int argc, char* args[])
             EnemyScripting::ForthDoString("showWords");
 
             // game framework layers
-            Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, textRenderer, backendClient);
+            Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, textRenderer, backendClient, &inputManager);
             FrontEndLayer frontend(textRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
             MapMakerLevelSelectLayer mapMakerLevelSelect(textRenderer, configFile, SCREEN_WIDTH, SCREEN_HEIGHT);
             MapMakerCreateNewLevelDialogue mapMakerCreateNewLevelDialogue(textRenderer, configFile, SCREEN_WIDTH, SCREEN_HEIGHT);
