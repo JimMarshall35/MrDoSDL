@@ -5,6 +5,7 @@
 #include "IFontAssetManager.h"
 #include <map>
 #include <string>
+#include "CommonTypedefs.h"
 
 class IConfigFile;
 struct FontConfigData;
@@ -15,7 +16,11 @@ typedef std::map<std::string, SDL_Rect[256]> FontRectMap;
 class FontAssetManager : public IFontAssetManager
 {
 public:
+#ifdef ReplayValidator
+	FontAssetManager(const std::shared_ptr<IConfigFile>& config);
+#else
 	FontAssetManager(const std::shared_ptr<IConfigFile>& config, SDL_Surface* windowSurface);
+#endif
 	~FontAssetManager();
 
 	// IFontAssetManager begin

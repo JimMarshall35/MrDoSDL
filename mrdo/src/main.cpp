@@ -21,9 +21,11 @@
 #include "PathFinding.h"
 #include "EnemyScripting.h"
 #include "BackendClient.h"
+#include <functional>
 #include <curl/curl.h>
 
-int main(int argc, char* args[])
+#ifndef ReplayValidator
+int GameMain(int argc, char* args[])
 {
 
     char* exePath = args[0];
@@ -94,10 +96,10 @@ int main(int argc, char* args[])
 
             GameFramework::PushLayers("FrontEnd", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, 0);
 
-            bool quit = false; 
+            bool quit = false;
             u32 simulationTime = 0;
             u32 realTime = 0;
-            while (quit == false) 
+            while (quit == false)
             {
                 realTime = SDL_GetTicks();
                 while (simulationTime < realTime) {
@@ -125,4 +127,64 @@ int main(int argc, char* args[])
 
 
     return 0;
+
+}
+#else
+int ReplayValidatorMain(int argc, char* args[])
+{
+    printf("argc %i \n", argc);
+   char* exePath = args[0];
+   std::string replayFileName = std::string(args[1]);
+   u32 expectedScore = std::atoi(args[2]);
+   
+   LevelLoadData LevelLoad = { LevelSource::ArcadeLevels, 0 };
+   std::shared_ptr<IFileSystem> fileSystem = std::make_shared<FileSystem>(exePath);
+   std::shared_ptr<IConfigFile> configFile = std::make_shared<ConfigFile>(fileSystem);
+   std::shared_ptr<BackgroundTileAssetManager> backgroundTileAssetManager = std::make_shared<BackgroundTileAssetManager>(configFile);
+   InputManager inputManager(configFile, fileSystem);
+   std::shared_ptr<IAnimationAssetManager> animationAssetManager = std::make_shared<AnimationAssetManager>(configFile);
+   bool bContinue = true;
+   //Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, &inputManager, [&bContinue]() {bContinue = false; });
+   inputManager.LoadRecordingFile(replayFileName);
+   std::function<void(void)> cb = [&bContinue]()
+   {
+       bContinue = false; 
+   };
+
+   PathFinding::Initialise(configFile->GetUIntValue("PathFindingPriorityQueueSize"));
+   EnemyScripting::InitScripting(
+       configFile->GetUIntValue("EnemyScriptingVMDictionarySizeCells"),
+       configFile->GetUIntValue("EnemyScriptingVMIntStackSizeCells"),
+       configFile->GetUIntValue("EnemyScriptingVMReturnStackSizeCells"));
+   EnemyScripting::EnemyManager_ForthExposedMethodImplementations::RegisterForthFunctions();
+   EnemyScripting::DoFile(fileSystem->GetEnemyAIFilePath());
+
+
+   Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, &inputManager, cb);
+   GameFramework::PushLayers("Game", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, &LevelLoad);
+
+   while (bContinue) { 
+       GameInputState state = inputManager.PollEvents();
+       bContinue = !state.Quit;
+       GameFramework::RecieveInput(state);
+       GameFramework::Update(16);
+       GameFramework::EndFrame();
+   }
+   EnemyScripting::DeInitScripting();
+   PathFinding::DeInit();
+   u32 score = game.GetGamestate().GetScore();
+   std::string s = std::string((score == expectedScore) ? " equals expectedScore " : " does not equal expected score ");
+   std::cout << "Game Score: " << score << s << expectedScore << "\n";
+   //Game game(fileSystem, configFile,backgr)
+    return expectedScore != score;
+}
+#endif
+
+int main(int argc, char* args[])
+{
+#ifdef ReplayValidator
+    return ReplayValidatorMain(argc, args);
+#else
+    return GameMain(argc, args);
+#endif
 }

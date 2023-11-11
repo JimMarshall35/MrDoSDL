@@ -5,7 +5,31 @@
 #include "TiledWorld.h"
 #include "TextRenderer.h"
 #include <stdio.h>
+#ifdef ReplayValidator
 
+GameState::GameState(const std::shared_ptr<IConfigFile>& configFile, Event<LevelLoadData>& NewLevelBegun, Event<LevelLoadData>& ResetAfterDeath)
+	: Score(0),
+	Lives(0),
+	LOnLevelLoad(this),
+	LOnResetAfterDeath(this),
+	Config(configFile),
+	CherryPoints(configFile->GetUIntValue("CherryPoints")),
+	EightCherryBonusPoints(configFile->GetUIntValue("EightCherryBonusPoints")),
+	CrystalBallKillPoints(configFile->GetUIntValue("CrystalBallKillPoints")),
+	BonusDiamondPoints(configFile->GetUIntValue("BonusDiamondPoints")),
+	StartBonusTreetPoints(configFile->GetUIntValue("StartBonusTreetPoints")),
+	BonusTreetIncrement(configFile->GetUIntValue("BonusTreetIncrement")),
+	BonusTreetMax(configFile->GetUIntValue("BonusTreetMax"))
+{
+	NewLevelBegun += &LOnLevelLoad;
+	ResetAfterDeath += &LOnResetAfterDeath;
+	int size = configFile->GetArraySize("AppleKillPointsTable");
+	for (int i = 0; i < size; i++)
+	{
+		AppleKillPointsTable.push_back(configFile->GetIntArrayValue("AppleKillPointsTable", i));
+	}
+}
+#else
 GameState::GameState(const std::shared_ptr<IConfigFile>& configFile,
 	const std::shared_ptr<TextRenderer>& textRenderer,
 	Event<LevelLoadData>& NewLevelBegun,
@@ -32,6 +56,7 @@ GameState::GameState(const std::shared_ptr<IConfigFile>& configFile,
 		AppleKillPointsTable.push_back(configFile->GetIntArrayValue("AppleKillPointsTable", i));
 	}
 }
+#endif
 
 void GameState::RecieveMessage(const CherryEaten& message)
 {
@@ -70,8 +95,10 @@ void GameState::RecieveMessage(const EnemyDeath& message)
 
 void GameState::Draw(SDL_Surface* windowSurface, float scale) const
 {
+#ifndef ReplayValidator
 	MyTextRenderer->RenderText({ 0,0 }, ScoreBuffer, windowSurface, scale);
 	MyTextRenderer->RenderText(LivesPositionToRender, LivesBuffer, windowSurface, scale);
+#endif
 }
 
 void GameState::OnLevelLoad(LevelLoadData level)

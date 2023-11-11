@@ -3,6 +3,21 @@
 #include <cassert>
 #include "SDL.h"
 
+#ifdef ReplayValidator
+AnimationAssetManager::AnimationAssetManager(const std::shared_ptr<IConfigFile>& config)
+	:Config(config),
+	AnimationsSpriteSheet(SDL_LoadBMP(config->GetAnimationsConfigData().SpriteSheetAssetPath.c_str()))
+{
+	assert(AnimationsSpriteSheet);
+
+	// ensure loaded bmp is the same format as the screen
+	//AnimationsSpriteSheet = SDL_ConvertSurface(AnimationsSpriteSheet, screenSurface->format);
+
+	// set colour of pixel to be treated as transparent when blitting
+	const AnimationsConfigData& data = Config->GetAnimationsConfigData();
+}
+
+#else
 AnimationAssetManager::AnimationAssetManager(const std::shared_ptr<IConfigFile>& config, SDL_Surface* screenSurface)
 	:Config(config),
 	AnimationsSpriteSheet(SDL_LoadBMP(config->GetAnimationsConfigData().SpriteSheetAssetPath.c_str()))
@@ -16,6 +31,7 @@ AnimationAssetManager::AnimationAssetManager(const std::shared_ptr<IConfigFile>&
 	const AnimationsConfigData& data = Config->GetAnimationsConfigData();
 	SDL_SetSurfaceColorKey(AnimationsSpriteSheet, SDL_TRUE, SDL_MapRGB(screenSurface->format, data.ColourKeyR, data.ColourKeyG, data.ColourKeyB));
 }
+#endif
 
 void AnimationAssetManager::MakeAnimationRectFramesFromName(const std::string& animationName, std::vector<SDL_Rect>& outRectFrames) const
 {

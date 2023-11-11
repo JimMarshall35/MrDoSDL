@@ -2,6 +2,20 @@
 #include "IConfigFile.h"
 #include <cassert>
 
+#ifdef ReplayValidator
+FontAssetManager::FontAssetManager(const std::shared_ptr<IConfigFile>& config)
+	:FontSheet(SDL_LoadBMP(config->GetFontConfigData().SpriteSheetAssetPath.c_str()))
+
+{
+	// ensure loaded bmp is the same format as the screen
+
+	// set colour of pixel to be treated as transparent when blitting
+	const FontConfigData& data = config->GetFontConfigData();
+	CachedFontTileSize = data.TileSize;
+
+	PopulateFontRectMap(data);
+}
+#else
 FontAssetManager::FontAssetManager(const std::shared_ptr<IConfigFile>& config, SDL_Surface* windowSurface)
 	:FontSheet(SDL_LoadBMP(config->GetFontConfigData().SpriteSheetAssetPath.c_str()))
 {
@@ -15,6 +29,7 @@ FontAssetManager::FontAssetManager(const std::shared_ptr<IConfigFile>& config, S
 
 	PopulateFontRectMap(data);
 }
+#endif
 
 FontAssetManager::~FontAssetManager()
 {

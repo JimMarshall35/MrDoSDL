@@ -156,6 +156,7 @@ public:
 	void PollEventsReplayingRecording();
 	void SaveRecordingFile();
 	void LoadRecordingFile();
+	void LoadRecordingFile(const std::string& fileName);
 
 private:
 	u64 FrameCounter = 0;

@@ -181,7 +181,12 @@ void InputManager::SaveRecordingFile()
 
 void InputManager::LoadRecordingFile()
 {
-    std::ifstream input(MyFileSystem->GetReplaysFolderPath() + ReplayFileName, std::ios::binary);
+    LoadRecordingFile(ReplayFileName);
+}
+
+void InputManager::LoadRecordingFile(const std::string& fileName)
+{
+    std::ifstream input(MyFileSystem->GetReplaysFolderPath() + fileName, std::ios::binary);
 
     // copies all data into buffer
     std::vector<unsigned char> buffer(std::istreambuf_iterator<char>(input), {});

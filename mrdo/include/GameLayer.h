@@ -11,6 +11,9 @@
 #include "LevelLoadData.h"
 #include "EnemyManager.h"
 #include "GameState.h"
+#ifdef ReplayValidator
+#include <functional>
+#endif
 
 class IFileSystem;
 class IBackgroundTileAssetManager;
@@ -37,14 +40,24 @@ private:
 		DieAnimationPlaying
 	};
 public:
+#ifdef ReplayValidator
+	Game(const std::shared_ptr<IFileSystem>& fileSystem,
+		const std::shared_ptr<IConfigFile>& config,
+		const std::shared_ptr<IBackgroundTileAssetManager>& backgroundAssetManager,
+		const std::shared_ptr<IAnimationAssetManager>& animationManager,
+		InputManager* inputManager,
+		std::function<void(void)>& gameOverCallback);
+#else
 	Game(
-		const std::shared_ptr<IFileSystem>& fileSystem, 
+		const std::shared_ptr<IFileSystem>& fileSystem,
 		const std::shared_ptr<IConfigFile>& config,
 		const std::shared_ptr<IBackgroundTileAssetManager>& backgroundAssetManager,
 		const std::shared_ptr<IAnimationAssetManager>& animationManager,
 		const std::shared_ptr<TextRenderer>& textRenderer,
 		const std::shared_ptr<IBackendClient>& backendClient,
 		InputManager* inputManager);
+#endif
+	
 
 	// Inherited via UpdateableLayerBase
 	virtual void Update(float deltaT) override;
@@ -83,9 +96,18 @@ private:
 	GameInputState InputState = { false, false, false, false, true, false };
 	GamePhase Phase;
 	LevelLoadData CurrentLevel = { LevelSource::Undefined, -1};
-	const std::shared_ptr<TextRenderer> CachedTextRenderer;
+
 	GameState MyGameState;
 	const std::shared_ptr<IConfigFile> Config;
+#ifndef ReplayValidator
+	const std::shared_ptr<TextRenderer> CachedTextRenderer;
 	const std::shared_ptr<IBackendClient> BackendClient;
+#else
+	std::function<void(void)> OnGameOverCallback;
+public:
+	const GameState& GetGamestate() { return MyGameState; }
+private:
+#endif
+
 	InputManager* MyInputManager;
 };

@@ -21,10 +21,17 @@ class GameState : public GameFrameworkMessageRecipientBase<CherryEaten>,
 	GameFrameworkMessageRecipientBase<EnemyDeath>
 {
 public:
+#ifdef ReplayValidator
+	GameState(const std::shared_ptr<IConfigFile>& configFile,
+		Event<LevelLoadData>& NewLevelBegun,
+		Event<LevelLoadData>& ResetAfterDeath);
+	u32 GetScore() const { return Score; }
+#else
 	GameState(const std::shared_ptr<IConfigFile>& configFile,
 		const std::shared_ptr<TextRenderer>& textRenderer,
 		Event<LevelLoadData>& NewLevelBegun,
 		Event<LevelLoadData>& ResetAfterDeath);
+#endif
 	virtual void RecieveMessage(const CherryEaten& message) override;
 	virtual void RecieveMessage(const EnemyDeath& message) override;
 	void Draw(SDL_Surface* windowSurface, float scale) const;
@@ -47,7 +54,9 @@ private:
 
 
 	std::shared_ptr<IConfigFile> Config;
+#ifndef ReplayValidator
 	std::shared_ptr<TextRenderer> MyTextRenderer;
+#endif
 	u32 CherryPoints;
 	u32 EightCherryBonusPoints;
 	u32 CrystalBallKillPoints;
