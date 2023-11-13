@@ -326,7 +326,7 @@ void ConfigFile::PopulateHighScoreTableWithOfflineScores(HighScore* tableToWrite
 	outNumWritten = 0;
 	json offlineTableJSON = ConfigFileJSON["OfflineHighScoreTable"];
 	assert(offlineTableJSON.is_array());
-	assert(offlineTableJSON.size() <= ConfigFileJSON["ClientHighScoreTableSize"]);
+	assert(offlineTableJSON.size() <= ConfigFileJSON["HighScoreTableSize"]);
 	for (const json& hsJson : offlineTableJSON)
 	{
 		HighScore highScore;
