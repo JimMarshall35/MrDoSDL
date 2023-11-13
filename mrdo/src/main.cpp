@@ -132,11 +132,14 @@ int GameMain(int argc, char* args[])
 #else
 int ReplayValidatorMain(int argc, char* args[])
 {
-    printf("argc %i \n", argc);
+
+    std::string replayFileName = std::string(args[1]);
+    u32 expectedScore = std::atoi(args[2]);
+    std::cout << "\n\n\n\n\n Mr Do! Replay validator.\n";
+   std::cout << "Replay file name: " << replayFileName << "\n";
+   std::cout << "Expected score: " << expectedScore << "\n";
    char* exePath = args[0];
-   std::string replayFileName = std::string(args[1]);
-   u32 expectedScore = std::atoi(args[2]);
-   
+
    LevelLoadData LevelLoad = { LevelSource::ArcadeLevels, 0 };
    std::shared_ptr<IFileSystem> fileSystem = std::make_shared<FileSystem>(exePath);
    std::shared_ptr<IConfigFile> configFile = std::make_shared<ConfigFile>(fileSystem);
@@ -144,7 +147,6 @@ int ReplayValidatorMain(int argc, char* args[])
    InputManager inputManager(configFile, fileSystem);
    std::shared_ptr<IAnimationAssetManager> animationAssetManager = std::make_shared<AnimationAssetManager>(configFile);
    bool bContinue = true;
-   //Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, &inputManager, [&bContinue]() {bContinue = false; });
    inputManager.LoadRecordingFile(replayFileName);
    std::function<void(void)> cb = [&bContinue]()
    {
@@ -175,6 +177,14 @@ int ReplayValidatorMain(int argc, char* args[])
    u32 score = game.GetGamestate().GetScore();
    std::string s = std::string((score == expectedScore) ? " equals expectedScore " : " does not equal expected score ");
    std::cout << "Game Score: " << score << s << expectedScore << "\n";
+   if (score == expectedScore)
+   {
+       std::cout << "REPLAY VALID\n";
+   }
+   else
+   {
+       std::cout << "REPLAY INVALID\n";
+   }
    //Game game(fileSystem, configFile,backgr)
     return expectedScore != score;
 }

@@ -23,7 +23,7 @@ public:
 	virtual void PopulateHighScores() = 0; 
 	virtual const HighScore& GetHighScore(int number) = 0;
 	virtual size_t GetNumHighScores() = 0;
-	virtual void SubmitPossibleHighScore(u32 score) = 0;
+	virtual void SubmitPossibleHighScore(u32 score, char* replayData, size_t replayDataSize) = 0;
 };
 
 class BackendClient : public IBackendClient
@@ -34,7 +34,8 @@ public:
 	virtual void PopulateHighScores() override;
 	virtual const HighScore& GetHighScore(int number) override;
 	virtual size_t GetNumHighScores() override;
-	virtual void SubmitPossibleHighScore(u32 score) override;
+	virtual void SubmitPossibleHighScore(u32 score, char* replayData, size_t replayDataSize) override;
+	virtual void SubmitPossibleHighScoreReplayToServer(char* replayData, size_t replaySize);
 
 private:
 	void PostPossibleHighScoreToServer(u32 score);
@@ -49,9 +50,11 @@ private:
 	std::string BaseURL;
 	std::string GetHighScoresRoute;
 	std::string SubmitHighScoreRoute;
+	std::string SubmitHighScoreReplayRoute;
 	u32 Port;
 	std::string GetHighScoresURL;
 	std::string SubmitHighScoreURL;
+	std::string SubmitHighScoreReplayURL;
 	CURL* Curl;
 	size_t HighScoreTableSize;
 	std::unique_ptr<HighScore[]> HighScoreTable;

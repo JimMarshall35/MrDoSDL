@@ -11,11 +11,13 @@ BackendClient::BackendClient(const std::shared_ptr<IConfigFile>& configFIle)
 	BaseURL(),
 	GetHighScoresRoute(),
 	SubmitHighScoreRoute(),
+	SubmitHighScoreReplayRoute(),
 	Port(configFIle->GetUIntValue("BackendServerConnectionPort")),
 	GetHighScoresURL(),
 	SubmitHighScoreURL(),
+	SubmitHighScoreReplayURL(),
 	Curl(curl_easy_init()),
-	HighScoreTableSize(configFIle->GetUIntValue("ClientHighScoreTableSize")),
+	HighScoreTableSize(configFIle->GetUIntValue("HighScoreTableSize")),
 	HighScoreTable(std::make_unique<HighScore[]>(HighScoreTableSize)),
 	NumLoadedHighScores(0),
 	Response(),
@@ -28,8 +30,10 @@ BackendClient::BackendClient(const std::shared_ptr<IConfigFile>& configFIle)
 	BaseURL = configFIle->GetStringValue("BackendServerURL");
 	GetHighScoresRoute = configFIle->GetStringValue("BackendServerHighScoresRoute");
 	SubmitHighScoreRoute = configFIle->GetStringValue("BackendServerSubmitHighScoreRoute");
+	SubmitHighScoreReplayRoute = configFIle->GetStringValue("SubmitReplayRoute"),
 	GetHighScoresURL = MakeURL(BaseURL, Port, GetHighScoresRoute);
 	SubmitHighScoreURL = MakeURL(BaseURL, Port, SubmitHighScoreRoute);
+	SubmitHighScoreReplayURL = MakeURL(BaseURL, Port, SubmitHighScoreReplayRoute);
 	HighScoreJSONResponseNameField = configFIle->GetStringValue("HighscoreDataNameColumnName");
 	HighScoreJSONResponseHSField = configFIle->GetStringValue("HighscoreDataHighScoreColumnName");
 	PlayerName = configFIle->GetStringValue("PlayerName");
@@ -102,7 +106,7 @@ size_t BackendClient::GetNumHighScores()
 	return NumLoadedHighScores;
 }
 
-void BackendClient::SubmitPossibleHighScore(u32 score)
+void BackendClient::SubmitPossibleHighScore(u32 score, char* replayData, size_t replayDataSize)
 {
 	for (int i = 0; i < NumLoadedHighScores; i++)
 	{
@@ -110,7 +114,8 @@ void BackendClient::SubmitPossibleHighScore(u32 score)
 		{
 			if (bCurlInitialised && bInitialConnectionSuccessful)
 			{
-				PostPossibleHighScoreToServer(score);
+				//PostPossibleHighScoreToServer(score);
+				SubmitPossibleHighScoreReplayToServer(replayData, replayDataSize);
 			}
 			else
 			{
@@ -118,6 +123,23 @@ void BackendClient::SubmitPossibleHighScore(u32 score)
 			}
 			return;
 		}
+	}
+}
+
+void BackendClient::SubmitPossibleHighScoreReplayToServer(char* replayData, size_t replaySize)
+{
+	curl_easy_setopt(Curl, CURLOPT_URL, SubmitHighScoreReplayURL.c_str());
+	struct curl_slist* headers = NULL;
+	headers = curl_slist_append(headers, "Content-Type:application/octet-stream");
+	curl_easy_setopt(Curl, CURLOPT_HEADER, true);
+	curl_easy_setopt(Curl, CURLOPT_HTTPHEADER, headers);
+	curl_easy_setopt(Curl, CURLOPT_POST, true);
+	curl_easy_setopt(Curl, CURLOPT_POSTFIELDSIZE_LARGE, replaySize);
+	curl_easy_setopt(Curl, CURLOPT_POSTFIELDS, replayData);
+	CURLcode res = curl_easy_perform(Curl);
+
+	if (res != CURLE_OK) {
+		fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
 	}
 }
 

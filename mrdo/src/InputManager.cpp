@@ -164,29 +164,38 @@ void InputManager::PollEventsReplayingRecording()
     
 }
 
-void InputManager::SaveRecordingFile()
+void InputManager::SaveRecordingFile(char* data, size_t size)
+{
+    std::ofstream wf(MyFileSystem->GetReplaysFolderPath() + ReplayFileName, std::ios::out | std::ios::binary);
+    wf.write(data, size);
+}
+
+size_t InputManager::GetCurrentReplayRequiredBufferSize() const
 {
     size_t bufferSize = InputSnaps.size() * sizeof(InputSnap) + sizeof(SavedRecordingHeader);
-    std::unique_ptr<char[]> buffer = std::make_unique<char[]>(bufferSize);
-    
+    return bufferSize;
+}
+
+void InputManager::WriteReplayBuffer(char* data, size_t size, u32 score) const
+{
     SavedRecordingHeader header;
+    header.Score = score;
     header.NumSnaps = InputSnaps.size();
     std::string name = Config->GetStringValue("PlayerName");
     strcpy_s(header.Name, name.c_str());
-    memcpy(buffer.get(), &header, sizeof(header));
-    memcpy(buffer.get() + sizeof(SavedRecordingHeader), InputSnaps.data(), sizeof(InputSnap) * header.NumSnaps);
-    std::ofstream wf(MyFileSystem->GetReplaysFolderPath() + ReplayFileName, std::ios::out | std::ios::binary);
-    wf.write(buffer.get(), bufferSize);
+    memcpy(data, &header, sizeof(header));
+    memcpy(data + sizeof(SavedRecordingHeader), InputSnaps.data(), sizeof(InputSnap) * header.NumSnaps);
 }
 
 void InputManager::LoadRecordingFile()
 {
-    LoadRecordingFile(ReplayFileName);
+    LoadRecordingFile(MyFileSystem->GetReplaysFolderPath() + ReplayFileName);
 }
 
-void InputManager::LoadRecordingFile(const std::string& fileName)
+void InputManager::LoadRecordingFile(const std::string& filePath)
 {
-    std::ifstream input(MyFileSystem->GetReplaysFolderPath() + fileName, std::ios::binary);
+    std::cout << "loading recording " << filePath << "\n";
+    std::ifstream input(filePath, std::ios::binary);
 
     // copies all data into buffer
     std::vector<unsigned char> buffer(std::istreambuf_iterator<char>(input), {});

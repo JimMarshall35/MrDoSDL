@@ -158,7 +158,6 @@ void Game::OnInputPush(void* data)
 		MyInputManager->SetRecordingState(InputRecordingState::PlayingBack);
 #else
 		MyInputManager->SetRecordingState(InputRecordingState::Recording);
-
 #endif
 	}
 }
@@ -205,8 +204,13 @@ void Game::RecieveMessage(const Victory& message)
 void Game::RecieveMessage(const GameOver& message)
 {
 #ifndef ReplayValidator
-	BackendClient->SubmitPossibleHighScore(message.Score);
-	MyInputManager->SaveRecordingFile();
+	size_t bufferSize = MyInputManager->GetCurrentReplayRequiredBufferSize();
+	std::unique_ptr<char[]> replayFile = std::make_unique<char[]>(bufferSize);
+	memset(replayFile.get(), 0, bufferSize);
+	MyInputManager->WriteReplayBuffer(replayFile.get(), bufferSize, message.Score);
+	BackendClient->SubmitPossibleHighScore(message.Score, replayFile.get(), bufferSize);
+
+	MyInputManager->SaveRecordingFile(replayFile.get(), bufferSize);
 	MyInputManager->SetRecordingState(InputRecordingState::NotRecording);
 	GameFramework::QueuePopLayersAtFrameEnd(GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update);
 #else

@@ -16,11 +16,27 @@ target_include_directories( MrDoGame SYSTEM PRIVATE ${SDL_INCLUDES})
 target_link_libraries(MrDoGame PRIVATE SDL3::SDL3)
 target_link_libraries(MrDoGame PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(MrDoGame PRIVATE CURL::libcurl)
+
+add_executable( ReplayValidator ${SOURCES} ${INCS})
+source_group(headers FILES ${INCS}) 
+
+
+set_target_properties( ReplayValidator PROPERTIES RUNTIME_OUTPUT_DIRECTORY 
+   ${MrDo_BINARY_DIR}/build_results/bin )
+target_compile_definitions( ReplayValidator PUBLIC -DReplayValidator )
+include_directories(${MrDo_SOURCE_DIR}/mrdo/include)
+target_include_directories( ReplayValidator SYSTEM PRIVATE ${SDL_INCLUDES})
+target_link_libraries(ReplayValidator PRIVATE SDL3::SDL3)
+target_link_libraries(ReplayValidator PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(ReplayValidator PRIVATE CURL::libcurl)
+
+
  if (WIN32)
     add_custom_command(
         TARGET MrDoGame POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL3::SDL3>" "$<TARGET_FILE_DIR:MrDoGame>"
-        VERBATIM
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:CURL::libcurl>" "$<TARGET_FILE_DIR:MrDoGame>"
+	VERBATIM
     )
 endif()
 

@@ -139,7 +139,8 @@ struct SavedRecordingHeader
 	int Version = 0;
 	size_t NumSnaps = 0;
 	char Name[RecordingFileNameMaxLen];
-	u64 Reserved;
+	u32 Score;
+	u32 Reserved;
 	u64 Reserved1;
 };
 
@@ -154,9 +155,11 @@ public:
 	void PollEventsNotRecording();
 	void PollEventsRecording();
 	void PollEventsReplayingRecording();
-	void SaveRecordingFile();
+	void SaveRecordingFile(char* data, size_t size);
 	void LoadRecordingFile();
 	void LoadRecordingFile(const std::string& fileName);
+	size_t GetCurrentReplayRequiredBufferSize() const;
+	void WriteReplayBuffer(char* data, size_t size, u32 score) const;
 
 private:
 	u64 FrameCounter = 0;
