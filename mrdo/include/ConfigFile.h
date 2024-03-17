@@ -28,6 +28,7 @@ public:
 	virtual float GetFloatArrayValue(const std::string& key, size_t index) const;
 	virtual const IFileSystem* GetFileSystem() const override { return Filesystem.get(); }
 	virtual void PopulateHighScoreTableWithOfflineScores(HighScore* tableToWrite, size_t& outNumWritten) const override;
+	virtual vec2 GetVec2Value(const std::string& key) const;
 
 private:
 	void PopulateBackgroundConfigDataStruct();
@@ -46,4 +47,5 @@ private:
 	LevelConfigData BlankLevel;
 	std::shared_ptr<IFileSystem> Filesystem;
 	FontConfigData FontConfigData;
+
 };

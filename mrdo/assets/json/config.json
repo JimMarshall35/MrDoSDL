@@ -6117,6 +6117,7 @@
   "StartBonusTreetPoints" : 500,
   "BonusTreetIncrement" : 500,
   "BonusTreetMax" : 8000,
+
   "BackendServerURL" : "http://127.0.0.1",
   "BackendServerConnectionPort" : 5000,
   "BackendServerHighScoresRoute" : "/HighScores",
@@ -6127,5 +6128,10 @@
   "PlayerName" : "JimmyM",
   "OfflineHighScoreTable" : [{"name" : "JNM", "highscore" : 100000}, {"name" : "JNM", "highscore" : 50000},{"name" : "JNM", "highscore" : 40000}, {"name" : "JNM", "highscore" : 30000}],
   "SubmitReplayRoute" : "/SubmitReplay",
-  "Version" : 0
+  "GetReplayRoute": "/Replays",
+  "Version" : 0,
+
+  "EnemyColliderOffset" : { "x" : 3, "y" : 3 },
+  "PlayerColliderOffset" : { "x" : 3, "y" : 3 }
+
 }

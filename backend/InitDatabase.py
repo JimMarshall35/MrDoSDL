@@ -4,16 +4,12 @@ os.remove("Backend.db")
 con = sqlite3.connect("Backend.db")
 
 cur = con.cursor()
-cur.execute("CREATE TABLE HighScores(name, highscore, replayFile)")
+cur.execute("CREATE TABLE HighScores(id INTEGER PRIMARY KEY AUTOINCREMENT, name, highscore, replayFile)")
 
 cur.execute("delete from HighScores")
+# {"name": "JimmyM", "highscore": 16100}, 
 cur.execute("""
-INSERT INTO HighScores VALUES
-        ('Jim Marshall', 60000, 'None'),
-        ('James Marshall', 50000, 'None'),
-        ('Jimmy Marshall', 40000, 'None'),
-        ('James Nicholas Marshall', 30000, 'None'),
-        ('JNM', 20000, 'None'),
-        ('Jim M Marshal', 10000, 'None')
+INSERT INTO HighScores ( name, highscore, replayFile )
+        VALUES ('JimmyM', 16100, 'C:\\Users\\User1\\source\\repos\\MrDoSDL\\backend\\Replays\\Valid\\JimmyM16100serverVersion0.replay')
 """)
 con.commit()

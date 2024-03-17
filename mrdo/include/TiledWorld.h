@@ -4,6 +4,8 @@
 #include <vector>
 #include "SDL.h"
 #include "LevelLoadData.h"
+#include <list>
+#include <set>
 
 class IBackgroundTileAssetManager;
 class IAnimationAssetManager;
@@ -25,6 +27,11 @@ enum class TileWallDirectionBit : u8
 class TiledWorld
 {
 public:
+	struct CellCollisionLines
+	{
+		std::pair<vec2, vec2> lines[4];
+	};
+public:
 	TiledWorld(
 		const std::shared_ptr<IConfigFile>& config, 
 		const std::shared_ptr<IBackgroundTileAssetManager>& bgtam,
@@ -35,6 +42,8 @@ public:
 	void ConnectAdjacentCells(const ivec2& cell1, const ivec2& cell2);
 	u8& GetCellAtIndex(const ivec2& coords);	
 	u8 GetCellAtIndexValue(const ivec2& coords) const;
+	CellCollisionLines& GetCellCollisionLines(const ivec2& coords);
+	const CellCollisionLines& GetCellCollisionLinesConst(const ivec2&) const;
 	u32 GetActiveLevelWidth() const { return ActiveLevelWidth; }
 	u32 GetActiveLevelHeight() const { return ActiveLevelHeight; }
 	int GetTileSize() const { return TileSize; }
@@ -48,6 +57,8 @@ public:
 	void AddCherry(const ivec2& coords);
 	void FreeLevel();
 	void CopyToLevelConfigData(LevelConfigData& dst);
+	void PopulateTileLines(ivec2 coords);
+	void GetLinesFromCells(std::vector<std::pair<vec2, vec2>>& outLines, const std::vector<ivec2>& inCellCoords) const;
 private:
 	std::shared_ptr<IConfigFile> Config;
 	std::shared_ptr<IBackgroundTileAssetManager> BackgroundTileAssetManager;
@@ -64,4 +75,6 @@ private:
 	u8 HUDTileRowsBottom;
 	SDL_Rect CherryRect;
 	int CurrentTileset = -1;
+	
+	std::unique_ptr<CellCollisionLines[]> LineSegments;
 };

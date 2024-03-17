@@ -240,6 +240,11 @@ void ConfigFile::RecreateMapMakerLevelsJSON()
 	}
 }
 
+vec2 ConfigFile::GetVec2Value(const std::string& key) const
+{
+	return vec2{ConfigFileJSON[key]["x"], ConfigFileJSON[key]["y"] };
+}
+
 std::string ConfigFile::GetStringValue(const std::string& key) const
 {
 	assert(ConfigFileJSON[key].is_string());

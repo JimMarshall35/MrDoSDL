@@ -304,8 +304,10 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 					apple.Position = { appleCoords.x * CachedBackgroundTileSize, appleCoords.y * CachedBackgroundTileSize };
 					apple.DistanceFallen = 0.0f;
 					apple.State = AppleState::Settled;
-					KillAppleCrushedEnemies(apple);
-
+					if (apple.EnemyBufferCurrentSize > 0)
+					{
+						KillAppleCrushedEnemies(apple);
+					}
 				}
 				else
 				{
@@ -329,7 +331,10 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 					apple.CrushedCharacter->Kill(CharacterDeathReason::CrushedByApple);
 					apple.CrushedCharacter = nullptr;
 				}
-				KillAppleCrushedEnemies(apple);
+				if (apple.EnemyBufferCurrentSize > 0)
+				{
+					KillAppleCrushedEnemies(apple);
+				}
 			}
 		}
 		break;
@@ -433,31 +438,29 @@ void AppleManager::RecursivelyPushApples(Apple& apple)
 				PushedAppleStack[PushedAppleStackSize++] = &otherApple;
 				RecursivelyPushApples(otherApple);
 			}
-			//else
-			{
-				CachedEnemyManager->IterateActiveEnemies([this, &apple](Enemy& enemy) {
-					if (enemy.bCrushed)
+
+			CachedEnemyManager->IterateActiveEnemies([this, &apple](Enemy& enemy) {
+				if (enemy.bCrushed)
+				{
+					return;
+				}
+				float dims = CachedSpriteDims.x;
+				if (CollisionHelpers::AABBCollision(
+					enemy.Pos + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
+					apple.Position + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
+					{ dims - A_SMALL_NUMBER, dims - A_SMALL_NUMBER },
+					{ dims - A_SMALL_NUMBER, dims - A_SMALL_NUMBER }))
+				{
+					if (apple.Position.x < enemy.Pos.x)
 					{
-						return;
+						enemy.Pos.x = apple.Position.x + CachedSpriteDims.x + A_SMALL_NUMBER;
 					}
-					float dims = CachedSpriteDims.x;
-					if (CollisionHelpers::AABBCollision(
-						enemy.Pos + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
-						apple.Position + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
-						{ dims - A_SMALL_NUMBER, dims - A_SMALL_NUMBER },
-						{ dims - A_SMALL_NUMBER, dims - A_SMALL_NUMBER }))
+					else
 					{
-						if (apple.Position.x < enemy.Pos.x)
-						{
-							enemy.Pos.x = apple.Position.x + CachedSpriteDims.x + A_SMALL_NUMBER;
-						}
-						else
-						{
-							enemy.Pos.x = apple.Position.x - CachedSpriteDims.x - A_SMALL_NUMBER;
-						}
+						enemy.Pos.x = apple.Position.x - CachedSpriteDims.x - A_SMALL_NUMBER;
 					}
-				});
-			}
+				}
+			});
 		}
 	}
 }

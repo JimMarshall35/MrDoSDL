@@ -65,6 +65,7 @@ void GameState::RecieveMessage(const CherryEaten& message)
 	RefreshScoreBuffer();
 	if (RemainingCherries <= 0)
 	{
+		printf("Victory: all cherries eaten.\n");
 		GameFramework::SendFrameworkMessage<Victory>({ VictoryReason::Cherries });
 	}
 }
@@ -73,6 +74,7 @@ void GameState::RecieveMessage(const EnemyDeath& message)
 {
 	if (message.NumberKilledTotal == 0)
 	{
+		printf("message.NumberKilledTotal == 0 !!\n");
 		return;
 	}
 	u32 scoreAddtion;
@@ -87,8 +89,14 @@ void GameState::RecieveMessage(const EnemyDeath& message)
 	Score += scoreAddtion;
 	RefreshScoreBuffer();
 	RemainingEnemies -= message.NumberSignificantKilled;
+	printf("%i %s killed. Of which %i were significant. remaining enemies: %i\n", 
+		message.NumberKilledTotal,
+		message.NumberKilledTotal == 1 ? "enemy" : "enemies",
+		message.NumberSignificantKilled,
+		RemainingEnemies);
 	if (RemainingEnemies <= 0)
 	{
+		printf("Victory: All monsters killed\n");
 		GameFramework::SendFrameworkMessage<Victory>({VictoryReason::Monsters});
 	}
 }
@@ -115,6 +123,7 @@ void GameState::OnLevelLoad(LevelLoadData level)
 	const LevelConfigData& lvl = levels[level.LevelIndex];
 	RemainingCherries = GetNumCherries(lvl);
 	RemainingEnemies = GetNumEnemies(lvl);
+	printf("New level loaded: remaining enemies: %i, remaining cherries: %i \n", RemainingEnemies, RemainingCherries);
 	LivesPositionToRender.y = lvl.NumRows * (Config->GetBackgroundConfigData().TileSize - 1);
 	LivesPositionToRender.x = 0;
 }

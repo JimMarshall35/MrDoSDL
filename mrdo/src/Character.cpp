@@ -52,13 +52,7 @@ void Character::Update(float deltaTime, GameInputState inputState)
 		return;
 	}
 
-	if (inputState.CrystalBallPress() && CrystalBallState == CrystalBallState::HasBall)
-	{
-		MyCrystalBall.Release();
-		PostThrowTimer = 0.0f;
-		bCanCatchBall = false;
-		CrystalBallState = CrystalBallState::NoBall;
-	}
+	
 	if (MyCrystalBall.IsReleased())
 	{
 		assert(CrystalBallState == CrystalBallState::NoBall);
@@ -69,6 +63,14 @@ void Character::Update(float deltaTime, GameInputState inputState)
 			bCanCatchBall = true;
 		}
 	}
+	else if (inputState.CrystalBallPress())
+	{
+		MyCrystalBall.Release();
+		PostThrowTimer = 0.0f;
+		bCanCatchBall = false;
+		CrystalBallState = CrystalBallState::NoBall;
+	}
+
 	if (inputState.AnyDirectionPressed())
 	{
 		bIsMoving = true;

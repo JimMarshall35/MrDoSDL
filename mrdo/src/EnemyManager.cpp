@@ -42,7 +42,10 @@ EnemyManager::EnemyManager(
 	PushSpeedMultiplier(configFile->GetFloatValue("EnemyPushSpeedMultiplier")),
 	EnemyWaitTimeBeforeBecomeDigger(configFile->GetFloatValue("EnemyWaitTimeBeforeBecomeDigger")),
 	MorphingEnemyFlashAnimationFPS(configFile->GetFloatValue("EnemyFlashAnimationFPS")),
-	MorphingEnemyFlashTime(configFile->GetFloatValue("EnemyFlashTime"))
+	MorphingEnemyFlashTime(configFile->GetFloatValue("EnemyFlashTime")),
+	EnemyCollider({configFile->GetVec2Value("EnemyColliderOffset")}),
+	PlayerCollider({ configFile->GetVec2Value("PlayerColliderOffset") })
+
 {
 	CachedTileSize = ConfigFile->GetAnimationsConfigData().TileSize;
 	onLevelLoaded += &LOnLevelBegun;
@@ -380,19 +383,28 @@ bool EnemyManager::FollowPathBase(Enemy& enemy, float deltaTime, const PathFinis
 		{
 			onPathFinished(enemy);
 		}
-
-		SetEnemyDestinationWorldSpace(enemy);
-		SetEnemyDirection(enemy);
+		if (enemy.PathBufferDestinationIndex >= 0)
+		{
+			assert(enemy.PathBufferDestinationIndex >= 0);
+			SetEnemyDestinationWorldSpace(enemy);
+			SetEnemyDirection(enemy);
+		}
+		else
+		{
+			enemy.PathBufferDestinationIndex = 0;
+		}
+		
 
 		// apply amount overshot
 		vec2 newMovementVector = MovementHelpers::GetDirectionVector(enemy.CurrentDirection);
 		enemy.Pos += newMovementVector * overshootAmount;
 	}
 	
-	if (CollisionHelpers::AABBCollision(enemy.Pos + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
-		CachedCharacter->GetPosition() + vec2{ A_SMALL_NUMBER / 2.0f, A_SMALL_NUMBER / 2.0f },
-		{ CachedTileSize - A_SMALL_NUMBER ,CachedTileSize - A_SMALL_NUMBER },
-		{ CachedTileSize - A_SMALL_NUMBER, CachedTileSize - A_SMALL_NUMBER }))
+
+	if (CollisionHelpers::AABBCollision(enemy.Pos + vec2{ A_SMALL_NUMBER / 2.0f + EnemyCollider.x / 2.0f, A_SMALL_NUMBER / 2.0f + EnemyCollider.y / 2.0f },
+		CachedCharacter->GetPosition() + vec2{ A_SMALL_NUMBER / 2.0f + PlayerCollider.x / 2.0f, A_SMALL_NUMBER / 2.0f + PlayerCollider.y / 2.0f },
+		{ CachedTileSize - A_SMALL_NUMBER  - EnemyCollider.x, CachedTileSize - A_SMALL_NUMBER - EnemyCollider.y },
+		{ CachedTileSize - A_SMALL_NUMBER - PlayerCollider.x, CachedTileSize - A_SMALL_NUMBER - PlayerCollider.y }))
 	{
 		CachedCharacter->Kill(CharacterDeathReason::KilledByMonster);
 	}
@@ -418,6 +430,7 @@ void EnemyManager::SetNewPath(Enemy& enemy, const ivec2& newDestinationCell)
 		CachedTiledWorld
 	);
 	enemy.PathBufferDestinationIndex = enemy.PathBufferCurrentSize - 1;
+	//assert(enemy.PathBufferDestinationIndex >= 0);
 }
 
 void EnemyManager::SetNewPathForDigger(Enemy& enemy, const ivec2& newDestinationCell, const ivec2& obstruction)
@@ -442,6 +455,7 @@ void EnemyManager::SetEnemyDirection(Enemy& enemy)
 
 	int dx = current.x - destination.x;
 	int dy = current.y - destination.y;
+	
 	assert((dx >= -1) && (dx <= 1));
 	assert((dy >= -1) && (dy <= 1));
 	assert((dx == 0) || (dy == 0));

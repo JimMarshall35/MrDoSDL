@@ -126,6 +126,9 @@ private:
 	float MorphingEnemyFlashAnimationFPS;
 	float MorphingEnemyFlashTime;
 	static float DeltaTime;
+	vec2 EnemyCollider;
+	vec2 PlayerCollider;
+
 	ExecutionToken UpdateNormalEnemyScriptFunction;
 	ExecutionToken FlashingEnemyScriptFunction;
 	ExecutionToken DiggerEnemyScriptFunction;

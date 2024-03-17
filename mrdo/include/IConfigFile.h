@@ -90,6 +90,7 @@ public:
 	virtual const float GetFloatValue(const std::string& key) const = 0;
 	virtual std::string GetStringValue(const std::string& key) const = 0;
 	virtual bool GetBoolValue(const std::string& key) const = 0;
+	virtual vec2 GetVec2Value(const std::string& key) const = 0;
 	virtual void SaveAfterMapMakerLevelsChange() = 0;
 	virtual int GetArraySize(const std::string& key) const = 0;
 	virtual int GetIntArrayValue(const std::string& key, size_t index) const = 0;

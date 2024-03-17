@@ -11,6 +11,8 @@
 #include <algorithm>
 #include "EnemyManager.h"
 #include "GameFramework.h"
+#include <iostream>
+#include <algorithm>
 
 CrystalBall::CrystalBall(Character* owner, IAnimationAssetManager* anim, IConfigFile* configFile, TiledWorld* tiledWorld, EnemyManager* enemyManager)
 	:Owner(owner),
@@ -34,6 +36,13 @@ CrystalBall::CrystalBall(Character* owner, IAnimationAssetManager* anim, IConfig
 	OnRegenerateParticleEffectRadius = ConfigFile->GetFloatValue("OnRegenerateParticleEffectRadius");
 	InitialiseParticleDirectionsAndSpeeds();
 	InitialiseRegenerateTimeTable();
+	std::cout << "CrystalBall created\n";
+}
+
+CrystalBall::~CrystalBall()
+{
+
+	std::cout << "CrystalBall destroyed\n";
 }
 
 void CrystalBall::Draw(SDL_Surface* windowSurface, float scale) const
@@ -175,447 +184,99 @@ void CrystalBall::OnCaught()
 	State = CrystalBallState::CharacterCarrying;
 }
 
+
 void CrystalBall::UpdateActiveBallInternal(float deltaT)
 {
 	if (State != CrystalBallState::Released)
 	{
 		return;
 	}
-
-	vec2 oldballCenter = Position + vec2{ CachedTileSize / 2.0f, CachedTileSize / 2.0f };
-	vec2 oldBallCenter1By1TileIndex = vec2{ oldballCenter.x / CachedTileSize, oldballCenter.y / CachedTileSize };
-	ivec2 oldBallCenterTileCoords = ivec2{ (u32)oldBallCenter1By1TileIndex.x, (u32)oldBallCenter1By1TileIndex.y };
-	vec2 oldPos = Position;
-	Position += (DirectionVector * CrystalBallSpeed * deltaT);
-
-	vec2 ballCenter = Position + vec2{ CachedTileSize / 2.0f, CachedTileSize / 2.0f };
-	vec2 ballCenter1By1TileIndex = vec2{ ballCenter.x / CachedTileSize, ballCenter.y / CachedTileSize };
-	ivec2 ballCenterTileCoords = ivec2{ (u32)ballCenter1By1TileIndex.x, (u32)ballCenter1By1TileIndex.y };
-
-	if (ballCenterTileCoords != oldBallCenterTileCoords)
+	struct Collision
 	{
-		u8 oldBallCenterTile = CachedTiledWorld->GetCellAtIndexValue(ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenter1By1TileIndex.y });
-		u8 ballCenterTile = CachedTiledWorld->GetCellAtIndexValue(ivec2{ (i32)ballCenterTileCoords.x, (i32)ballCenterTileCoords.y });
+		vec2 N;
+		float t;
 
-		int dx = ballCenterTileCoords.x - oldBallCenterTileCoords.x;
-		int dy = ballCenterTileCoords.y - oldBallCenterTileCoords.y;
-		assert((dx >= -1) && (dx <= 1));
-		assert((dy >= -1) && (dy <= 1));
+	};
+	std::vector<Collision> collisions;
+	vec2 velocity = DirectionVector * CrystalBallSpeed * deltaT;
 
-		bool hasCollided = false;
-		vec2 collisionNormal;
-		ivec2 collidedCell;
-		switch (dx)
+	float distanceToTravelLeft = velocity.Magnitude();
+
+	while (distanceToTravelLeft > 0 && !CollisionHelpers::EqualWithEpsilon(distanceToTravelLeft, 0.0f))
+	{
+		vec2 oldballCenter = Position + vec2{ CachedTileSize / 2.0f, CachedTileSize / 2.0f };
+		ivec2 oldBallCenterTileCoords = ivec2{ (u32)(oldballCenter.x / CachedTileSize), (u32)(oldballCenter.y / CachedTileSize)};
+
+		vec2 newBallCenter = oldballCenter + velocity;
+		ivec2 newBallCenterTileCoords = ivec2{ (u32)(oldballCenter.x / CachedTileSize), (u32)(oldballCenter.y / CachedTileSize) };
+
+		ivec2 cellsOccupiedByBall[4] = {
+		/* topLeft      */{ (oldballCenter.x - CrystalBallRadius) / CachedTileSize, (oldballCenter.y - CrystalBallRadius) / CachedTileSize },
+		/* bottomRight  */{ (oldballCenter.x + CrystalBallRadius) / CachedTileSize, (oldballCenter.y + CrystalBallRadius) / CachedTileSize },
+ 		/* topLeft2     */{ (newBallCenter.x - CrystalBallRadius) / CachedTileSize, (newBallCenter.y - CrystalBallRadius) / CachedTileSize },
+		/* bottomRight2 */{ (newBallCenter.x + CrystalBallRadius) / CachedTileSize, (newBallCenter.y + CrystalBallRadius) / CachedTileSize}
+		};
+
+		ivec2 tl, br;
+		CollisionHelpers::CalcBoundingBox(tl, br, cellsOccupiedByBall, 4);
+		std::vector<ivec2> cellsToTest;
+		std::vector<std::pair<vec2, vec2>> lines;
+		for (int y = tl.y; y <= br.y; y++)
 		{
-		case -1:
-			switch (dy)
+			for (int x = tl.x; x <= br.x; x++)
 			{
-			case -1:
-			{
-				ivec2 cellToLeft = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ -1,0 };
-				ivec2 cellAbove = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ 0,-1 };
-
-				u8 tileToLeft = CachedTiledWorld->GetCellAtIndexValue(cellToLeft);
-				u8 tileAbove = CachedTiledWorld->GetCellAtIndexValue(cellAbove);
-				if ((tileAbove & (1 << (u32)TileWallDirectionBit::Down)) || (oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Up)))
-				{
-					vec2 oldTileToptWallA = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize
-					};
-					vec2 oldTileToptWallB = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize
-					};
-					if (CollisionHelpers::isintersect(oldTileToptWallA, oldTileToptWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = cellAbove;
-						collisionNormal = MovementHelpers::Down;
-						break;
-					}
-				}
-				if ((oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Left)) || (tileToLeft & (1 << (u32)TileWallDirectionBit::Right)))
-				{
-					vec2 oldTileLeftWallA = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize
-					};
-					vec2 oldTileLeftWallB = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-
-					if (CollisionHelpers::isintersect(oldTileLeftWallA, oldTileLeftWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = cellToLeft;
-						collisionNormal = MovementHelpers::Right;
-						break;
-					}
-				}
-				if ((ballCenterTile & (1 << (u32)TileWallDirectionBit::Down)) || (tileToLeft & (1 << (u32)TileWallDirectionBit::Up)))
-				{
-					vec2 newTileBottomWallA = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-					vec2 newTileBottomWallB = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-					if (CollisionHelpers::isintersect(newTileBottomWallA, newTileBottomWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
-						collisionNormal = MovementHelpers::Down;
-						break;
-					}
-				}
-				if ((ballCenterTile & (1 << (u32)TileWallDirectionBit::Right)) || (tileAbove & (1 << (u32)TileWallDirectionBit::Left)))
-				{
-					vec2 newTileBRightWallA = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize
-					};
-					vec2 newTileRightWallB = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-					if (CollisionHelpers::isintersect(newTileBRightWallA, newTileRightWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
-						collisionNormal = MovementHelpers::Right;
-						break;
-					}
-				}
+				cellsToTest.emplace_back(x, y);
 			}
-
-			break;
-			case 0:
-				if ((oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Left)) || (ballCenterTile & (1 << (u32)TileWallDirectionBit::Right)))
-				{
-					// collision
-					hasCollided = true;
-					collidedCell = ivec2{ (i32)ballCenterTileCoords.x, (i32)ballCenterTileCoords.y };
-					collisionNormal = MovementHelpers::Right;
-				}
-				break;
-			case 1:
-			{
-
-				ivec2 cellToLeft = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ -1,0 };
-				ivec2 cellBelow = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ 0, 1 };
-
-				u8 tileToLeft = CachedTiledWorld->GetCellAtIndexValue(cellToLeft);
-				u8 tileBelow = CachedTiledWorld->GetCellAtIndexValue(cellBelow);
-				if ((tileBelow & (1 << (u32)TileWallDirectionBit::Up)) || (oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Down)))
-				{
-					vec2 oldTilBottomtWallA = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-					vec2 oldTilBottomtWallB = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-					if (CollisionHelpers::isintersect(oldTilBottomtWallA, oldTilBottomtWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = cellBelow;
-						collisionNormal = MovementHelpers::Up;
-						break;
-					}
-				}
-				if ((oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Left)) || (tileToLeft & (1 << (u32)TileWallDirectionBit::Right)))
-				{
-					vec2 oldTileLeftWallA = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize
-					};
-					vec2 oldTileLeftWallB = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-
-					if (CollisionHelpers::isintersect(oldTileLeftWallA, oldTileLeftWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = cellToLeft;
-						collisionNormal = MovementHelpers::Right;
-						break;
-					}
-				}
-				if ((ballCenterTile & (1 << (u32)TileWallDirectionBit::Up)) || (tileToLeft & (1 << (u32)TileWallDirectionBit::Down)))
-				{
-					vec2 newTileTopWallA = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize
-					};
-					vec2 newTileTopWallB = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize
-					};
-					if (CollisionHelpers::isintersect(newTileTopWallA, newTileTopWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
-						collisionNormal = MovementHelpers::Up;
-						break;
-					}
-				}
-				if ((ballCenterTile & (1 << (u32)TileWallDirectionBit::Right)) || (tileBelow & (1 << (u32)TileWallDirectionBit::Left)))
-				{
-					vec2 newTileRightWallA = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize
-					};
-					vec2 newTileRightWallB = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-					if (CollisionHelpers::isintersect(newTileRightWallA, newTileRightWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
-						collisionNormal = MovementHelpers::Right;
-						break;
-					}
-				}
-			}
-			break;
-			}
-			break;
-		case 0:
-			switch (dy)
-			{
-			case -1:
-				if ((oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Up)) || (ballCenterTile & (1 << (u32)TileWallDirectionBit::Down)))
-				{
-					// collision
-					hasCollided = true;
-					collidedCell = ivec2{ (i32)ballCenterTileCoords.x, (i32)ballCenterTileCoords.y };
-					collisionNormal = MovementHelpers::Down;
-				}
-				break;
-			case 0:
-				break;
-			case 1:
-				if ((oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Down)) || (ballCenterTile & (1 << (u32)TileWallDirectionBit::Up)))
-				{
-					// collision
-					hasCollided = true;
-					collidedCell = ivec2{ (i32)ballCenterTileCoords.x, (i32)ballCenterTileCoords.y };
-					collisionNormal = MovementHelpers::Up;
-				}
-				break;
-			}
-			break;
-		case 1:
-			switch (dy)
-			{
-			case -1:
-			{
-				ivec2 cellToRight = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ 1,0 };
-				ivec2 cellAbove = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ 0,-1 };
-
-				u8 tileToRight = CachedTiledWorld->GetCellAtIndexValue(cellToRight);
-				u8 tileAbove = CachedTiledWorld->GetCellAtIndexValue(cellAbove);
-				if ((tileAbove & (1 << (u32)TileWallDirectionBit::Down)) || (oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Up)))
-				{
-					vec2 oldTileToptWallA = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize
-					};
-					vec2 oldTileToptWallB = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize
-					};
-					if (CollisionHelpers::isintersect(oldTileToptWallA, oldTileToptWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = cellToRight;
-						collisionNormal = MovementHelpers::Down;
-						break;
-					}
-				}
-				if ((oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Right)) || (tileToRight & (1 << (u32)TileWallDirectionBit::Left)))
-				{
-					vec2 oldTileRighttWallA = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize
-					};
-					vec2 oldTileRightWallB = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-
-					if (CollisionHelpers::isintersect(oldTileRighttWallA, oldTileRightWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = cellToRight;
-						collisionNormal = MovementHelpers::Left;
-						break;
-					}
-				}
-				if ((ballCenterTile & (1 << (u32)TileWallDirectionBit::Down)) || (tileToRight & (1 << (u32)TileWallDirectionBit::Up)))
-				{
-					vec2 newTileBottomWallA = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-					vec2 newTileBottomWallB = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-					if (CollisionHelpers::isintersect(newTileBottomWallA, newTileBottomWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
-						collisionNormal = MovementHelpers::Down;
-						break;
-					}
-				}
-				if ((ballCenterTile & (1 << (u32)TileWallDirectionBit::Left)) || (tileAbove & (1 << (u32)TileWallDirectionBit::Right)))
-				{
-					vec2 newTileLeftWallA = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize
-					};
-					vec2 newTileLeftWallB = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize ,
-						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-					if (CollisionHelpers::isintersect(newTileLeftWallA, newTileLeftWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
-						collisionNormal = MovementHelpers::Right;
-						break;
-					}
-				}
-			}
-			break;
-			case 0:
-				if ((oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Right)) || (ballCenterTile & (1 << (u32)TileWallDirectionBit::Left)))
-				{
-					// collision
-					hasCollided = true;
-					collidedCell = ivec2{ (i32)ballCenterTileCoords.x, (i32)ballCenterTileCoords.y };
-					collisionNormal = MovementHelpers::Left;
-				}
-				break;
-			case 1:
-			{
-				ivec2 cellToRight = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ 1,0 };
-				ivec2 cellBelow = ivec2{ (i32)oldBallCenterTileCoords.x, (i32)oldBallCenterTileCoords.y } + ivec2{ 0,-1 };
-
-				u8 tileToRight = CachedTiledWorld->GetCellAtIndexValue(cellToRight);
-				u8 tileBelow = CachedTiledWorld->GetCellAtIndexValue(cellBelow);
-				if ((tileBelow & (1 << (u32)TileWallDirectionBit::Up)) || (oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Down)))
-				{
-					vec2 oldTileBottomtWallA = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-					vec2 oldTileBottomtWallB = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize,
-					};
-					if (CollisionHelpers::isintersect(oldTileBottomtWallA, oldTileBottomtWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = cellBelow;
-						collisionNormal = MovementHelpers::Up;
-						break;
-					}
-				}
-				if ((oldBallCenterTile & (1 << (u32)TileWallDirectionBit::Right)) || (tileToRight & (1 << (u32)TileWallDirectionBit::Left)))
-				{
-					vec2 oldTileRighttWallA = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize
-					};
-					vec2 oldTileRightWallB = vec2{
-						(float)oldBallCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)oldBallCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-
-					if (CollisionHelpers::isintersect(oldTileRighttWallA, oldTileRightWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = cellToRight;
-						collisionNormal = MovementHelpers::Left;
-						break;
-					}
-				}
-				if ((ballCenterTile & (1 << (u32)TileWallDirectionBit::Down)) || (tileToRight & (1 << (u32)TileWallDirectionBit::Up)))
-				{
-					vec2 newTileBottomWallA = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-					vec2 newTileBottomWallB = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize + CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-					if (CollisionHelpers::isintersect(newTileBottomWallA, newTileBottomWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
-						collisionNormal = MovementHelpers::Down;
-						break;
-					}
-				}
-				if ((ballCenterTile & (1 << (u32)TileWallDirectionBit::Left)) || (tileBelow & (1 << (u32)TileWallDirectionBit::Right)))
-				{
-					vec2 newTileLeftWallA = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize,
-						(float)ballCenterTileCoords.y * CachedTileSize
-					};
-					vec2 newTileLeftWallB = vec2{
-						(float)ballCenterTileCoords.x * CachedTileSize ,
-						(float)ballCenterTileCoords.y * CachedTileSize + CachedTileSize
-					};
-					if (CollisionHelpers::isintersect(newTileLeftWallA, newTileLeftWallB, oldballCenter, ballCenter))
-					{
-						hasCollided = true;
-						collidedCell = ivec2{ (i32)ballCenterTileCoords.x,  (i32)ballCenterTileCoords.y };
-						collisionNormal = MovementHelpers::Right;
-						break;
-					}
-				}
-			}
-			break;
-			}
-			break;
 		}
 
-		if (hasCollided)
-		{
-			vec2 collidedCellTL = vec2{ collidedCell.x * CachedTileSize, collidedCell.y * CachedTileSize };
+		CachedTiledWorld->GetLinesFromCells(lines, cellsToTest);
+		const float distanceToTravel = velocity.Magnitude();
+	
+	
+		float smallestDistance = std::numeric_limits<float>::max();
+		collisions.clear();
 
-			vec2 collisionEdge = ((collidedCellTL + vec2{ CachedTileSize / 2.0f, CachedTileSize / 2.0f }) + collisionNormal * (CachedTileSize / 2.0f));
-			Position = oldPos;
-			if (collisionNormal == MovementHelpers::Up || collisionNormal == MovementHelpers::Down)
+		int closestCollisionIndex = -1;
+		bool collisionOcurred = false;
+		for (std::pair<vec2, vec2> line : lines)
+		{
+			
+			vec2 N;
+			float t;
+			CollisionHelpers::circleLine(oldballCenter, CrystalBallRadius, line.first, line.second, DirectionVector * CrystalBallSpeed * deltaT, t, N);
+			if (t >= 0)
 			{
-				DirectionVector.y *= -1;
+				collisions.push_back({ N,t });
 			}
-			else if (collisionNormal == MovementHelpers::Left || collisionNormal == MovementHelpers::Right)
-			{
-				DirectionVector.x *= -1;
-			}
+			
 		}
-		vec2 ballCenterNew = Position + vec2{ CachedTileSize / 2.0f, CachedTileSize / 2.0f };
+		if (!collisions.empty())
+		{
+			std::sort(collisions.begin(), collisions.end(), [](const Collision& c1, const Collision& c2) {
+				return c1.t < c2.t;
+			});
+
+			newBallCenter = oldballCenter + velocity * collisions[0].t;
+			distanceToTravelLeft -= (oldballCenter - newBallCenter).Magnitude();
+			DirectionVector = vec2::Reflect(DirectionVector, collisions[0].N).Normalized();;
+			velocity = DirectionVector * CrystalBallSpeed * (distanceToTravelLeft / distanceToTravel) * deltaT;
+		}
+		else
+		{
+			distanceToTravelLeft = 0;
+		}
+
+		Position = newBallCenter - vec2{CachedTileSize / 2.0f, CachedTileSize / 2.0f};
+		//printf("dfjiods");
+		
 		vec2 ownerPos = Owner->GetPosition();
 
-		if (CollisionHelpers::CircleRect(ballCenter.x, ballCenter.y, (float)CrystalBallRadius, ownerPos.x, ownerPos.y, CachedTileSize, CachedTileSize))
+		if (CollisionHelpers::CircleRect(newBallCenter.x, newBallCenter.y, (float)CrystalBallRadius, ownerPos.x, ownerPos.y, CachedTileSize, CachedTileSize))
 		{
 			Owner->CatchBall();
 		}
-		CachedEnemyManager->IterateActiveEnemies([&ballCenter, this](Enemy& enemy) {
-			if (CollisionHelpers::CircleRect(ballCenter.x, ballCenter.y, (float)CrystalBallRadius, enemy.Pos.x, enemy.Pos.y, CachedTileSize, CachedTileSize))
+		CachedEnemyManager->IterateActiveEnemies([&newBallCenter, this](Enemy& enemy) {
+			if (CollisionHelpers::CircleRect(newBallCenter.x, newBallCenter.y, (float)CrystalBallRadius, enemy.Pos.x, enemy.Pos.y, CachedTileSize, CachedTileSize))
 			{
 				CachedEnemyManager->KillEnemy(&enemy);
 				// should go into cooldown here 
@@ -623,7 +284,7 @@ void CrystalBall::UpdateActiveBallInternal(float deltaT)
 				EnemyDeath d;
 				d.Reason = EnemyDeathReason::CrystalBall;
 				d.NumberKilledTotal = 1;
-				if(IsSignificantEnemyType(enemy.Type))
+				if (IsSignificantEnemyType(enemy.Type))
 				{
 					d.NumberSignificantKilled = 1;
 				}
@@ -632,6 +293,8 @@ void CrystalBall::UpdateActiveBallInternal(float deltaT)
 
 		});
 	}
+
+	
 }
 
 void CrystalBall::UpdateOnHitParticleEffect(float deltaT)

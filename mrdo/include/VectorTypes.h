@@ -46,6 +46,11 @@ struct vec2
 		return sqrt(x * x + y * y);
 	}
 
+	float MagnitudeSqr() const
+	{
+		return (x * x + y * y);
+	}
+
 	vec2 Normalized() const
 	{
 		float mag = Magnitude();
@@ -63,12 +68,47 @@ struct vec2
 		float _sin = sin(angle);
 		return
 		{
-			x*_cos-y*_sin,
-			x*_sin+y*_cos
+			x * _cos - y * _sin,
+			x * _sin + y * _cos
 		};
 	}
-};
 
+	static float Dot(const vec2& l, const vec2& r)
+	{
+		return l.x * r.x + l.y * r.y;
+	}
+	static float getSqrMagnitude(const vec2& v)
+	{
+		return v.x * v.x + v.y * v.y;
+	}
+	// project u onto v
+	static vec2 Proj(const vec2& u, const vec2& v)
+	{
+		return v * (Dot(u, v) / Dot(v, v));
+	}
+
+	static float projectPointOntoLine(vec2& point, vec2 start, vec2 end)
+	{
+		vec2 startToPoint = point - start;
+		vec2 startToEnd = end - start;
+
+		float dot = Dot(startToPoint, startToEnd);
+		float t = dot / getSqrMagnitude(startToEnd);
+
+		point = start + startToEnd * t;
+
+		return t;
+	}
+
+	static vec2 Reflect(const vec2& direction, const vec2& normal)
+	{
+		return direction - normal * 2 * (vec2::Dot(direction, normal));
+	}
+};
+inline float get2DCrossProduct(const vec2& v1, const vec2& v2)
+{
+	return v1.x * v2.y - v1.y * v2.x;
+}
 struct ivec2
 {
 	i32 x;

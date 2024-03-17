@@ -135,9 +135,9 @@ void InputManager::PollEventsRecording()
     if (CurrentState.AnyRecordingSignificantChange())
     {
         InputSnaps.push_back({ CurrentState, FrameCounter });
-        std::cout << "Snaps size: " << InputSnaps.size() << " Current state: ";// << std::to_string((int)CurrentState) << "Frame Counter: "<< FrameCounter << "\n";
-        CurrentState.PrintCurrent();
-        std::cout << "Frame Counter: " << FrameCounter << "\n";
+        //std::cout << "Snaps size: " << InputSnaps.size() << " Current state: ";// << std::to_string((int)CurrentState) << "Frame Counter: "<< FrameCounter << "\n";
+        //CurrentState.PrintCurrent();
+        //std::cout << "Frame Counter: " << FrameCounter << "\n";
     }
     ++FrameCounter;
 }

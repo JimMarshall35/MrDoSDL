@@ -4,7 +4,7 @@
 #include "IAnimationAssetManager.h"
 #include <cassert>
 #include <stdlib.h>     /* abs */
-
+#include <cmath>
 TiledWorld::TiledWorld(
 	const std::shared_ptr<IConfigFile>& config, 
 	const std::shared_ptr<IBackgroundTileAssetManager>& bgtam,
@@ -44,8 +44,18 @@ void TiledWorld::LoadLevel(const LevelLoadData* level)
 	ActiveLevelHeight = selectedLevel.NumRows;
 	ActiveLevel = std::make_unique<u8[]>(selectedLevel.TileData.size());
 	memcpy(ActiveLevel.get(), selectedLevel.TileData.data(), selectedLevel.TileData.size());
+	LineSegments = std::make_unique<CellCollisionLines[]>(selectedLevel.TileData.size());
+
 	CurrentTileset = selectedLevel.BackgroundTileset;
 	ActiveLevelTileset = BackgroundTileAssetManager->GetLevelTileset(selectedLevel.BackgroundTileset);
+	for (int y = 0; y < ActiveLevelHeight; y++)
+	{
+		for (int x = 0; x < ActiveLevelWidth; x++)
+		{
+			ivec2 coords = { x, y };
+			PopulateTileLines(coords);
+		}
+	}
 	
 }
 
@@ -127,6 +137,9 @@ void TiledWorld::ConnectAdjacentCells(const ivec2& cell1, const ivec2& cell2)
 	// both cells now have no center
 	cell1Val &= ~(1 << (u8)TileWallDirectionBit::Center);
 	cell2Val &= ~(1 << (u8)TileWallDirectionBit::Center);
+
+	PopulateTileLines(cell1);
+	PopulateTileLines(cell2);
 }
 
 u8& TiledWorld::GetCellAtIndex(const ivec2& coords)
@@ -147,6 +160,18 @@ u8 TiledWorld::GetCellAtIndexValue(const ivec2& coords) const
 	}
 	int i = coords.y * ActiveLevelWidth + coords.x;
 	return ActiveLevel[i];
+}
+
+TiledWorld::CellCollisionLines& TiledWorld::GetCellCollisionLines(const ivec2& coords)
+{
+	int i = coords.y * ActiveLevelWidth + coords.x;
+	return LineSegments[i];
+}
+
+const TiledWorld::CellCollisionLines& TiledWorld::GetCellCollisionLinesConst(const ivec2& coords) const
+{
+	int i = coords.y * ActiveLevelWidth + coords.x;
+	return LineSegments[i];
 }
 
 bool TiledWorld::IsBarrierBetween(const ivec2& cell1, const ivec2& cell2) const
@@ -222,6 +247,7 @@ void TiledWorld::FillTile(const ivec2& coords)
 		u8& neighbourcell = GetCellAtIndex(coordsCopy + ivec2{ 0,1 });
 		neighbourcell |= (1 << (u32)TileWallDirectionBit::Up);
 	}
+	PopulateTileLines(coords);
 }
 
 void TiledWorld::AddCherry(const ivec2& coords)
@@ -249,6 +275,70 @@ void TiledWorld::CopyToLevelConfigData(LevelConfigData& dst)
 	assert(CurrentTileset >= 0);
 	memcpy(dst.TileData.data(), ActiveLevel.get(), ActiveLevelHeight * ActiveLevelWidth);
 	dst.BackgroundTileset = CurrentTileset;
+}
+
+void TiledWorld::PopulateTileLines(ivec2 coords)
+{
+	CellCollisionLines& l = GetCellCollisionLines(coords);
+	u8 cell = GetCellAtIndexValue(coords);
+	size_t index = coords.y * ActiveLevelWidth + coords.x;
+	if ((u8)(1 << (int)TileWallDirectionBit::Up) & cell)
+	{
+		l.lines[(int)TileWallDirectionBit::Up].first  = vec2{ (float)coords.x * TileSize,            (float)coords.y * TileSize };
+		l.lines[(int)TileWallDirectionBit::Up].second = vec2{ (float)coords.x * TileSize + TileSize, (float)coords.y * TileSize };
+	}
+	if ((u8)(1 << (int)TileWallDirectionBit::Down) & cell)
+	{
+		l.lines[(int)TileWallDirectionBit::Down].first  = vec2{ (float)coords.x * TileSize,            (float)coords.y * TileSize + TileSize };
+		l.lines[(int)TileWallDirectionBit::Down].second = vec2{ (float)coords.x * TileSize + TileSize, (float)coords.y * TileSize + TileSize };
+	}
+	if ((u8)(1 << (int)TileWallDirectionBit::Left) & cell)
+	{
+		l.lines[(int)TileWallDirectionBit::Left].first  = vec2{ (float)coords.x * TileSize,            (float)coords.y * TileSize };
+		l.lines[(int)TileWallDirectionBit::Left].second = vec2{ (float)coords.x * TileSize,            (float)coords.y * TileSize + TileSize    };
+	}
+	if ((u8)(1 << (int)TileWallDirectionBit::Right) & cell)
+	{
+		l.lines[(int)TileWallDirectionBit::Right].first  = vec2{ (float)coords.x * TileSize + TileSize, (float)coords.y * TileSize };
+		l.lines[(int)TileWallDirectionBit::Right].second = vec2{ (float)coords.x * TileSize + TileSize, (float)coords.y * TileSize + TileSize };
+	}
+
+}
+
+std::pair<long, long> FloatPairToLongPair(const vec2& p)
+{
+	return std::pair<long, long>(std::round(p.x * 1e5), std::round(p.y * 1e5));
+}
+
+std::pair<std::pair<long, long>, std::pair<long, long>> LLineFromVec2Line(const std::pair<vec2, vec2>& l)
+{
+	return {
+		FloatPairToLongPair(l.first),
+		FloatPairToLongPair(l.second)
+	};
+}
+
+void TiledWorld::GetLinesFromCells(std::vector<std::pair<vec2, vec2>>& outLines, const std::vector<ivec2>& inCellCoords) const
+{
+	std::set<std::pair<std::pair<long, long>, std::pair<long, long>>> encountered;
+	for (const ivec2& coord : inCellCoords)
+	{
+		const CellCollisionLines& lines = GetCellCollisionLinesConst(coord);
+		u8 cellVal = GetCellAtIndexValue(coord);
+		for (int i = (int)TileWallDirectionBit::Up; i < (int)TileWallDirectionBit::Center; i++)
+		{
+			if (cellVal & (1 << i))
+			{
+				std::pair<vec2,vec2> p = lines.lines[i];
+				std::pair<std::pair<long, long>, std::pair<long, long>> lLine = LLineFromVec2Line(p);
+				if (encountered.find(lLine) == encountered.end())
+				{
+					outLines.push_back(p);
+					encountered.insert(lLine);
+				}
+			}
+		}
+	}
 }
 
 bool TiledWorld::IsCherryAtTile(const ivec2& coords) const

@@ -27,6 +27,7 @@ private:
 	};
 public:
 	CrystalBall(Character* owner, IAnimationAssetManager* anim, IConfigFile* configFile, TiledWorld* tiledWorld, EnemyManager* enemyManager);
+	~CrystalBall();
 	void Draw(SDL_Surface* windowSurface, float scale) const;
 	void Release();
 	void Update(float deltaT);
