@@ -23,6 +23,8 @@
 #include "BackendClient.h"
 #include <functional>
 #include <curl/curl.h>
+#include "RNG.h"
+
 
 #ifndef ReplayValidator
 int GameMain(int argc, char* args[])
@@ -64,7 +66,7 @@ int GameMain(int argc, char* args[])
             // Game systems setup
             // my rationale for making these shared ptrs is that they might be used in destructors of classes that depend on them
             // so I don't want the order of instantiation to matter as it would if they were stack allocated here and passed as raw ptrs for example
-
+            RNG rng;
             std::shared_ptr<IFileSystem> fileSystem = std::make_shared<FileSystem>(exePath);
             std::shared_ptr<IConfigFile> configFile = std::make_shared<ConfigFile>(fileSystem);
             std::shared_ptr<IFontAssetManager> fontAssetManager = std::make_shared<FontAssetManager>(configFile, screenSurface);

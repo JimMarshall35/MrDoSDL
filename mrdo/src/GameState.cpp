@@ -5,9 +5,12 @@
 #include "TiledWorld.h"
 #include "TextRenderer.h"
 #include <stdio.h>
+#include "IAnimationAssetManager.h"
+#include "GameLayer.h"
+
 #ifdef ReplayValidator
 
-GameState::GameState(const std::shared_ptr<IConfigFile>& configFile, Event<LevelLoadData>& NewLevelBegun, Event<LevelLoadData>& ResetAfterDeath)
+GameState::GameState(const std::shared_ptr<IConfigFile>& configFile, Event<LevelLoadData>& NewLevelBegun, Event<LevelLoadData>& ResetAfterDeath, Game* g)
 	: Score(0),
 	Lives(0),
 	LOnLevelLoad(this),
@@ -19,7 +22,8 @@ GameState::GameState(const std::shared_ptr<IConfigFile>& configFile, Event<Level
 	BonusDiamondPoints(configFile->GetUIntValue("BonusDiamondPoints")),
 	StartBonusTreetPoints(configFile->GetUIntValue("StartBonusTreetPoints")),
 	BonusTreetIncrement(configFile->GetUIntValue("BonusTreetIncrement")),
-	BonusTreetMax(configFile->GetUIntValue("BonusTreetMax"))
+	BonusTreetMax(configFile->GetUIntValue("BonusTreetMax")),
+	pGame(g)
 {
 	NewLevelBegun += &LOnLevelLoad;
 	ResetAfterDeath += &LOnResetAfterDeath;
@@ -32,8 +36,10 @@ GameState::GameState(const std::shared_ptr<IConfigFile>& configFile, Event<Level
 #else
 GameState::GameState(const std::shared_ptr<IConfigFile>& configFile,
 	const std::shared_ptr<TextRenderer>& textRenderer,
+	const std::shared_ptr<IAnimationAssetManager>& animAssetManager,
 	Event<LevelLoadData>& NewLevelBegun,
-	Event<LevelLoadData>& ResetAfterDeath)
+	Event<LevelLoadData>& ResetAfterDeath,
+	Game* g)
 	: Score(0),
 	Lives(0),
 	LOnLevelLoad(this),
@@ -46,7 +52,10 @@ GameState::GameState(const std::shared_ptr<IConfigFile>& configFile,
 	BonusDiamondPoints(configFile->GetUIntValue("BonusDiamondPoints")),
 	StartBonusTreetPoints(configFile->GetUIntValue("StartBonusTreetPoints")),
 	BonusTreetIncrement(configFile->GetUIntValue("BonusTreetIncrement")),
-	BonusTreetMax(configFile->GetUIntValue("BonusTreetMax"))
+	BonusTreetMax(configFile->GetUIntValue("BonusTreetMax")),
+	MyExtraState(animAssetManager, configFile, textRenderer),
+	pGame(g)
+
 {
 	NewLevelBegun += &LOnLevelLoad;
 	ResetAfterDeath += &LOnResetAfterDeath;
@@ -106,7 +115,13 @@ void GameState::Draw(SDL_Surface* windowSurface, float scale) const
 #ifndef ReplayValidator
 	MyTextRenderer->RenderText({ 0,0 }, ScoreBuffer, windowSurface, scale);
 	MyTextRenderer->RenderText(LivesPositionToRender, LivesBuffer, windowSurface, scale);
+	MyExtraState.Draw(windowSurface, scale);
 #endif
+}
+
+void GameState::Update(float deltaT)
+{
+	MyExtraState.Update(deltaT);
 }
 
 void GameState::OnLevelLoad(LevelLoadData level)
@@ -169,4 +184,133 @@ int GameState::GetNumEnemies(const LevelConfigData& lvl)
 		r += spawner.NumMonsters;
 	}
 	return r;
+}
+
+#ifdef ReplayValidator
+ExtraState::ExtraState(const std::shared_ptr<IConfigFile>& configFile)
+	:pConfigFile(configFile)
+{
+	memset(LetterStates, NotGot, sizeof(LetterState) * 5);
+	LetterStates[Selected] = NotGotSelected;
+	LetterChangeIntervalMs = configFile->GetUIntValue("ExtraLetterChangeInterval");
+}
+#else
+ExtraState::ExtraState(const std::shared_ptr<IAnimationAssetManager>& animAssetManager, const std::shared_ptr<IConfigFile>& configFile, const std::shared_ptr<TextRenderer>& textRenderer)
+	:pAnimAssetManager(animAssetManager), pConfigFile(configFile), pTextRenderer(textRenderer)
+{
+	memset(LetterStates, NotGot, sizeof(LetterState) * 5);
+	LetterStates[Selected] = NotGotSelected;
+	LetterChangeIntervalMs = configFile->GetUIntValue("ExtraLetterChangeInterval");
+
+	pAnimAssetManager->MakeSingleSpriteRectFrame("E_Dim", ExtraMenUnlit[0]);
+	pAnimAssetManager->MakeSingleSpriteRectFrame("X_Dim", ExtraMenUnlit[1]);
+	pAnimAssetManager->MakeSingleSpriteRectFrame("T_Dim", ExtraMenUnlit[2]);
+	pAnimAssetManager->MakeSingleSpriteRectFrame("R_Dim", ExtraMenUnlit[3]);
+	pAnimAssetManager->MakeSingleSpriteRectFrame("A_Dim", ExtraMenUnlit[4]);
+
+	pAnimAssetManager->MakeSingleSpriteRectFrame("E_Lit", ExtraMenLit[0]);
+	pAnimAssetManager->MakeSingleSpriteRectFrame("X_Lit", ExtraMenLit[1]);
+	pAnimAssetManager->MakeSingleSpriteRectFrame("T_Lit", ExtraMenLit[2]);
+	pAnimAssetManager->MakeSingleSpriteRectFrame("R_Lit", ExtraMenLit[3]);
+	pAnimAssetManager->MakeSingleSpriteRectFrame("A_Lit", ExtraMenLit[4]);
+}
+#endif
+
+void ExtraState::AdvanceSelection()
+{
+	switch (LetterStates[Selected])
+	{
+	case GotSelected:
+		LetterStates[Selected] = Got;
+		break;
+	case NotGotSelected:
+		LetterStates[Selected] = NotGot;
+		break;
+	default:
+		assert(false);
+		break;
+	}
+	++Selected;
+	if (Selected >= 5)
+	{
+		Selected = 0;
+	}
+	switch (LetterStates[Selected])
+	{
+	case Got:
+		LetterStates[Selected] = GotSelected;
+		break;
+	case NotGot:
+		LetterStates[Selected] = NotGotSelected;
+		break;
+	}
+}
+
+void ExtraState::Draw(SDL_Surface* windowSurface, float scale) const
+{
+#ifndef ReplayValidator
+	vec2 cursor = { 8.0f * pTextRenderer->GetTextTileSize(), 0 * pTextRenderer->GetTextTileSize() };
+	const BackgroundTileConfigData& backgroundConfig = pConfigFile->GetBackgroundConfigData();
+	int ts = backgroundConfig.TileSize;
+	for (int i = 0; i < 5; i++)
+	{
+		switch (LetterStates[i])
+		{
+		case Got:
+			pTextRenderer->SetCurrentFont(LitFont);
+			pTextRenderer->RenderText(cursor + vec2{ pTextRenderer->GetTextTileSize() / 2.0f, pTextRenderer->GetTextTileSize() / 2.0f}, LettersS[i], windowSurface, scale);
+			break;
+		case NotGot:
+			pTextRenderer->SetCurrentFont(UnlitFont);
+			pTextRenderer->RenderText(cursor + vec2{ pTextRenderer->GetTextTileSize() / 2.0f, pTextRenderer->GetTextTileSize() / 2.0f },  LettersS[i], windowSurface, scale);
+			break;
+		case GotSelected:
+		{
+			SDL_Surface* animationManagerSurface = pAnimAssetManager->GetAnimationsSpriteSheetSurface();
+			SDL_Rect dst;
+
+			dst.w = ts * scale;
+			dst.h = ts * scale;
+			dst.x = cursor.x * scale;
+			dst.y = cursor.y * scale;
+			const SDL_Rect* rect = &ExtraMenLit[i];
+			SDL_BlitSurfaceScaled(animationManagerSurface, rect, windowSurface, &dst);
+
+		}
+			break;
+		case NotGotSelected:
+		{
+			SDL_Surface* animationManagerSurface = pAnimAssetManager->GetAnimationsSpriteSheetSurface();
+			SDL_Rect dst;
+
+			dst.w = ts * scale;
+			dst.h = ts * scale;
+			dst.x = cursor.x * scale;
+			dst.y = cursor.y * scale;
+			const SDL_Rect* rect = &ExtraMenUnlit[i];
+			SDL_BlitSurfaceScaled(animationManagerSurface, rect, windowSurface, &dst);
+		}
+			break;
+		default:
+			assert(false);
+			break;
+		}
+		cursor.x += ts;
+	}
+	pTextRenderer->SetCurrentFont("White_BlackBackground");
+#endif
+}
+
+void ExtraState::ObtainLetter(char letter)
+{
+}
+
+void ExtraState::Update(float deltaT)
+{
+	Timer += deltaT;
+	if (Timer >= LetterChangeIntervalMs)
+	{
+		AdvanceSelection();
+		Timer = 0;
+	}
 }

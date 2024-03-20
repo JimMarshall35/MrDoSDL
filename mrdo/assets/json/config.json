@@ -1,6 +1,56 @@
 {
   "Animations": {
     "AnimationFrames": {
+      "ExtraMan_E" : [
+      	{
+      		"x" : 1,
+      		"y" : 14
+      	},
+      	{
+      		"x" : 2,
+      		"y" : 14
+      	}
+      ],
+      "ExtraMan_X" : [
+      	{
+      		"x" : 4,
+      		"y" : 14
+      	},
+      	{
+      		"x" : 5,
+      		"y" : 14
+      	}
+      ],
+      "ExtraMan_T" : [
+      	{
+      		"x" : 7,
+      		"y" : 14
+      	},
+      	{
+      		"x" : 8,
+      		"y" : 14
+      	}
+      ],
+      "ExtraMan_R" : [
+      	{
+      		"x" : 10,
+      		"y" : 14
+      	},
+      	{
+      		"x" : 11,
+      		"y" : 14
+      	}
+      ],
+      "ExtraMan_A" : [
+      	{
+      		"x" : 13,
+      		"y" : 14
+      	},
+      	{
+      		"x" : 14,
+      		"y" : 14
+      	}
+      ],
       "Apple_Split_LeftHalf": [
         {
           "x": 12,
@@ -711,6 +761,46 @@
       "CrystalBall_Particle": {
         "x": 14,
         "y": 0
+      },
+      "E_Dim" :{
+      	"x" : 0,
+      	"y" : 14
+      },
+      "E_Lit" :{
+      	"x" : 1,
+      	"y" : 14
+      },
+      "X_Dim" :{
+      	"x" : 3,
+      	"y" : 14
+      },
+      "X_Lit" :{
+      	"x" : 4,
+      	"y" : 14
+      },
+      "T_Dim" :{
+      	"x" : 6,
+      	"y" : 14
+      },
+      "T_Lit" :{
+      	"x" : 7,
+      	"y" : 14
+      },
+      "R_Dim" :{
+      	"x" : 9,
+      	"y" : 14
+      },
+      "R_Lit" :{
+      	"x" : 10,
+      	"y" : 14
+      },
+      "A_Dim" :{
+      	"x" : 12,
+      	"y" : 14
+      },
+      "A_Lit" :{
+      	"x" : 13,
+      	"y" : 14
       }
     },
     "TileSize": 16
@@ -6132,6 +6222,7 @@
   "Version" : 0,
 
   "EnemyColliderOffset" : { "x" : 3, "y" : 3 },
-  "PlayerColliderOffset" : { "x" : 3, "y" : 3 }
+  "PlayerColliderOffset" : { "x" : 3, "y" : 3 },
+  "ExtraLetterChangeInterval" : 2000
 
 }

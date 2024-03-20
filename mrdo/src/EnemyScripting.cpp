@@ -257,6 +257,15 @@ namespace EnemyScripting
 		return Bool();
 	}
 
+	Bool EnemyManager_ForthExposedMethodImplementations::SetExtraManAnimation(ForthVm* vm)
+	{
+		// ( enemy letter -- )
+		char c = (char)Pop();
+		Enemy* enemy = (Enemy*)Pop();
+		enemy->EnemyAnimator.CurrentAnimation = &EnemyManager::ExtraMenAnimationTable[(u32)c];
+		return Bool();
+	}
+
 	Bool EnemyManager_ForthExposedMethodImplementations::ConnectAdjacentCells(ForthVm* vm)
 	{
 		// ( y1 x1 y2 x2 -- )

@@ -11,6 +11,8 @@
 std::vector<SDL_Rect> EnemyManager::NormalEnemyAnimationTable[2][4];
 std::vector<SDL_Rect> EnemyManager::DiggerAnimationTable[4];
 std::vector<SDL_Rect> EnemyManager::TransformingToDiggerAnimationTable[4];
+std::vector<SDL_Rect> EnemyManager::ExtraMenAnimationTable[5];
+
 SDL_Rect EnemyManager::SpawnerTileSprite;
 SDL_Rect EnemyManager::CrushedMonsterSprite;
 float EnemyManager::DeltaTime = 0.0f;
@@ -57,6 +59,7 @@ EnemyManager::EnemyManager(
 	UpdateNormalEnemyScriptFunction = EnemyScripting::FindExecutionToken("EnemyUpdate");
 	FlashingEnemyScriptFunction = EnemyScripting::FindExecutionToken("FlashingEnemyUpdate");
 	DiggerEnemyScriptFunction = EnemyScripting::FindExecutionToken("DiggerEnemyUpdate");
+	ExtraManScriptFunction = EnemyScripting::FindExecutionToken("ExtraManEnemyUpdate");
 	EnemyScripting::EnemyManager_ForthExposedMethodImplementations::Instance = this;
 
 }
@@ -216,6 +219,7 @@ void EnemyManager::OnResetAfterDeath(LevelLoadData level)
 	NumEnemiesSpawned = 0;
 }
 
+
 void EnemyManager::PopulateAnimationTables()
 {
 	AnimationAssetManager->MakeAnimationRectFramesFromName("NormalEnemy_RunRight", NormalEnemyAnimationTable[0][(i32)MovementDirection::Right]);
@@ -238,6 +242,11 @@ void EnemyManager::PopulateAnimationTables()
 	AnimationAssetManager->MakeAnimationRectFramesFromName("RedDigger_Left", DiggerAnimationTable[(i32)MovementDirection::Left]);
 	AnimationAssetManager->MakeAnimationRectFramesFromName("RedDigger_Up", DiggerAnimationTable[(i32)MovementDirection::Up]);
 
+	AnimationAssetManager->MakeAnimationRectFramesFromName("ExtraMan_E", ExtraMenAnimationTable[0]);
+	AnimationAssetManager->MakeAnimationRectFramesFromName("ExtraMan_X", ExtraMenAnimationTable[1]);
+	AnimationAssetManager->MakeAnimationRectFramesFromName("ExtraMan_T", ExtraMenAnimationTable[2]);
+	AnimationAssetManager->MakeAnimationRectFramesFromName("ExtraMan_R", ExtraMenAnimationTable[3]);
+	AnimationAssetManager->MakeAnimationRectFramesFromName("ExtraMan_A", ExtraMenAnimationTable[4]);
 }
 
 void EnemyManager::UpdateSingleSpawner(float deltaTime, EnemySpawner& spawner)
@@ -270,13 +279,13 @@ void EnemyManager::UpdateSingleSpawner(float deltaTime, EnemySpawner& spawner)
 	}
 }
 
-void EnemyManager::SpawnEnemy(EnemySpawner& spawner)
+Enemy& EnemyManager::SpawnEnemy(EnemySpawner& spawner, EnemyType type /* = EnemyType::Normal */)
 {
 	--spawner.NumberOfEnemiesLeftToSpawn;
 	Enemy& spawned = EnemyPool[NumEnemiesSpawned++];
 	spawned.bActive = true;
 	spawned.OriginSpawner = &spawner;
-	spawned.Type = EnemyType::Normal;
+	spawned.Type = type;
 	spawned.Pos = { spawner.TileCoords.x * (float)BackgroundTileSize, spawner.TileCoords.y * (float)BackgroundTileSize };
 	const ivec2& characterTile = CachedCharacter->GetTile();
 	
@@ -288,6 +297,7 @@ void EnemyManager::SpawnEnemy(EnemySpawner& spawner)
 	SetNewPath(spawned, characterTile);
 	SetEnemyDestinationWorldSpace(spawned);
 	SetEnemyDirection(spawned);
+	return spawned;
 }
 
 void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
@@ -308,6 +318,9 @@ void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
 		EnemyScripting::Push((Cell)enemyPtr);
 		EnemyScripting::DoExecutionToken(DiggerEnemyScriptFunction);
 		break;
+	case EnemyType::ExtraMan:
+		EnemyScripting::Push((Cell)enemyPtr);
+		EnemyScripting::DoExecutionToken(ExtraManScriptFunction);
 	}
 	EnemyType newType = enemy.Type;
 }
@@ -315,6 +328,14 @@ void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
 void EnemyManager::SetEnemyPushingState(Enemy* enemy, bool newState)
 {
 	enemy->bPushing = newState;
+}
+
+void EnemyManager::SpawnExtraMan(const ivec2& location, int c)
+{
+	ExtraManDummySpawner.TileCoords = location;
+	Enemy& e = SpawnEnemy(ExtraManDummySpawner, EnemyType::ExtraMan);
+	e.EnemyAnimator.CurrentAnimation = &ExtraMenAnimationTable[c];
+	e.ExtraManLetterIndex = c;
 }
 
 

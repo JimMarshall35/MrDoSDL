@@ -201,7 +201,8 @@ void CrystalBall::UpdateActiveBallInternal(float deltaT)
 	vec2 velocity = DirectionVector * CrystalBallSpeed * deltaT;
 
 	float distanceToTravelLeft = velocity.Magnitude();
-
+	int maxIters = 8;
+	int iters = 0;
 	while (distanceToTravelLeft > 0 && !CollisionHelpers::EqualWithEpsilon(distanceToTravelLeft, 0.0f))
 	{
 		vec2 oldballCenter = Position + vec2{ CachedTileSize / 2.0f, CachedTileSize / 2.0f };
@@ -292,6 +293,10 @@ void CrystalBall::UpdateActiveBallInternal(float deltaT)
 			}
 
 		});
+		if (++iters >= maxIters)
+		{
+			break;
+		}
 	}
 
 	

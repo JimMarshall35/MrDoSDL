@@ -125,3 +125,11 @@
 	then
 ;
 
+: ExtraManEnemyUpdate ( enemy -- )
+	dup                                   ( enemy enemy )
+	GetDeltaT                             ( enemy enemy deltaT )
+	swap UpdateAnimator                   ( enemy )
+	' OnReachedEndOfPath FollowPath       ( newCellEntered )
+	drop
+;
+

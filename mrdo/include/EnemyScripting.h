@@ -34,6 +34,7 @@ namespace EnemyScripting
 		static Bool SetNewDiggerPathTo(ForthVm* vm);
 		static Bool GetCurrentDestination(ForthVm* vm);
 		static Bool SetDiggerAnimation(ForthVm* vm);
+		static Bool SetExtraManAnimation(ForthVm* vm);
 		static Bool ConnectAdjacentCells(ForthVm* vm);
 		static Bool GetCurrentCell(ForthVm* vm);
 

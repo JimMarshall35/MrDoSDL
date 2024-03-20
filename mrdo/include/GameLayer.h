@@ -85,6 +85,8 @@ public:
 	virtual void RecieveMessage(const Victory& message) override;
 	virtual void RecieveMessage(const GameOver& message) override;
 
+	void SpawnExtraMan(const ivec2& location, int c);
+
 private:
 	Event<LevelLoadData> NewLevelBegun;
 	Event<LevelLoadData> ResetAfterDeath;

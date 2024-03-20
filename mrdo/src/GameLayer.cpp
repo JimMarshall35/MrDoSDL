@@ -41,7 +41,7 @@ Game::Game(const std::shared_ptr<IFileSystem>& fileSystem,
 	MyAppleManager(animationManager, config, MyTiledWorld, NewLevelBegun, &MyEnemyManager),
 	MyEnemyManager(config, animationManager, MyTiledWorld.get(), NewLevelBegun, ResetAfterDeath, &MyCharacter),
 	Phase(GamePhase::Playing),
-	MyGameState(config,textRenderer, NewLevelBegun, ResetAfterDeath),
+	MyGameState(config, textRenderer, animationManager, NewLevelBegun, ResetAfterDeath, this),
 	Config(config),
 	CachedTextRenderer(textRenderer),
 	BackendClient(backendClient),
@@ -60,6 +60,7 @@ void Game::Update(float deltaT)
 		MyCharacter.Update(deltaT, InputState);
 		MyEnemyManager.Update(deltaT);
 		MyAppleManager.Update(deltaT);
+		MyGameState.Update(deltaT);
 		break;
 	case GamePhase::DieAnimationPlaying:
 		MyCharacter.UpdatePlayingDeathAnimation(deltaT);
@@ -216,4 +217,9 @@ void Game::RecieveMessage(const GameOver& message)
 #else
 	OnGameOverCallback();
 #endif
+}
+
+void Game::SpawnExtraMan(const ivec2& location, int c)
+{
+	MyEnemyManager.SpawnExtraMan(location, c);
 }

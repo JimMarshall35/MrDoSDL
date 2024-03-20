@@ -404,12 +404,15 @@ void AppleManager::KillAppleCrushedEnemies(Apple& apple)
 	d.Reason = EnemyDeathReason::Apple;
 	for (int i = 0; i < apple.EnemyBufferCurrentSize; i++)
 	{
-		if (IsSignificantEnemyType(apple.EnemyBuffer[i]->Type))
+		if (apple.EnemyBuffer[i]->bActive)
 		{
-			d.NumberSignificantKilled++;
+			if (IsSignificantEnemyType(apple.EnemyBuffer[i]->Type))
+			{
+				d.NumberSignificantKilled++;
+			}
+			d.NumberKilledTotal++;
+			CachedEnemyManager->KillEnemy(apple.EnemyBuffer[i]);
 		}
-		d.NumberKilledTotal++;
-		CachedEnemyManager->KillEnemy(apple.EnemyBuffer[i]);
 	}
 	GameFramework::SendFrameworkMessage<EnemyDeath>(d);
 }

@@ -46,6 +46,7 @@ struct Enemy
 	ivec2 CurrentCell;
 	Animator EnemyAnimator;
 	Cell Timer;
+	int ExtraManLetterIndex;
 	u8 bPushing : 1;
 	u8 bActive : 1;
 	u8 bCrushed : 1;
@@ -71,6 +72,7 @@ public:
 	void CrushEnemy(Enemy* enemy);
 	void KillEnemy(Enemy* enemy);
 	void SetEnemyPushingState(Enemy* enemy, bool newState);
+	void SpawnExtraMan(const ivec2& location, int c);
 private:
 	typedef std::function<void(Enemy&)> PathFinishedCallback;
 
@@ -79,7 +81,7 @@ private:
 	void OnResetAfterDeath(LevelLoadData level);
 	void PopulateAnimationTables();
 	void UpdateSingleSpawner(float deltaTime, EnemySpawner& spawner);
-	void SpawnEnemy(EnemySpawner& spawner);
+	Enemy& SpawnEnemy(EnemySpawner& spawner, EnemyType type = EnemyType::Normal);
 	void UpdateSingleEnemy(float deltaTime, Enemy& enemy);
 	void InitialiseEnemyPool();
 	void SetNewPath(Enemy& enemy, const ivec2& newDestinationCell);
@@ -113,6 +115,7 @@ private:
 	static std::vector<SDL_Rect> NormalEnemyAnimationTable[2][4];
 	static std::vector<SDL_Rect> DiggerAnimationTable[4];
 	static std::vector<SDL_Rect> TransformingToDiggerAnimationTable[4];
+	static std::vector<SDL_Rect> ExtraMenAnimationTable[5];
 	static SDL_Rect SpawnerTileSprite;
 	static SDL_Rect CrushedMonsterSprite;
 	Character* CachedCharacter;
@@ -129,7 +132,10 @@ private:
 	vec2 EnemyCollider;
 	vec2 PlayerCollider;
 
+	EnemySpawner ExtraManDummySpawner;
+
 	ExecutionToken UpdateNormalEnemyScriptFunction;
 	ExecutionToken FlashingEnemyScriptFunction;
 	ExecutionToken DiggerEnemyScriptFunction;
+	ExecutionToken ExtraManScriptFunction;
 };
