@@ -201,7 +201,7 @@ namespace EnemyScripting
 
 	Bool EnemyManager_ForthExposedMethodImplementations::SetNewEnemyPathTo(ForthVm* vm)
 	{
-		// ( enemy destY destX -- )
+		// ( enemy destY destX -- pathFound )
 		Cell destX = (Cell)Pop();
 		Cell destY = (Cell)Pop();
 
@@ -212,7 +212,7 @@ namespace EnemyScripting
 		assert(destY >= 0);
 		assert(destY < Instance->CachedTiledWorld->GetActiveLevelHeight());
 
-		Instance->SetNewPath(*enemy, {destX,destY});
+		Push(Instance->SetNewPath(*enemy, {destX,destY}) ? True : False);
 		return Bool();
 	}
 
@@ -228,13 +228,13 @@ namespace EnemyScripting
 
 	Bool EnemyManager_ForthExposedMethodImplementations::SetNewDiggerPathTo(ForthVm* vm)
 	{
-		// ( enemy destinationY destinationX obstructionY obstructionX -- )
+		// ( enemy destinationY destinationX obstructionY obstructionX -- pathFound )
 		Cell obsX = Pop();
 		Cell obsY = Pop();
 		Cell destX = Pop();
 		Cell destY = Pop();
 		Enemy* enemy = (Enemy*)Pop();
-		Instance->SetNewPathForDigger(*enemy, {destX, destY}, {obsX, obsY});
+		Push(Instance->SetNewPathForDigger(*enemy, {destX, destY}, {obsX, obsY}) ? True : False);
 		return Bool();
 	}
 

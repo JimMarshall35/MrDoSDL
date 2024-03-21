@@ -23,6 +23,7 @@ class TextRenderer;
 class IConfigFile;
 class IBackendClient;
 class InputManager;
+class IRNG;
 
 class Game : 
 	public UpdateableLayerBase, 
@@ -46,7 +47,8 @@ public:
 		const std::shared_ptr<IBackgroundTileAssetManager>& backgroundAssetManager,
 		const std::shared_ptr<IAnimationAssetManager>& animationManager,
 		InputManager* inputManager,
-		std::function<void(void)>& gameOverCallback);
+		std::function<void(void)>& gameOverCallback,
+		const std::shared_ptr<IRNG>& rng);
 #else
 	Game(
 		const std::shared_ptr<IFileSystem>& fileSystem,
@@ -55,7 +57,8 @@ public:
 		const std::shared_ptr<IAnimationAssetManager>& animationManager,
 		const std::shared_ptr<TextRenderer>& textRenderer,
 		const std::shared_ptr<IBackendClient>& backendClient,
-		InputManager* inputManager);
+		InputManager* inputManager,
+		const std::shared_ptr<IRNG>& rng);
 #endif
 	
 

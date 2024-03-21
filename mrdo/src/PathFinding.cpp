@@ -149,7 +149,10 @@ namespace PathFinding
 		}
 	}
 
-	void DoAStar(const ivec2& start, const ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld , const NodeNeighboutIteratorApplier& iterApplier)
+	/// <summary>
+	/// returns Path successfully found
+	/// </summary>
+	bool DoAStar(const ivec2& start, const ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld , const NodeNeighboutIteratorApplier& iterApplier)
 	{
 		// based on https://github.com/OneLoneCoder/Javidx9/blob/master/ConsoleGameEngine/SmallerProjects/OneLoneCoder_PathFinding_AStar.cpp
 		// changed data structure used from list to min heap
@@ -167,7 +170,7 @@ namespace PathFinding
 		AStarNode* finishNode = FindNode(finish);
 		startNode->LocalScore = 0;
 		startNode->GlobalScore = heuristic(startNode, finishNode);
-
+		outPathBufferSize = 0;
 		assert(PriorityQueue->IsEmpty());
 		PriorityQueue->Insert(startNode);
 
@@ -226,21 +229,31 @@ namespace PathFinding
 		}
 		PriorityQueue->Clear();
 		// write path to output buffer, by following the chain of parent pointers
-		outPathBufferSize = 0;
+
 		currentNode = finishNode;
+		if (!finishNode)
+		{
+			return false;
+		}
 		while (currentNode != startNode && outPathBufferSize < pathBufferMaxSize)
 		{
 			outPath[outPathBufferSize++] = currentNode->GridCoords;
 			currentNode = currentNode->Parent;
+			if (!currentNode)
+			{
+				outPathBufferSize = 0;
+				return false;
+			}
 		}
+		return true;
 	}
-	void DoAStarNormalEnemy(const ivec2& start, const ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld)
+	bool DoAStarNormalEnemy(const ivec2& start, const ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld)
 	{
-		DoAStar(start, finish, outPath, outPathBufferSize, pathBufferMaxSize, tiledWorld, NodeNeighboutIteratorApplier(&IterateNodeNeighbours));
+		return DoAStar(start, finish, outPath, outPathBufferSize, pathBufferMaxSize, tiledWorld, NodeNeighboutIteratorApplier(&IterateNodeNeighbours));
 	}
-	void DoDiggingEnemyAStar(const ivec2& start, ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld, const ivec2& obstruction)
+	bool DoDiggingEnemyAStar(const ivec2& start, ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld, const ivec2& obstruction)
 	{
-		DoAStar(start, finish, outPath, outPathBufferSize, pathBufferMaxSize, tiledWorld,
+		return DoAStar(start, finish, outPath, outPathBufferSize, pathBufferMaxSize, tiledWorld,
 			[&obstruction](AStarNode* node, const TiledWorld* tiledWorld, NodeNeighbourIterator iterator) {
 			DiggingEnemyIterateNeighbours(node, tiledWorld, iterator, obstruction);
 		});

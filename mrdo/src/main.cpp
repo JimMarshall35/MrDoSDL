@@ -1,3 +1,4 @@
+
 //Using SDL and standard IO
 #include <SDL.h>
 #include <stdio.h>
@@ -66,7 +67,7 @@ int GameMain(int argc, char* args[])
             // Game systems setup
             // my rationale for making these shared ptrs is that they might be used in destructors of classes that depend on them
             // so I don't want the order of instantiation to matter as it would if they were stack allocated here and passed as raw ptrs for example
-            RNG rng;
+            std::shared_ptr<IRNG> rng = std::make_unique<RNG>();
             std::shared_ptr<IFileSystem> fileSystem = std::make_shared<FileSystem>(exePath);
             std::shared_ptr<IConfigFile> configFile = std::make_shared<ConfigFile>(fileSystem);
             std::shared_ptr<IFontAssetManager> fontAssetManager = std::make_shared<FontAssetManager>(configFile, screenSurface);
@@ -89,7 +90,7 @@ int GameMain(int argc, char* args[])
             EnemyScripting::ForthDoString("showWords");
 
             // game framework layers
-            Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, textRenderer, backendClient, &inputManager);
+            Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, textRenderer, backendClient, &inputManager,rng);
             FrontEndLayer frontend(textRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
             MapMakerLevelSelectLayer mapMakerLevelSelect(textRenderer, configFile, SCREEN_WIDTH, SCREEN_HEIGHT);
             MapMakerCreateNewLevelDialogue mapMakerCreateNewLevelDialogue(textRenderer, configFile, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -137,12 +138,15 @@ int ReplayValidatorMain(int argc, char* args[])
 
     std::string replayFileName = std::string(args[1]);
     u32 expectedScore = std::atoi(args[2]);
+    u32 seed = std::atoi(args[3]);
     std::cout << "\n\n\n\n\n Mr Do! Replay validator.\n";
    std::cout << "Replay file name: " << replayFileName << "\n";
    std::cout << "Expected score: " << expectedScore << "\n";
+   std::cout << "Seed: " << seed << "\n";
    char* exePath = args[0];
 
    LevelLoadData LevelLoad = { LevelSource::ArcadeLevels, 0 };
+   std::shared_ptr<IRNG> rng = std::make_unique<RNG>(seed);
    std::shared_ptr<IFileSystem> fileSystem = std::make_shared<FileSystem>(exePath);
    std::shared_ptr<IConfigFile> configFile = std::make_shared<ConfigFile>(fileSystem);
    std::shared_ptr<BackgroundTileAssetManager> backgroundTileAssetManager = std::make_shared<BackgroundTileAssetManager>(configFile);
@@ -164,7 +168,7 @@ int ReplayValidatorMain(int argc, char* args[])
    EnemyScripting::DoFile(fileSystem->GetEnemyAIFilePath());
 
 
-   Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, &inputManager, cb);
+   Game game(fileSystem, configFile, backgroundTileAssetManager, animationAssetManager, &inputManager, cb, rng);
    GameFramework::PushLayers("Game", GameLayerType::Draw | GameLayerType::Input | GameLayerType::Update, &LevelLoad);
 
    while (bContinue) { 

@@ -10,7 +10,7 @@
 
 #ifdef ReplayValidator
 
-GameState::GameState(const std::shared_ptr<IConfigFile>& configFile, Event<LevelLoadData>& NewLevelBegun, Event<LevelLoadData>& ResetAfterDeath, Game* g)
+GameState::GameState(const std::shared_ptr<IConfigFile>& configFile, Event<LevelLoadData>& NewLevelBegun, Event<LevelLoadData>& ResetAfterDeath, Game* g, const shared_ptr<IRNG>& rng)
 	: Score(0),
 	Lives(0),
 	LOnLevelLoad(this),
@@ -23,7 +23,9 @@ GameState::GameState(const std::shared_ptr<IConfigFile>& configFile, Event<Level
 	StartBonusTreetPoints(configFile->GetUIntValue("StartBonusTreetPoints")),
 	BonusTreetIncrement(configFile->GetUIntValue("BonusTreetIncrement")),
 	BonusTreetMax(configFile->GetUIntValue("BonusTreetMax")),
-	pGame(g)
+	pGame(g),
+	MyExtraState(configFile),
+	RNG(rng)
 {
 	NewLevelBegun += &LOnLevelLoad;
 	ResetAfterDeath += &LOnResetAfterDeath;
@@ -39,7 +41,8 @@ GameState::GameState(const std::shared_ptr<IConfigFile>& configFile,
 	const std::shared_ptr<IAnimationAssetManager>& animAssetManager,
 	Event<LevelLoadData>& NewLevelBegun,
 	Event<LevelLoadData>& ResetAfterDeath,
-	Game* g)
+	Game* g,
+	const std::shared_ptr<IRNG>& rng)
 	: Score(0),
 	Lives(0),
 	LOnLevelLoad(this),
@@ -54,8 +57,8 @@ GameState::GameState(const std::shared_ptr<IConfigFile>& configFile,
 	BonusTreetIncrement(configFile->GetUIntValue("BonusTreetIncrement")),
 	BonusTreetMax(configFile->GetUIntValue("BonusTreetMax")),
 	MyExtraState(animAssetManager, configFile, textRenderer),
-	pGame(g)
-
+	pGame(g),
+	RNG(rng)
 {
 	NewLevelBegun += &LOnLevelLoad;
 	ResetAfterDeath += &LOnResetAfterDeath;

@@ -20,6 +20,7 @@ class Event;
 class TextRenderer;
 class IAnimationAssetManager;
 class Game;
+class IRNG;
 
 class ExtraState
 {
@@ -71,7 +72,8 @@ public:
 	GameState(const std::shared_ptr<IConfigFile>& configFile,
 		Event<LevelLoadData>& NewLevelBegun,
 		Event<LevelLoadData>& ResetAfterDeath, 
-		Game* Game);
+		Game* Game,
+		const std::shared_ptr<IRNG>& rng);
 	u32 GetScore() const { return Score; }
 #else
 	GameState(const std::shared_ptr<IConfigFile>& configFile,
@@ -79,7 +81,8 @@ public:
 		const std::shared_ptr<IAnimationAssetManager>& animAssetManager,
 		Event<LevelLoadData>& NewLevelBegun,
 		Event<LevelLoadData>& ResetAfterDeath,
-		Game* Game);
+		Game* Game,
+		const std::shared_ptr<IRNG>& rng);
 #endif
 	virtual void RecieveMessage(const CherryEaten& message) override;
 	virtual void RecieveMessage(const EnemyDeath& message) override;
@@ -120,6 +123,7 @@ private:
 	vec2 LivesPositionToRender = { 0,0 };
 	ExtraState MyExtraState;
 	Game* pGame;
+	std::shared_ptr<IRNG> RNG;
 private:
 	LISTENER(GameState, OnLevelLoad, LevelLoadData);
 	LISTENER(GameState, OnResetAfterDeath, LevelLoadData);

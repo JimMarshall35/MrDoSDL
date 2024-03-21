@@ -84,8 +84,8 @@ private:
 	Enemy& SpawnEnemy(EnemySpawner& spawner, EnemyType type = EnemyType::Normal);
 	void UpdateSingleEnemy(float deltaTime, Enemy& enemy);
 	void InitialiseEnemyPool();
-	void SetNewPath(Enemy& enemy, const ivec2& newDestinationCell);
-	void SetNewPathForDigger(Enemy& enemy, const ivec2& newDestinationCell, const ivec2& obstruction);
+	bool SetNewPath(Enemy& enemy, const ivec2& newDestinationCell);
+	bool SetNewPathForDigger(Enemy& enemy, const ivec2& newDestinationCell, const ivec2& obstruction);
 	void SetEnemyDirection(Enemy& enemy);
 	void SetEnemyDestinationWorldSpace(Enemy& enemy);
 

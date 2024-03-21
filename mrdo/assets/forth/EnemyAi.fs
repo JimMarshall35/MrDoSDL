@@ -16,8 +16,14 @@
 
 0 var DiggerPreMoveCellY
 
+: NoPathToPlayer ( -- )
+	
+;
+
 : OnReachedPathEnd ( enemy )
-	GetCharacterTile SetPathTo
+	GetCharacterTile SetPathTo 0 = if
+		NoPathToPlayer
+	then
 ;
 
 : IncrementDeltaTime ( enemyPtr -- enemyPtr )

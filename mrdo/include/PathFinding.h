@@ -21,11 +21,11 @@ namespace PathFinding
 
 	void DeInit();
 
-	void DoAStar(const ivec2& start, const ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld, const NodeNeighboutIteratorApplier& iterApplier);
+	bool DoAStar(const ivec2& start, const ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld, const NodeNeighboutIteratorApplier& iterApplier);
 
-	void DoAStarNormalEnemy(const ivec2& start, const ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld);
+	bool DoAStarNormalEnemy(const ivec2& start, const ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld);
 
-	void DoDiggingEnemyAStar(const ivec2& start, ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld, const ivec2& obstruction);
+	bool DoDiggingEnemyAStar(const ivec2& start, ivec2& finish, ivec2* outPath, u32& outPathBufferSize, u32 pathBufferMaxSize, const TiledWorld* tiledWorld, const ivec2& obstruction);
 
 	template<typename T, typename TKey>
 	class PtrMinHeap

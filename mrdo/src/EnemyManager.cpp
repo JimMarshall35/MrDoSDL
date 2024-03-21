@@ -294,9 +294,14 @@ Enemy& EnemyManager::SpawnEnemy(EnemySpawner& spawner, EnemyType type /* = Enemy
 	spawned.EnemyAnimator.FPS = 4;
 	spawned.bCrushed = false;
 	spawned.Timer = 0.0f;
-	SetNewPath(spawned, characterTile);
-	SetEnemyDestinationWorldSpace(spawned);
-	SetEnemyDirection(spawned);
+
+	// todo: delete this if and its contents
+	if (SetNewPath(spawned, characterTile))
+	{
+		SetEnemyDestinationWorldSpace(spawned);
+		SetEnemyDirection(spawned);
+	}
+	
 	return spawned;
 }
 
@@ -348,6 +353,10 @@ void EnemyManager::SetEnemyDestinationWorldSpace(Enemy& enemy)
 bool EnemyManager::FollowPathBase(Enemy& enemy, float deltaTime, const PathFinishedCallback& onPathFinished, float speedMultiplier)
 {
 	//move towards next path node
+	if (enemy.PathBufferCurrentSize == 0)
+	{
+		return false;
+	}
 	vec2 moveDirection = (enemy.Destination - enemy.Pos).Normalized();
 	float* coordinateToChangePtr = nullptr;
 	float changeDirection = 1.0f;
@@ -440,9 +449,9 @@ void EnemyManager::InitialiseEnemyPool()
 	}
 }
 
-void EnemyManager::SetNewPath(Enemy& enemy, const ivec2& newDestinationCell)
+bool EnemyManager::SetNewPath(Enemy& enemy, const ivec2& newDestinationCell)
 {
-	PathFinding::DoAStarNormalEnemy(
+	bool b = PathFinding::DoAStarNormalEnemy(
 		enemy.CurrentCell,
 		ivec2{ (u32)newDestinationCell.x, (u32)newDestinationCell.y },
 		enemy.PathBuffer.get(),
@@ -450,13 +459,18 @@ void EnemyManager::SetNewPath(Enemy& enemy, const ivec2& newDestinationCell)
 		PathBufferSize,
 		CachedTiledWorld
 	);
-	enemy.PathBufferDestinationIndex = enemy.PathBufferCurrentSize - 1;
+	if (b)
+	{
+		//path successfully found
+		enemy.PathBufferDestinationIndex = enemy.PathBufferCurrentSize - 1;
+	}
+	return b;
 	//assert(enemy.PathBufferDestinationIndex >= 0);
 }
 
-void EnemyManager::SetNewPathForDigger(Enemy& enemy, const ivec2& newDestinationCell, const ivec2& obstruction)
+bool EnemyManager::SetNewPathForDigger(Enemy& enemy, const ivec2& newDestinationCell, const ivec2& obstruction)
 {
-	PathFinding::DoDiggingEnemyAStar(
+	bool b = PathFinding::DoDiggingEnemyAStar(
 		enemy.CurrentCell,
 		ivec2{ (u32)newDestinationCell.x, (u32)newDestinationCell.y },
 		enemy.PathBuffer.get(),
@@ -465,8 +479,12 @@ void EnemyManager::SetNewPathForDigger(Enemy& enemy, const ivec2& newDestination
 		CachedTiledWorld,
 		obstruction//enemy.PathBuffer[enemy.PathBufferDestinationIndex]
 	);
-	enemy.PathBufferDestinationIndex = enemy.PathBufferCurrentSize - 1;
-	SetEnemyDestinationWorldSpace(enemy);
+	if (b)
+	{
+		enemy.PathBufferDestinationIndex = enemy.PathBufferCurrentSize - 1;
+		SetEnemyDestinationWorldSpace(enemy);
+	}
+	return b;
 }
 
 void EnemyManager::SetEnemyDirection(Enemy& enemy)
