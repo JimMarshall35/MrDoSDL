@@ -53,6 +53,7 @@
 	rot                                                     ( enemy charY charX enemy )
 	GetCurrentDestination                                   ( enemy charY charX destY destX )
 	SetNewDiggerPath
+	drop
 ;
 
 : EnemyUpdate ( enemyptr -- )
