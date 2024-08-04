@@ -175,7 +175,7 @@ namespace EnemyScripting
 
 	Bool EnemyManager_ForthExposedMethodImplementations::GetEnemyTypePtr(ForthVm* vm)
 	{
-		// ( enemy -- )
+		// ( enemy -- &enemy->type )
 		Enemy* enemy = (Enemy*)Pop();
 		Push((Cell)&enemy->Type);
 		return Bool();

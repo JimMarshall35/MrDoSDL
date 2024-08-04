@@ -56,7 +56,11 @@
 	drop
 ;
 
-: EnemyUpdate ( enemyptr -- )
+: GetEnemyType ( enemyptr -- enemyPtr enemyType )
+	dup GetEnemyTypePtr @32
+;
+
+: NormalEnemyUpdate ( enemyptr -- )
 	( increment enemy timer with delta time )
 	IncrementDeltaTime
 	dup                           ( enemy enemy )
@@ -140,3 +144,24 @@
 	drop
 ;
 
+: GhostEnemyUpdate ( enemy -- )
+	drop
+;
+
+: EnemyUpdate ( enemyptr -- )
+	GetEnemyType EnemyTypeNormal = if
+		NormalEnemyUpdate
+	else GetEnemyType EnemyTypeDigger = if
+		DiggerEnemyUpdate
+	else GetEnemyType EnemyTypeTurningIntoDigger = if
+		FlashingEnemyUpdate
+	else GetEnemyType EnemyTypeExtraMan = if
+		ExtraManEnemyUpdate
+	else GetEnemyType EnemyTypeGhost = if
+		GhostEnemyUpdate
+	then
+	then
+	then
+	then
+	then
+;

@@ -1,6 +1,6 @@
 #pragma once
 
-enum class EnemyType
+enum class EnemyType : uint32_t
 {
 	Normal,
 	TurningIntoDigger,

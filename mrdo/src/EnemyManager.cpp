@@ -309,24 +309,8 @@ void EnemyManager::UpdateSingleEnemy(float deltaTime, Enemy& enemy)
 {
 	EnemyType oldType = enemy.Type;
 	Enemy* enemyPtr = &enemy;
-	switch (enemy.Type)
-	{
-	case EnemyType::Normal:
-		EnemyScripting::Push((Cell)enemyPtr);
-		EnemyScripting::DoExecutionToken(UpdateNormalEnemyScriptFunction);
-		break;
-	case EnemyType::TurningIntoDigger:
-		EnemyScripting::Push((Cell)enemyPtr);
-		EnemyScripting::DoExecutionToken(FlashingEnemyScriptFunction);
-		break;
-	case EnemyType::Digger:
-		EnemyScripting::Push((Cell)enemyPtr);
-		EnemyScripting::DoExecutionToken(DiggerEnemyScriptFunction);
-		break;
-	case EnemyType::ExtraMan:
-		EnemyScripting::Push((Cell)enemyPtr);
-		EnemyScripting::DoExecutionToken(ExtraManScriptFunction);
-	}
+	EnemyScripting::Push((Cell)enemyPtr);
+	EnemyScripting::DoExecutionToken(UpdateNormalEnemyScriptFunction);
 	EnemyType newType = enemy.Type;
 }
 
