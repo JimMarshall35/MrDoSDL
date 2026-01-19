@@ -9,10 +9,11 @@
 #include "GameLayer.h"
 #include <string.h>
 #include <memory>
+#include "RNG.h"
 
 #ifdef ReplayValidator
 
-GameState::GameState(const std::shared_ptr<IConfigFile>& configFile, Event<LevelLoadData>& NewLevelBegun, Event<LevelLoadData>& ResetAfterDeath, Game* g, const shared_ptr<IRNG>& rng)
+GameState::GameState(const std::shared_ptr<IConfigFile>& configFile, Event<LevelLoadData>& NewLevelBegun, Event<LevelLoadData>& ResetAfterDeath, Game* g, const std::shared_ptr<IRNG>& rng)
 	: Score(0),
 	Lives(0),
 	LOnLevelLoad(this),
