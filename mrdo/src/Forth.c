@@ -360,7 +360,12 @@ static Bool InnerInterpreter(ForthVm* vm){
 		BCase Here:
 			PushIntStack(vm, vm->memoryTop);
 		BCase Allot:
-			((char*)vm->memoryTop) += PopIntStack(vm);
+			{
+				char* asC = vm->memoryTop;
+				asC += PopIntStack(vm);
+				vm->memoryTop = asC;
+			}
+			
 		BCase Colon:
 			if (vm->currentMode & Forth_CompileBit) {
 				ForthPrint(vm, "you're already in colon compile mode");

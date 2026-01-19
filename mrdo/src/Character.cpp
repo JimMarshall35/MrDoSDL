@@ -40,7 +40,7 @@ Character::Character(
 
 	DeathAnimationFPS = ConfigFile->GetFloatValue("CharacterDeathAnimatorFPS");
 	AliveAnimationsFPS = ConfigFile->GetFloatValue("CharacterAnimatorFPS");
-	Animator.FPS = AliveAnimationsFPS;
+	animator.FPS = AliveAnimationsFPS;
 	PopulateAnimFrames();
 }
 
@@ -55,7 +55,7 @@ void Character::Update(float deltaTime, GameInputState inputState)
 	
 	if (MyCrystalBall.IsReleased())
 	{
-		assert(CrystalBallState == CrystalBallState::NoBall);
+		assert(crystalBallState == CrystalBallState::NoBall);
 		MyCrystalBall.Update(deltaTime);
 		PostThrowTimer += deltaTime;
 		if (PostThrowTimer > PostThrowTimerLimit)
@@ -68,7 +68,7 @@ void Character::Update(float deltaTime, GameInputState inputState)
 		MyCrystalBall.Release();
 		PostThrowTimer = 0.0f;
 		bCanCatchBall = false;
-		CrystalBallState = CrystalBallState::NoBall;
+		crystalBallState = CrystalBallState::NoBall;
 	}
 
 	if (inputState.AnyDirectionPressed())
@@ -79,25 +79,25 @@ void Character::Update(float deltaTime, GameInputState inputState)
 			static ivec2 cellWhenDiggingStarted = { -1,-1 };
 			if (CachedTiledWorld->IsBarrierBetween(CurrentTile, DestinationTile))
 			{
-				PushingState = PushingState::Digging;
+				pushingState = PushingState::Digging;
 				cellWhenDiggingStarted = CurrentTile;
 				bPreviousBarrierBetween = true;
 			}
-			else if(PushingState == PushingState::Digging)
+			else if(pushingState == PushingState::Digging)
 			{
 				bPreviousBarrierBetween = false;
 				if (CurrentMovementDirection == PreviousDirection && CurrentTile == cellWhenDiggingStarted)
 				{
-					PushingState = PushingState::Digging;
+					pushingState = PushingState::Digging;
 				}
 				else
 				{
-					PushingState = PushingState::NotPushing;
+					pushingState = PushingState::NotPushing;
 				}
 			}
 			else
 			{
-				PushingState = PushingState::NotPushing;
+				pushingState = PushingState::NotPushing;
 				bPreviousBarrierBetween = false;
 			}
 			
@@ -195,7 +195,7 @@ void Character::Update(float deltaTime, GameInputState inputState)
 			NextMovementDirection = newDir;
 			SetNewDestinationCell(newDir);
 			MoveTowardsDestination(deltaTime);
-			PushingState = CachedTiledWorld->IsBarrierBetween(CurrentTile, DestinationTile) ? PushingState::Digging : PushingState::NotPushing;
+			pushingState = CachedTiledWorld->IsBarrierBetween(CurrentTile, DestinationTile) ? PushingState::Digging : PushingState::NotPushing;
 			bHasMoved = true;
 		}
 	}
@@ -229,19 +229,19 @@ void Character::Update(float deltaTime, GameInputState inputState)
 			CurrentLocation.y = foundApple->Position.y - CachedSpriteDims.y;
 			bHasMoved = false;
 		}
-		PushingState = PushingState::Pushing;
+		pushingState = PushingState::Pushing;
 	}
 	PreviousDirection = CurrentMovementDirection;
-	Animator.CurrentAnimation = &RunningAnimFrames[(u32)CrystalBallState][(u32)PushingState][(u32)CurrentMovementDirection];
-	Animator.bIsAnimating = bIsMoving;
-	Animator.Update(deltaTime / 1000.0f);
+	animator.CurrentAnimation = &RunningAnimFrames[(u32)crystalBallState][(u32)pushingState][(u32)CurrentMovementDirection];
+	animator.bIsAnimating = bIsMoving;
+	animator.Update(deltaTime / 1000.0f);
 }
 
 void Character::CatchBall(bool forceCatch)
 {
 	if (bCanCatchBall || forceCatch)
 	{
-		CrystalBallState = CrystalBallState::HasBall;
+		crystalBallState = CrystalBallState::HasBall;
 		MyCrystalBall.OnCaught();
 	}
 }
@@ -377,7 +377,7 @@ void Character::MoveTowardsDestination(float deltaTime)
 	if (DestinationTile != CurrentTile)
 	{
 		float speedMultiplier = 1.0;
-		switch (PushingState)
+		switch (pushingState)
 		{
 		case PushingState::Pushing:
 			speedMultiplier = PushSpeedMultiplier;
@@ -485,12 +485,12 @@ void Character::Kill(CharacterDeathReason deathReason)
 {
 	bBeingCrushed = false;
 	// set animator state for death animation
-	Animator.bIsAnimating = true;
-	Animator.CurrentAnimation = &DieAnimFrames;
-	Animator.OnAnimFrame = 0;
-	Animator.FPS = DeathAnimationFPS;
-	Animator.bLooping = false;
-	Animator.bFinished = false;
+	animator.bIsAnimating = true;
+	animator.CurrentAnimation = &DieAnimFrames;
+	animator.OnAnimFrame = 0;
+	animator.FPS = DeathAnimationFPS;
+	animator.bLooping = false;
+	animator.bFinished = false;
 
 	GameFramework::SendFrameworkMessage(CharacterDied{ deathReason });
 }
@@ -512,7 +512,7 @@ void Character::OnNewLevelStarted(LevelLoadData level)
 
 	spawnedAtTile &= ~(1 << (u32)TileWallDirectionBit::Center); // knock out center wall of tile spawned in
 
-	Animator.CurrentAnimation = &RunningAnimFrames[0][0][0];
+	animator.CurrentAnimation = &RunningAnimFrames[0][0][0];
 	if (bCanCatchBall)
 	{
 		CatchBall();
@@ -535,13 +535,13 @@ void Character::OnResetAfterDeath(LevelLoadData levelLoadData)
 	bIsMoving = false;
 	bHasMoved = false;
 	bCanCatchBall = false;
-	PushingState = PushingState::NotPushing;
+	pushingState = PushingState::NotPushing;
 
 	// set animator state for gameplay
-	Animator.OnAnimFrame = 0;
-	Animator.FPS = AliveAnimationsFPS;
-	Animator.bLooping = true;
-	Animator.bFinished = false;
+	animator.OnAnimFrame = 0;
+	animator.FPS = AliveAnimationsFPS;
+	animator.bLooping = true;
+	animator.bFinished = false;
 
 	// make sure ball is caught
 	CatchBall(true);
@@ -552,7 +552,7 @@ void Character::Draw(SDL_Surface* windowSurface, float scale) const
 {
 	if (MyCrystalBall.IsReleased())
 	{
-		assert(CrystalBallState == CrystalBallState::NoBall);
+		assert(crystalBallState == CrystalBallState::NoBall);
 		MyCrystalBall.Draw(windowSurface, scale);
 	}
 	SDL_Surface* surface = AnimationAssetManager->GetAnimationsSpriteSheetSurface();
@@ -570,7 +570,7 @@ void Character::Draw(SDL_Surface* windowSurface, float scale) const
 	}
 	else
 	{
-		rect = &Animator.GetCurrentFrame();
+		rect = &animator.GetCurrentFrame();
 	}
 	
 	SDL_BlitSurfaceScaled(surface, rect, windowSurface, &dst);
@@ -578,5 +578,5 @@ void Character::Draw(SDL_Surface* windowSurface, float scale) const
 
 void Character::UpdatePlayingDeathAnimation(float deltaTime)
 {
-	Animator.Update(deltaTime / 1000.0f);
+	animator.Update(deltaTime / 1000.0f);
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <iostream>
+#include <algorithm>
 #include "EventListener.h"
 
 // Based heavily on https://cratonica.wordpress.com/implementing-c-events-in-c/

@@ -65,7 +65,7 @@ public:
 
 
 #define FRAMEWORK_STACKS_SIZE 100
-static class GameFramework {
+class GameFramework {
 public:
 	GameFramework();
 	static void Update(double deltaT);

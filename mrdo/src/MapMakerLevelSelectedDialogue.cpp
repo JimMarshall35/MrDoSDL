@@ -93,7 +93,7 @@ const std::string& MapMakerLevelSelectedDialogue::GetInputLayerName() const
 void MapMakerLevelSelectedDialogue::OnInputPush(void* data)
 {
 	SelectedOption = MMOptionIndexEdit;
-	SelectedLevelIndex = (u32)data;
+	SelectedLevelIndex = (u64)data;
 	LevelLoad.LevelIndex = SelectedLevelIndex;
 	std::vector<LevelConfigData>& mapMakerLevels = ConfigFile->GetMapMakerLevelsConfigData();
 	SelectedLevel = &mapMakerLevels[SelectedLevelIndex];

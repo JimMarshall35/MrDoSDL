@@ -5,6 +5,8 @@
 #include <cassert>
 #include <stdlib.h>     /* abs */
 #include <cmath>
+#include <string.h>
+
 TiledWorld::TiledWorld(
 	const std::shared_ptr<IConfigFile>& config, 
 	const std::shared_ptr<IBackgroundTileAssetManager>& bgtam,
@@ -184,6 +186,10 @@ bool TiledWorld::IsBarrierBetween(const ivec2& cell1, const ivec2& cell2) const
 	{
 		return true;
 	}
+	if(cell2.x < 0 || cell2.y < 0)
+	{
+		return true;
+	}
 	int dx = cell2.x - cell1.x;
 	int dy = cell2.y - cell1.y;
 	assert((dx >= -1) && (dx <= 1));
@@ -207,6 +213,7 @@ bool TiledWorld::IsBarrierBetween(const ivec2& cell1, const ivec2& cell2) const
 	{
 		return (cell1Val & (u8)(1 << (u8)TileWallDirectionBit::Up)) || (cell2Val & (u8)(1 << (u8)TileWallDirectionBit::Down));
 	}
+	return true;
 
 }
 

@@ -86,7 +86,6 @@ void AppleManager::Draw(SDL_Surface* windowSurface, float scale) const
 					dst.h = CachedBackgroundTileSize * scale;
 					dst.x = (float)apple.Position.x * scale;
 					dst.y = (float)apple.Position.y * scale;
-
 					const SDL_Rect& rect = WobbleAnimation[apple.OnAnimationFrame];
 					SDL_BlitSurfaceScaled(surface, &rect, windowSurface, &dst);
 				}
@@ -246,6 +245,7 @@ void AppleManager::UpdateSingleApple(float deltaT, Apple& apple)
 				if (IsCellBelowEmpty(lastApple) && !IsAppleBelow(lastApple))
 				{
 					lastApple->State = AppleState::Sliding;
+					lastApple->OnAnimationFrame = 0;
 					float lastAppleCenterX = lastApple->Position.x + CachedSpriteDims.x / 2.0f;
 					int cellBelowCoordsX = lastAppleCenterX / CachedBackgroundTileSize;
 					lastApple->SlideDestination = cellBelowCoordsX * CachedBackgroundTileSize;

@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include "IAnimationAssetManager.h"
 #include "GameLayer.h"
+#include <string.h>
+#include <memory>
 
 #ifdef ReplayValidator
 
@@ -158,12 +160,20 @@ void GameState::OnResetAfterDeath(LevelLoadData levelLoadData)
 
 void GameState::RefreshScoreBuffer()
 {
+#ifdef WIN32
 	sprintf_s(ScoreBuffer, ScoreBufferSize, "%i", Score);
+#else
+	sprintf(ScoreBuffer, "%i", Score);
+#endif
 }
 
 void GameState::RefreshLivesBuffer()
 {
+#ifdef WIN32
 	sprintf_s(LivesBuffer, LivesBufferSize, "%i", Lives);
+#else
+	sprintf(LivesBuffer, "%i", Lives);
+#endif
 }
 
 int GameState::GetNumCherries(const LevelConfigData& lvl)

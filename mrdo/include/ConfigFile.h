@@ -46,6 +46,6 @@ private:
 	std::vector<LevelConfigData> MapMakerLevelsConfigData;
 	LevelConfigData BlankLevel;
 	std::shared_ptr<IFileSystem> Filesystem;
-	FontConfigData FontConfigData;
+	FontConfigData fontConfigData;
 
 };

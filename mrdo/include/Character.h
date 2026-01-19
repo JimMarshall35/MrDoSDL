@@ -63,7 +63,7 @@ public:
 	void SetAppleManager(AppleManager* appleManager);     // can't be passed into ctor with other dependencies as both this and the apple manager are members of GameLayer and instantiated at same time so would lead to chicken and egg syndrom
 	void Kill(CharacterDeathReason deathReason);
 	void Crush();
-	bool IsAnimationFinished() const { return Animator.bFinished; }
+	bool IsAnimationFinished() const { return animator.bFinished; }
 private:
 	void PopulateAnimFrames();
 	MovementDirection GetMovementDirection(GameInputState inputState);
@@ -73,7 +73,7 @@ private:
 	void OnResetAfterDeath(LevelLoadData level);
 private:
 	CrystalBall MyCrystalBall;
-	Animator Animator;
+	Animator animator;
 	// map of frames, index in by crystal ball state, is pushing or digging and finally direction moving
 	std::vector<SDL_Rect> RunningAnimFrames[2][3][4];
 	SDL_Rect CrushedFrame;
@@ -90,8 +90,8 @@ private:
 	MovementDirection CurrentMovementDirection;
 	MovementDirection NextMovementDirection;
 	float CharacterSpeed;
-	CrystalBallState CrystalBallState = CrystalBallState::HasBall;
-	PushingState PushingState = PushingState::NotPushing;
+	CrystalBallState crystalBallState = CrystalBallState::HasBall;
+	PushingState pushingState = PushingState::NotPushing;
 	float PostThrowTimerLimit;
 	float PostThrowTimer;
 

@@ -2,7 +2,8 @@
 #include "IFontAssetManager.h"
 #include "SDL.h"
 #include "VectorTypes.h"
-#include <cstringt.h>
+//#include <cstringt.h>
+#include <string.h>
 
 TextRenderer::TextRenderer(const std::shared_ptr<IFontAssetManager>& fontAssetManager)
 	:CachedFontAssetManager(fontAssetManager),

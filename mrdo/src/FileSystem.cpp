@@ -1,14 +1,15 @@
 #include "FileSystem.h"
+#include <iostream>
 
 FileSystem::FileSystem(const std::string& exePath)
 	:ExePath(GetFolderOfFile(exePath)),
 	AssetFolderPath(ExePath + "assets"),
-	SpriteFolderPath(ExePath + "assets\\sprites"),
-	ConfigFilePath(ExePath + "assets\\json\\config.json"),
-	EnemyAIFilePath(ExePath + "assets\\forth\\EnemyAi.fs"),
-	ReplaysFolderPath(AssetFolderPath + "\\replays\\")
+	SpriteFolderPath(ExePath + "assets/sprites"),
+	ConfigFilePath(ExePath + "assets/json/config.json"),
+	EnemyAIFilePath(ExePath + "assets/forth/EnemyAi.fs"),
+	ReplaysFolderPath(AssetFolderPath + "/replays/")
 {
-
+	std::cout << "assets: " << AssetFolderPath << std::endl;
 }
 
 const std::string& FileSystem::GetAssetFolderPath() const
@@ -39,7 +40,7 @@ const std::string& FileSystem::GetReplaysFolderPath() const
 std::string FileSystem::GetFolderOfFile(const std::string& filePath)
 {
 	std::string rVal = filePath;
-	while (rVal[rVal.length() - 1] != '\\')
+	while (rVal[rVal.length() - 1] != '/')
 	{
 		rVal.erase(rVal.end() - 1);
 	}

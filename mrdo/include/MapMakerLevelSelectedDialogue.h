@@ -63,7 +63,7 @@ private:
 	std::shared_ptr<IConfigFile> ConfigFile;
 	std::shared_ptr<TextRenderer> CachedTextRenderer;
 	LevelConfigData* SelectedLevel;
-	u32 SelectedLevelIndex;
+	u64 SelectedLevelIndex;
 	i32 SelectedOption;
 	DialogueOption Options[MMNumOptions];
 	u32 ScreenWidth;

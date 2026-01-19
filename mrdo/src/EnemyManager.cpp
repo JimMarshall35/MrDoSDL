@@ -454,9 +454,10 @@ bool EnemyManager::SetNewPath(Enemy& enemy, const ivec2& newDestinationCell)
 
 bool EnemyManager::SetNewPathForDigger(Enemy& enemy, const ivec2& newDestinationCell, const ivec2& obstruction)
 {
+	auto cell = ivec2{ (u32)newDestinationCell.x, (u32)newDestinationCell.y };
 	bool b = PathFinding::DoDiggingEnemyAStar(
 		enemy.CurrentCell,
-		ivec2{ (u32)newDestinationCell.x, (u32)newDestinationCell.y },
+		cell,
 		enemy.PathBuffer.get(),
 		enemy.PathBufferCurrentSize,
 		PathBufferSize,

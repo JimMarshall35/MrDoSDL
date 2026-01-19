@@ -3,6 +3,7 @@
 #include "TextRenderer.h"
 #include <cassert>
 #include <IConfigFile.h>
+#include <string.h>
 #include "BackendClient.h"
 #include "InputManager.h"
 

@@ -1,6 +1,7 @@
 #include "InputManager.h"
 #include "IConfigFile.h"
 #include "IFileSystem.h"
+#include <string.h>
 #include <iostream>
 #include <fstream>
 
@@ -182,7 +183,12 @@ void InputManager::WriteReplayBuffer(char* data, size_t size, u32 score) const
     header.Score = score;
     header.NumSnaps = InputSnaps.size();
     std::string name = Config->GetStringValue("PlayerName");
+
+#ifdef WIN32
     strcpy_s(header.Name, name.c_str());
+#else
+    strcpy(header.Name, name.c_str());
+#endif
     memcpy(data, &header, sizeof(header));
     memcpy(data + sizeof(SavedRecordingHeader), InputSnaps.data(), sizeof(InputSnap) * header.NumSnaps);
 }

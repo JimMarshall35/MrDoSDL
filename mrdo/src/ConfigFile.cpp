@@ -72,8 +72,8 @@ void ConfigFile::PopulateSpriteSheetBase(SpriteSheetConfigData& spriteSheet, con
 	spriteSheet.NumRows = ConfigFileJSON[objectName]["NumRows"];
 	spriteSheet.TileSize = ConfigFileJSON[objectName]["TileSize"];
 
-	spriteSheet.SpriteSheetAssetPath = Filesystem->GetSpritesFolderPath() + "\\" + ConfigFileJSON[objectName]["AssetPath"].template get<std::string>();
-
+	spriteSheet.SpriteSheetAssetPath = Filesystem->GetSpritesFolderPath() + "/" + ConfigFileJSON[objectName]["AssetPath"].template get<std::string>();
+	std::cout << "SpriteSheetAssetPath: " << spriteSheet.SpriteSheetAssetPath << std::endl;
 }
 
 void ConfigFile::PopulateLevelsConfigData(std::vector<LevelConfigData>& vectorToAddTo, const std::string& configFileArrayName)
@@ -90,25 +90,25 @@ void ConfigFile::PopulateLevelsConfigData(std::vector<LevelConfigData>& vectorTo
 
 void ConfigFile::PopulateFontConfigDataStruct()
 {
-	PopulateSpriteSheetBase(FontConfigData, "Font");
+	PopulateSpriteSheetBase(fontConfigData, "Font");
 	json font = ConfigFileJSON["Font"];
 	json blockDims = font["BlockDimensions"];
-	FontConfigData.BlockDims = ivec2{ (i32)blockDims["x"], (i32)blockDims["y"] };
+	fontConfigData.BlockDims = ivec2{ (i32)blockDims["x"], (i32)blockDims["y"] };
 	json colourKey = font["ColourKey"];
-	FontConfigData.ColourKeyR = colourKey["r"];
-	FontConfigData.ColourKeyG = colourKey["g"];
-	FontConfigData.ColourKeyB = colourKey["b"];
+	fontConfigData.ColourKeyR = colourKey["r"];
+	fontConfigData.ColourKeyG = colourKey["g"];
+	fontConfigData.ColourKeyB = colourKey["b"];
 
 	if (font["AllCaps"])
 	{
 		assert(!font["AllLowercase"]);
-		FontConfigData.LetterAvailability = FontLetterAvailability::AllCaps;
+		fontConfigData.LetterAvailability = FontLetterAvailability::AllCaps;
 	}
 
 	if (font["AllLowercase"])
 	{
 		assert(!font["AllCaps"]);
-		FontConfigData.LetterAvailability = FontLetterAvailability::AllLowercase;
+		fontConfigData.LetterAvailability = FontLetterAvailability::AllLowercase;
 	}
 
 	json blocks = font["Blocks"];
@@ -116,7 +116,7 @@ void ConfigFile::PopulateFontConfigDataStruct()
 	{
 		json value = item.value();
 		assert(value.is_object());
-		FontConfigData.Blocks[item.key()] = ivec2{ (i32)value["x"], (i32)value["y"] };
+		fontConfigData.Blocks[item.key()] = ivec2{ (i32)value["x"], (i32)value["y"] };
 	}
 
 	assert(font["BlockMapping"].is_array());
@@ -124,7 +124,7 @@ void ConfigFile::PopulateFontConfigDataStruct()
 	{
 		assert(item.is_array());
 		assert(item.size() >= 2);
-		FontConfigData.BlockMapping.push_back(std::pair<u8, u8>(item[0], item[1]));
+		fontConfigData.BlockMapping.push_back(std::pair<u8, u8>(item[0], item[1]));
 	}
 }
 
@@ -299,7 +299,7 @@ std::vector<LevelConfigData>& ConfigFile::GetMapMakerLevelsConfigData()
 
 const FontConfigData& ConfigFile::GetFontConfigData() const
 {
-	return FontConfigData;
+	return fontConfigData;
 }
 
 int ConfigFile::GetArraySize(const std::string& key) const

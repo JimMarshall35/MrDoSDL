@@ -30,7 +30,7 @@
 #ifndef ReplayValidator
 int GameMain(int argc, char* args[])
 {
-
+    printf("hello wold\n");
     char* exePath = args[0];
     //The window we'll be rendering to
     SDL_Window* window = NULL;
@@ -46,6 +46,7 @@ int GameMain(int argc, char* args[])
     }
     else
     {
+        printf("SDL initialized\n");
         // just hard code this for now - all levels are this size
         ivec2 windowSize = { 12 * 16, 15 * 16 }; //level->GetRequiredBaseWindowSize();
         float scaleFactor = 3.0f;
@@ -68,8 +69,12 @@ int GameMain(int argc, char* args[])
             // my rationale for making these shared ptrs is that they might be used in destructors of classes that depend on them
             // so I don't want the order of instantiation to matter as it would if they were stack allocated here and passed as raw ptrs for example
             std::shared_ptr<IRNG> rng = std::make_unique<RNG>();
+            printf("RNG initialized\n");
+            printf("exe path: %s\n", exePath);
             std::shared_ptr<IFileSystem> fileSystem = std::make_shared<FileSystem>(exePath);
+            printf("FileSystem initialized\n");
             std::shared_ptr<IConfigFile> configFile = std::make_shared<ConfigFile>(fileSystem);
+            printf("ConfigFile initialized\n");
             std::shared_ptr<IFontAssetManager> fontAssetManager = std::make_shared<FontAssetManager>(configFile, screenSurface);
             std::shared_ptr<TextRenderer> textRenderer = std::make_shared<TextRenderer>(fontAssetManager);
             std::shared_ptr<BackgroundTileAssetManager> backgroundTileAssetManager = std::make_shared<BackgroundTileAssetManager>(configFile);
